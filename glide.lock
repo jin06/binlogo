@@ -1,0 +1,26 @@
+hash: ec4bab34a61cd010f0bb4dd6687af618c62254bb7bd731df36c762f6df7c5192
+updated: 2019-03-17T15:37:19.192370599+08:00
+imports:
+- name: github.com/pingcap/errors
+  version: 1176802fff62540cc87d289bd40c52a2d6b2ea16
+- name: github.com/satori/go.uuid
+  version: b2ce2384e17bbe0c6d34077efa39dbab3e09123b
+- name: github.com/shopspring/decimal
+  version: cd690d0c9e2447b1ef2a129a6b7b49077da89b8e
+- name: github.com/siddontang/go
+  version: bdc77568d726a8702315ec4eafda030b6abc4f43
+  subpackages:
+  - hack
+- name: github.com/siddontang/go-log
+  version: 1e957dd83bed18c84716181da7b80d4af48eaefe
+  subpackages:
+  - log
+  - loggers
+- name: github.com/siddontang/go-mysql
+  version: c6ab05a85eb86dc51a27ceed6d2f366a32874a24
+  subpackages:
+  - client
+  - mysql
+  - packet
+  - replication
+testImports: []

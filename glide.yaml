@@ -1,0 +1,3 @@
+package: binlogo
+import:
+- package: github.com/siddontang/go-mysql
