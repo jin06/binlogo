@@ -10,7 +10,6 @@ import (
 )
 
 func main() {
-	print("hello")
 	cfg := replication.BinlogSyncerConfig{
 		ServerID: 100,
 		Flavor:   "mysql",
@@ -19,8 +18,8 @@ func main() {
 		User:     "root",
 		Password: "123456",
 	}
-	binlogFile := "mysql-bin.000009"
-	binlogPos := uint32(4370261)
+	binlogFile := "mysql-bin.000040"
+	binlogPos := uint32(4)
 	position := mysql.Position{
 		binlogFile,
 		binlogPos,
@@ -42,6 +41,7 @@ func main() {
 		ev, _ := streamer.GetEvent(context.Background())
 		// Dump event
 		ev.Dump(os.Stdout)
+		//ev.Dump(os.Stdout)
 	}
 
 	// or we can use a timeout context

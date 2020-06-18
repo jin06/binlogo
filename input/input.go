@@ -1,5 +1,5 @@
 package input
 
-type input struct {
+type Inputer struct {
 
 }
