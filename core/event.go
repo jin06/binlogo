@@ -1,5 +1,7 @@
 package core
 
-type Event struct {
+import "github.com/siddontang/go-mysql/replication"
 
+type Event struct {
+	BinlogEvent replication.BinlogEvent
 }
