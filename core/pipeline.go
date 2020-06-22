@@ -3,11 +3,12 @@ package core
 import "context"
 
 type Pipeline struct {
-	Importer Importer
+	Importer *Importer
 	Exporter Exporter
 	Filters  []Filter
-	line     chan *Event
 	Context  context.Context
+	SourceLine chan *Event
+	FilterLine chan *Event
 }
 
 func NewPipeline(context context.Context) *Pipeline {
@@ -16,7 +17,6 @@ func NewPipeline(context context.Context) *Pipeline {
 
 func newPipeline() *Pipeline {
 	p := new(Pipeline)
-	p.line = make(chan *Event, 10000)
 	return p
 }
 
@@ -33,5 +33,12 @@ func (p *Pipeline) ChangeEx(exporter *Exporter) error {
 }
 
 func (p *Pipeline) Run() error {
-	return nil
+	ch, err := p.Importer.Start()
+	if err != nil {
+		panic(err)
+	}
+	p.SourceLine = ch
+	err =  p.Exporter.Start(p.SourceLine)
+	return err
 }
+

@@ -1,12 +1,12 @@
 package main
 
 import (
+	"fmt"
 	"github.com/jin06/binlogo/core"
 	"github.com/siddontang/go-mysql/replication"
-	"os"
 )
 
-func main() {
+func main()  {
 	importer := core.Importer{}
 	importer.SyncerCfg = &replication.BinlogSyncerConfig{
 		ServerID: 100,
@@ -17,16 +17,15 @@ func main() {
 		Password: "123456",
 	}
 	importer.BinlogFile = "mysql-bin.000040"
-	importer.BinlogPos = 4
-	importer.InitSyncer()
-	ch, _ := importer.Start()
+	importer.BinlogPos =  4
+	pipe := new(core.Pipeline)
 
-	for {
-		select {
-		case event := <-ch:
-			{
-				event.BinlogEvent.Dump(os.Stdout)
-			}
-		}
+	pipe.Importer = &importer
+	pipe.Exporter = &core.Stand{}
+	err := pipe.Run()
+	fmt.Println(err)
+	select {
+
 	}
+
 }

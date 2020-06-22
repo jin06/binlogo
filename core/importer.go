@@ -2,14 +2,12 @@ package core
 
 import (
 	"context"
-	"fmt"
 	"github.com/siddontang/go-mysql/mysql"
 	"github.com/siddontang/go-mysql/replication"
-	"os"
 )
 
 type Importer struct {
-	Id uint
+	Id         uint
 	Syncer     *replication.BinlogSyncer
 	SyncerCfg  *replication.BinlogSyncerConfig
 	BinlogFile string
@@ -24,22 +22,24 @@ func (im *Importer) InitSyncer() {
 	}
 }
 
-func (im *Importer) Start() {
-	position := mysql.Position{im.BinlogFile,im.BinlogPos}
+func (im *Importer) Start() (ch chan *Event, err error) {
+	im.InitSyncer()
+	position := mysql.Position{im.BinlogFile, im.BinlogPos}
 	streamer, err := im.Syncer.StartSync(position)
 	if err != nil {
-		panic(err.Error())
+		return
 	}
-	for {
-		event , err := streamer.GetEvent(context.Background())
-		if err != nil {
-			panic(err.Error())
+	ch = make(chan *Event, 10000)
+	go func() {
+		for {
+			event, err := streamer.GetEvent(context.Background())
+			if err != nil {
+				panic(err.Error())
+			}
+			ch <- &Event{event}
 		}
-		//fmt.Println(string(event.RawData))
-		fmt.Println("@@")
-		event.Dump(os.Stdout)
-		//fmt.Println(event.Header.EventType)
-	}
+	}()
+	return
 }
 
 func (im *Importer) updateBinlogFile(file string) {
@@ -49,4 +49,3 @@ func (im *Importer) updateBinlogFile(file string) {
 func (im *Importer) updateBinlogPos(pos uint32) {
 	im.BinlogPos = pos
 }
-
