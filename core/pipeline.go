@@ -15,6 +15,10 @@ func NewPipeline(context context.Context) *Pipeline {
 	return &Pipeline{Context: context}
 }
 
+func NewFromConfig() {
+
+}
+
 func newPipeline() *Pipeline {
 	p := new(Pipeline)
 	return p
@@ -32,13 +36,18 @@ func (p *Pipeline) ChangeEx(exporter *Exporter) error {
 	return nil
 }
 
+func (p *Pipeline) MetaEvent() (ch chan *Event, err error)  {
+
+	return
+}
+
 func (p *Pipeline) Run() error {
 	ch, err := p.Importer.Start()
 	if err != nil {
 		panic(err)
 	}
 	p.SourceLine = ch
-	err =  p.Exporter.Start(p.SourceLine)
+	err = p.Exporter.Start(ch)
 	return err
 }
 

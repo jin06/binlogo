@@ -49,3 +49,9 @@ func (im *Importer) updateBinlogFile(file string) {
 func (im *Importer) updateBinlogPos(pos uint32) {
 	im.BinlogPos = pos
 }
+
+func (im *Importer) filterEvent(e *Event) (err error){
+	return
+}
+
+
