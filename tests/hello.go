@@ -13,5 +13,5 @@ func main()  {
 
 func reverseLeftWords(s string, n int) string {
 	fmt.Println(s[0])
-	return s;
+	return s
 }

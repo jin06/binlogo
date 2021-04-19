@@ -11,15 +11,19 @@ import (
 
 func main() {
 	cfg := replication.BinlogSyncerConfig{
-		ServerID: 100,
+		ServerID: 1001,
 		Flavor:   "mysql",
-		Host:     "127.0.0.1",
-		Port:     3306,
-		User:     "root",
+		//Host:     "127.0.0.1",
+		//Port:     3306,
+		//User:     "root",
+		//Password: "123456",
+		Host: "127.0.0.1",
+		Port: 13306,
+		User: "root",
 		Password: "123456",
 	}
-	binlogFile := "mysql-bin.000040"
-	binlogPos := uint32(4)
+	binlogFile := "mysql-bin.000001"
+	binlogPos := uint32(120)//uint32(4)
 	position := mysql.Position{
 		binlogFile,
 		binlogPos,
