@@ -1,4 +1,4 @@
-package mysql
+package basedata
 
 type Database struct {
 	Name string
