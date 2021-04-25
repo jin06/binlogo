@@ -36,7 +36,7 @@ func main() {
 	// Start sync with specified binlog file and position
 	streamer, _ := syncer.StartSync(position)
 
-	// or you can start a gtid replication like
+	// or you can start a gtid repl like
 	// streamer, _ := syncer.StartSyncGTID(gtidSet)
 	// the mysql GTID set likes this "de278ad0-2106-11e4-9f8e-6edd0ca20947:1-2"
 	// the mariadb GTID set likes this "0-1-100"
