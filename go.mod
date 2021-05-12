@@ -10,6 +10,7 @@ require (
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/google/uuid v1.2.0 // indirect
 	github.com/hashicorp/consul/api v1.3.0
+	github.com/heetch/confita v0.10.0
 	github.com/jmoiron/sqlx v1.2.0 // indirect
 	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
 	github.com/siddontang/go-log v0.0.0-20190221022429-1e957dd83bed // indirect

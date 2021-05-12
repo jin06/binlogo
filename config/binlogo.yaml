@@ -1,0 +1,4 @@
+cluster:
+  name: cluster1
+node:
+  name: node1
