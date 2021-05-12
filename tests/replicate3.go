@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"github.com/jin06/binlogo/mysql/repl"
 	_ "github.com/siddontang/go-mysql/driver"
 	"os"
@@ -30,6 +31,7 @@ func main() {
 		ev, _ := syncer.BinlogStreamer.GetEvent(context.Background())
 		// Dump event
 		ev.Dump(os.Stdout)
+		fmt.Println(syncer.BinlogSyncer.GetNextPosition())
 		//ev.Dump(os.Stdout)
 	}
 
