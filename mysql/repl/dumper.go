@@ -6,35 +6,35 @@ import (
 	"github.com/siddontang/go-mysql/replication"
 )
 
-type Syncer struct {
+type Dumper struct {
 	BinlogSyncer *replication.BinlogSyncer
 	BinlogStreamer *replication.BinlogStreamer
 	Config       Config
 	//Streamer     *Streamer
 }
 
-func (s *Syncer) Start() {
+func (s *Dumper) Start() {
 	pos := s.binlogPosition()
 	fmt.Println(pos)
 	s.BinlogStreamer, _ = s.BinlogSyncer.StartSync(pos)
 	return
 }
 
-func (s *Syncer) Read() {
+func (s *Dumper) Read() {
 
 }
 
-func (s *Syncer) initBinlogSyncer() {
+func (s *Dumper) initBinlogSyncer() {
 	c := s.Config.BinlogSyncerConfig()
 	s.BinlogSyncer = replication.NewBinlogSyncer(c)
 }
 
-func (s *Syncer) binlogPosition() mysql.Position {
+func (s *Dumper) binlogPosition() mysql.Position {
 	return s.Config.Position.BinlogPosition()
 }
 
-func NewSyncer(config Config) *Syncer{
-	syncer := new(Syncer)
+func NewSyncer(config Config) *Dumper{
+	syncer := new(Dumper)
 	syncer.Config = config
 	syncer.initBinlogSyncer()
 	return syncer

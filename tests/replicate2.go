@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	syncer := repl.Syncer{
+	syncer := repl.Dumper{
 
 	}
 	syncer.Position = repl.Position{
