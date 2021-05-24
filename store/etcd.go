@@ -9,7 +9,7 @@ type ETCD struct {
 	Client 	*clientv3.Client
 }
 
-func (etcd *ETCD) Get (key string) (resp string, err error)  {
+func (etcd *ETCD) Get(key string) (resp string, err error)  {
 	ctx := context.TODO()
 	res, err := etcd.Client.Get(ctx,key)
 	if err != nil {

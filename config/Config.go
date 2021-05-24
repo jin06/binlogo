@@ -7,7 +7,6 @@ import (
 )
 
 var Cfg Config
-var DefaultPath string = "/Users/jinlong/code/jin06/binlogo/config/binlogo.yaml"
 
 type Config struct {
 	Cluster struct{
@@ -16,9 +15,15 @@ type Config struct {
 	Node struct{
 		Name string `config:"name"`
 	}
+	Store struct{
+		Type string `config:"type"`
+		Etcd struct{
+			Endpoints []string `config:"endpoints"`
+		}
+	}
 }
 
-func InitCfg() {
-	loader := confita.NewLoader(file.NewBackend(DefaultPath))
+func InitCfg(path string) {
+	loader := confita.NewLoader(file.NewBackend(path))
 	loader.Load(context.Background(), &Cfg)
 }

@@ -2,3 +2,6 @@ cluster:
   name: cluster1
 node:
   name: node1
+store:
+  type: etcd
+  etcd:
