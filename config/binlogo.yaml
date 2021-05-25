@@ -5,3 +5,5 @@ node:
 store:
   type: etcd
   etcd:
+    endpoints:
+      - "localhost:12379"

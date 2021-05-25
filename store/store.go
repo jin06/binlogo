@@ -1,7 +1,9 @@
 package store
 
 import (
+	"context"
 	"github.com/jin06/binlogo/config"
+	log "github.com/sirupsen/logrus"
 	"go.etcd.io/etcd/clientv3"
 	"time"
 )
@@ -17,19 +19,24 @@ func InitDefault() {
 	switch config.Cfg.Store.Type {
 	case "etcd":
 		{
-			etcd := new(ETCD)
+			etcd := ETCD{}
 			cli, err := clientv3.New(clientv3.Config{
-				Endpoints: config.Cfg.Store.Etcd.Endpoints,
+				//Endpoints: config.Cfg.Store.Etcd.Endpoints,
+				Endpoints: []string{"localhost:12379"},
 				DialTimeout: 5 * time.Second,
 			})
+			ctx , _ := context.WithTimeout(context.Background(), 10 * time.Second)
+			cli.Put(ctx, "kk", "vv")
+			etcd.Client = cli
 			if err != nil {
-
+				panic(err)
 			}
 			defer cli.Close()
-			DefaultStore = etcd
+			DefaultStore = &etcd
+			log.Infoln("store is etcd")
 		}
 	default:
-
+		log.Error("Does support the store")
 	}
 }
 

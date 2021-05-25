@@ -15,6 +15,7 @@ require (
 	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
 	github.com/siddontang/go-log v0.0.0-20190221022429-1e957dd83bed // indirect
 	github.com/siddontang/go-mysql v0.0.0-20200424072754-803944a6e4ea
+	github.com/sirupsen/logrus v1.4.1
 	go.etcd.io/etcd v3.3.25+incompatible
 	go.uber.org/zap v1.12.0 // indirect
 	google.golang.org/grpc v1.25.1 // indirect
