@@ -15,8 +15,8 @@ func main() {
 	flag.StringVar(&configPath, "config", defaultPath, "config path")
 	config.InitCfg(configPath)
 	store.InitDefault()
-	//key := "/binlogo/cluster1/database/1"
-	//store.Put(key, "klsdjflkdj")
+	key := "/binlogo/cluster1/database/1"
+	store.Put(key, "klsdjflkdj")
 	//fmt.Println(resp)
 	fmt.Println(config.Cfg)
 }

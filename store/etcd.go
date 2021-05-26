@@ -8,6 +8,7 @@ import (
 )
 
 type ETCD struct {
+	Type string
 	Client 	*clientv3.Client
 }
 
@@ -25,10 +26,13 @@ func (etcd *ETCD) Get(key string) (resp string, err error)  {
 	return string(res.Kvs[0].Value), err
 }
 func (etcd *ETCD) Put(key string, val string) (err error) {
+	logrus.Debug("etcd start")
 	timeout := time.Second * 10
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	logrus.Debug("etcd put")
 	_, err = etcd.Client.Put(ctx, key, val)
-	cancel()
+	if err != nil {
+		cancel()
+	}
 	return err
 }
