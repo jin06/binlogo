@@ -2,6 +2,7 @@ package server
 
 type Server struct {
 	Id string
+	Engine *Engine
 }
 
 func NewServer(id string) *Server {
