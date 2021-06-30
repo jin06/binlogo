@@ -15,6 +15,9 @@ type Config struct {
 	Node struct{
 		Name string `config:"name"`
 	} `config:"node"`
+	Api struct{
+		Port uint8 `port`
+	} `config:"api"`
 	Store struct{
 		Type string `config:"type"`
 		Etcd struct{

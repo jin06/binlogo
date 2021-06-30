@@ -2,6 +2,8 @@ cluster:
   name: cluster1
 node:
   name: node1
+api:
+  port: 8080
 store:
   type: etcd
   etcd:
