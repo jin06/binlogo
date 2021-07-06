@@ -36,3 +36,16 @@ func (etcd *ETCD) Put(key string, val string) (err error) {
 	}
 	return err
 }
+
+func NewETCD(endpoints []string) (etcd *ETCD,err error){
+	etcd = &ETCD{}
+	cli, err := clientv3.New(clientv3.Config{
+		Endpoints: endpoints,
+		DialTimeout: 5 * time.Second,
+	})
+	if err != nil {
+		return
+	}
+	etcd.Client = cli
+	return
+}

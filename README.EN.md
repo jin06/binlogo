@@ -1,4 +1,4 @@
 Binlogo
 ==================
-[中文](README.me) | [English](README.EN.md)
+[中文](README.md) | [English](README.EN.md)
 

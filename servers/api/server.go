@@ -2,18 +2,18 @@ package api
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/jin06/binlogo/pkg/api/routers"
+	"github.com/jin06/binlogo/servers/api/routers"
 )
 
-type Server struct {
+type APIServer struct {
 
 }
 
-func NewApiServer() *Server {
-	return &Server{}
+func NewAPIServer() *APIServer {
+	return &APIServer{}
 }
 
-func (server *Server) Run() {
+func (server *APIServer) Run() {
 	g := gin.Default()
 	// default 8080
 
