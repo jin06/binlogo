@@ -34,7 +34,7 @@ func (etcd *ETCD) Put(key string, val string) (err error) {
 	if err != nil {
 		cancel()
 	}
-	return err
+	return
 }
 
 func NewETCD(endpoints []string) (etcd *ETCD,err error){
