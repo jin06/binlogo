@@ -40,11 +40,11 @@ func NewETCD(endpoints []string) (etcd *ETCD, err error) {
 	return
 }
 
-func (e *ETCD) Get(key string) (resp string, err error) {
+func (e *ETCD) Read(key string) (resp string, err error) {
 	timeout := time.Second * 10
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	res, err := e.Client.Get(ctx, key)
-	cancel()
+	defer cancel()
 	if err != nil {
 		return "", err
 	}
@@ -54,21 +54,16 @@ func (e *ETCD) Get(key string) (resp string, err error) {
 	return string(res.Kvs[0].Value), err
 }
 
-func (e *ETCD) Put(key string, val string) (err error) {
+func (e *ETCD) Write(key string, val string) (err error) {
 	logrus.Debug("etcd start")
 	timeout := time.Second * 10
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	logrus.Debug("etcd put")
 	_, err = e.Client.Put(ctx, key, val)
-	if err != nil {
-		cancel()
-	}
+	defer cancel()
 	return
 }
 
-func (e *ETCD) Insert(model model.Model) (err error) {
-	return
-}
 
 func (e *ETCD) Create(m model.Model) (ok bool, err error) {
 	ctx, cancel := context.WithTimeout(context.TODO(), e.Timeout)
@@ -103,7 +98,7 @@ func (e *ETCD) Delete(m model.Model) (ok bool, err error) {
 	return
 }
 
-func (e *ETCD) G(m model.Model) (ok bool, err error) {
+func (e *ETCD) Get(m model.Model) (ok bool, err error) {
 	timeout := time.Second * 10
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
