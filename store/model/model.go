@@ -1,7 +1,7 @@
 package model
 
-type Model struct {
-
+type Model interface {
+	Val() string
+	Key() string
 }
-
 

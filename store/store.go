@@ -2,12 +2,14 @@ package store
 
 import (
 	"github.com/jin06/binlogo/config"
+	"github.com/jin06/binlogo/store/model"
 	"github.com/sirupsen/logrus"
 )
 
 type Store interface {
-	Get(key string) (resp string, err error)
-	Put(key string, val string) (err error)
+	Get(key string) (string, error)
+	Put(key string, val string) error
+	Insert(model model.Model) error
 }
 
 var DefaultStore Store

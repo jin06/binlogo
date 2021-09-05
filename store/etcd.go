@@ -2,20 +2,48 @@ package store
 
 import (
 	"context"
+	"encoding/json"
+	"github.com/jin06/binlogo/config"
+	"github.com/jin06/binlogo/store/model"
 	"github.com/sirupsen/logrus"
 	"go.etcd.io/etcd/clientv3"
 	"time"
 )
 
-type ETCD struct {
-	Type string
-	Client 	*clientv3.Client
+var E *ETCD
+
+func DefaultETCD() {
+	etcd, err := NewETCD(config.Cfg.Store.Etcd.Endpoints)
+	if err != nil {
+		panic(err)
+	}
+	E = etcd
+	logrus.Info("default etcd init...")
 }
 
-func (etcd *ETCD) Get(key string) (resp string, err error)  {
+type ETCD struct {
+	Type    string
+	Client  *clientv3.Client
+	Timeout time.Duration
+}
+
+func NewETCD(endpoints []string) (etcd *ETCD, err error) {
+	etcd = &ETCD{}
+	cli, err := clientv3.New(clientv3.Config{
+		Endpoints:   endpoints,
+		DialTimeout: 5 * time.Second,
+	})
+	if err != nil {
+		return
+	}
+	etcd.Client = cli
+	return
+}
+
+func (e *ETCD) Get(key string) (resp string, err error) {
 	timeout := time.Second * 10
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
-	res, err := etcd.Client.Get(ctx,key)
+	res, err := e.Client.Get(ctx, key)
 	cancel()
 	if err != nil {
 		return "", err
@@ -25,27 +53,70 @@ func (etcd *ETCD) Get(key string) (resp string, err error)  {
 	}
 	return string(res.Kvs[0].Value), err
 }
-func (etcd *ETCD) Put(key string, val string) (err error) {
+
+func (e *ETCD) Put(key string, val string) (err error) {
 	logrus.Debug("etcd start")
 	timeout := time.Second * 10
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	logrus.Debug("etcd put")
-	_, err = etcd.Client.Put(ctx, key, val)
+	_, err = e.Client.Put(ctx, key, val)
 	if err != nil {
 		cancel()
 	}
 	return
 }
 
-func NewETCD(endpoints []string) (etcd *ETCD,err error){
-	etcd = &ETCD{}
-	cli, err := clientv3.New(clientv3.Config{
-		Endpoints: endpoints,
-		DialTimeout: 5 * time.Second,
-	})
+func (e *ETCD) Insert(model model.Model) (err error) {
+	return
+}
+
+func (e *ETCD) Create(m model.Model) (ok bool, err error) {
+	ctx, cancel := context.WithTimeout(context.TODO(), e.Timeout)
+	defer cancel()
+	_, err = e.Client.Put(ctx, m.Key(), m.Val())
 	if err != nil {
 		return
 	}
-	etcd.Client = cli
+	ok = true
+	return
+}
+
+func (e *ETCD) Update(m model.Model) (ok bool, err error) {
+	ctx, cancel := context.WithTimeout(context.TODO(), e.Timeout)
+	defer cancel()
+	_, err = e.Client.Put(ctx, m.Key(), m.Val())
+	if err != nil {
+		return
+	}
+	ok = true
+	return
+}
+
+func (e *ETCD) Delete(m model.Model) (ok bool, err error) {
+	ctx, cancel := context.WithTimeout(context.TODO(), e.Timeout)
+	defer cancel()
+	_, err = e.Client.Delete(ctx, m.Key())
+	if err != nil {
+		return
+	}
+	ok = true
+	return
+}
+
+func (e *ETCD) G(m model.Model) (ok bool, err error) {
+	timeout := time.Second * 10
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+	res, err := e.Client.Get(ctx, m.Key())
+	if err != nil {
+		return
+	}
+	if len(res.Kvs) == 0 {
+		return
+	}
+	if err = json.Unmarshal(res.Kvs[0].Value, m); err != nil {
+		return
+	}
+	ok = true
 	return
 }
