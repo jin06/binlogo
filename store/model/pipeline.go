@@ -10,12 +10,12 @@ type Pipeline struct {
 	Password string `json:"password"`
 }
 
-func (p *Pipeline) Key() (key string){
+func (p *Pipeline) Key() (key string) {
 	return "pipeline/" + p.ID
 }
 
 func (p *Pipeline) Val() (val string) {
-	b , _ := json.Marshal(p)
+	b, _ := json.Marshal(p)
 	val = string(b)
 	return
 }
@@ -24,5 +24,3 @@ func (p *Pipeline) Unmarshal(val []byte) (err error) {
 	err = json.Unmarshal(val, p)
 	return
 }
-
-

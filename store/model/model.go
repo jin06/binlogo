@@ -6,3 +6,11 @@ type Model interface {
 	Unmarshal([]byte) error
 }
 
+//type ETCD struct {
+//}
+//
+//func (etcd *ETCD) Val() (val string) {
+//	b, _ := json.Marshal(etcd)
+//	val = string(b)
+//	return
+//}
