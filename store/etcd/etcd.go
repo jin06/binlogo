@@ -15,7 +15,7 @@ var E *ETCD
 func DefaultETCD() {
 	etcd, err := NewETCD(
 		options.Endpoints(config.Cfg.Store.Etcd.Endpoints),
-		options.Prefix("binlogo/" + config.Cfg.Cluster.Name),
+		options.Prefix("binlogo/"+config.Cfg.Cluster.Name),
 		options.Timeout(5*time.Second),
 	)
 	if err != nil {
@@ -26,7 +26,7 @@ func DefaultETCD() {
 }
 
 type ETCD struct {
-	Client  *clientv3.Client
+	Client *clientv3.Client
 	options.Options
 }
 
@@ -75,7 +75,7 @@ func (e *ETCD) Write(key string, val string) (err error) {
 func (e *ETCD) Create(m model.Model) (ok bool, err error) {
 	ctx, cancel := context.WithTimeout(context.TODO(), e.Timeout)
 	defer cancel()
-	key := "/"  + e.Prefix + "/" + m.Key()
+	key := "/" + e.Prefix + "/" + m.Key()
 	val := m.Val()
 	_, err = e.Client.Put(ctx, key, val)
 	if err != nil {
@@ -88,7 +88,9 @@ func (e *ETCD) Create(m model.Model) (ok bool, err error) {
 func (e *ETCD) Update(m model.Model) (ok bool, err error) {
 	ctx, cancel := context.WithTimeout(context.TODO(), e.Timeout)
 	defer cancel()
-	_, err = e.Client.Put(ctx, m.Key(), m.Val())
+	key := "/" + e.Prefix + "/" + m.Key()
+	val := m.Val()
+	_, err = e.Client.Put(ctx, key, val)
 	if err != nil {
 		return
 	}
@@ -99,7 +101,8 @@ func (e *ETCD) Update(m model.Model) (ok bool, err error) {
 func (e *ETCD) Delete(m model.Model) (ok bool, err error) {
 	ctx, cancel := context.WithTimeout(context.TODO(), e.Timeout)
 	defer cancel()
-	_, err = e.Client.Delete(ctx, m.Key())
+	key := "/" + e.Prefix + "/" + m.Key()
+	_, err = e.Client.Delete(ctx, key)
 	if err != nil {
 		return
 	}
@@ -110,7 +113,8 @@ func (e *ETCD) Delete(m model.Model) (ok bool, err error) {
 func (e *ETCD) Get(m model.Model) (ok bool, err error) {
 	ctx, cancel := context.WithTimeout(context.Background(), e.Timeout)
 	defer cancel()
-	res, err := e.Client.Get(ctx, m.Key())
+	key := "/" + e.Prefix + "/" + m.Key()
+	res, err := e.Client.Get(ctx, key)
 	if err != nil {
 		return
 	}

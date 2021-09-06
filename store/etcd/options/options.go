@@ -4,8 +4,8 @@ import "time"
 
 type Options struct {
 	Endpoints []string
-	Timeout time.Duration
-	Prefix string
+	Timeout   time.Duration
+	Prefix    string
 }
 
 type Option func(*Options)
@@ -22,7 +22,7 @@ func Timeout(timeout time.Duration) Option {
 	}
 }
 
-func Prefix(prefix string ) Option {
+func Prefix(prefix string) Option {
 	return func(options *Options) {
 		options.Prefix = prefix
 	}
