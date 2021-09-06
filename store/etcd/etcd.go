@@ -1,9 +1,9 @@
-package store
+package etcd
 
 import (
 	"context"
-	"encoding/json"
 	"github.com/jin06/binlogo/config"
+	"github.com/jin06/binlogo/store/etcd/options"
 	"github.com/jin06/binlogo/store/model"
 	"github.com/sirupsen/logrus"
 	"go.etcd.io/etcd/clientv3"
@@ -13,7 +13,11 @@ import (
 var E *ETCD
 
 func DefaultETCD() {
-	etcd, err := NewETCD(config.Cfg.Store.Etcd.Endpoints)
+	etcd, err := NewETCD(
+		options.Endpoints(config.Cfg.Store.Etcd.Endpoints),
+		options.Prefix("binlogo/" + config.Cfg.Cluster.Name),
+		options.Timeout(5*time.Second),
+	)
 	if err != nil {
 		panic(err)
 	}
@@ -22,15 +26,20 @@ func DefaultETCD() {
 }
 
 type ETCD struct {
-	Type    string
 	Client  *clientv3.Client
-	Timeout time.Duration
+	options.Options
 }
 
-func NewETCD(endpoints []string) (etcd *ETCD, err error) {
-	etcd = &ETCD{}
+func NewETCD(opt ...options.Option) (etcd *ETCD, err error) {
+	ops := options.Options{}
+	for _, o := range opt {
+		o(&ops)
+	}
+	etcd = &ETCD{
+		Options: ops,
+	}
 	cli, err := clientv3.New(clientv3.Config{
-		Endpoints:   endpoints,
+		Endpoints:   etcd.Options.Endpoints,
 		DialTimeout: 5 * time.Second,
 	})
 	if err != nil {
@@ -56,19 +65,19 @@ func (e *ETCD) Read(key string) (resp string, err error) {
 
 func (e *ETCD) Write(key string, val string) (err error) {
 	logrus.Debug("etcd start")
-	timeout := time.Second * 10
-	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	ctx, cancel := context.WithTimeout(context.Background(), e.Timeout)
 	logrus.Debug("etcd put")
 	_, err = e.Client.Put(ctx, key, val)
 	defer cancel()
 	return
 }
 
-
 func (e *ETCD) Create(m model.Model) (ok bool, err error) {
 	ctx, cancel := context.WithTimeout(context.TODO(), e.Timeout)
 	defer cancel()
-	_, err = e.Client.Put(ctx, m.Key(), m.Val())
+	key := "/"  + e.Prefix + "/" + m.Key()
+	val := m.Val()
+	_, err = e.Client.Put(ctx, key, val)
 	if err != nil {
 		return
 	}
@@ -99,8 +108,7 @@ func (e *ETCD) Delete(m model.Model) (ok bool, err error) {
 }
 
 func (e *ETCD) Get(m model.Model) (ok bool, err error) {
-	timeout := time.Second * 10
-	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	ctx, cancel := context.WithTimeout(context.Background(), e.Timeout)
 	defer cancel()
 	res, err := e.Client.Get(ctx, m.Key())
 	if err != nil {
@@ -109,7 +117,7 @@ func (e *ETCD) Get(m model.Model) (ok bool, err error) {
 	if len(res.Kvs) == 0 {
 		return
 	}
-	if err = json.Unmarshal(res.Kvs[0].Value, m); err != nil {
+	if err = m.Unmarshal(res.Kvs[0].Value); err != nil {
 		return
 	}
 	ok = true

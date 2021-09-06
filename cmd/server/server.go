@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"github.com/jin06/binlogo/config"
 	"github.com/jin06/binlogo/store"
+	"github.com/jin06/binlogo/store/etcd"
+	"github.com/jin06/binlogo/store/model"
 	"github.com/sirupsen/logrus"
 )
 
@@ -14,6 +16,14 @@ func main() {
 	defaultPath := "./../../config/binlogo.yaml"
 	flag.StringVar(&configPath, "config", defaultPath, "config path")
 	config.InitCfg(configPath)
-	store.InitDefault()
+	//store.InitDefault()
+	etcd.DefaultETCD()
+	store.Create(&model.Pipeline{
+		ID: "123",
+		MysqlID: "kkk",
+		Database: "sxx_product3",
+		Name:"测试",
+		Password: "123",
+	})
 	fmt.Println(config.Cfg)
 }

@@ -9,18 +9,18 @@ import (
 var Cfg Config
 
 type Config struct {
-	Cluster struct{
+	Cluster struct {
 		Name string `config:"name"`
 	} `config:"cluster"`
-	Node struct{
+	Node struct {
 		Name string `config:"name"`
 	} `config:"node"`
-	Api struct{
+	Api struct {
 		Port uint8 `port`
 	} `config:"api"`
-	Store struct{
+	Store struct {
 		Type string `config:"type"`
-		Etcd struct{
+		Etcd struct {
 			Endpoints []string `config:"endpoints"`
 		} `config:"etcd"`
 	} `config:"store"`
