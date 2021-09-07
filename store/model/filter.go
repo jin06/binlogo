@@ -3,8 +3,8 @@ package model
 import "encoding/json"
 
 type Filter struct {
-	ID         string
-	Type       string
+	ID         string `json:"id"`
+	Type       string `json:"type"`
 	PipelineId string `json:"pipeline_id"`
 }
 
