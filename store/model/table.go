@@ -3,10 +3,10 @@ package model
 import "encoding/json"
 
 type Table struct {
-	ID string `json:"id"`
-	Name string `json:"name"`
+	ID         string `json:"id"`
+	Name       string `json:"name"`
 	DatabaseID string `json:"database_id"`
-	Charset string `json:"charset"`
+	Charset    string `json:"charset"`
 	PrimaryKey string `json:"primary_key"`
 }
 
