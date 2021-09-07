@@ -4,15 +4,16 @@ import "encoding/json"
 
 type Column struct {
 	ID         string   `json:"id"`
-	DatabaseID string   `json:"database_id"`
-	TableID    string   `json:"table_id"`
 	Charset    string   `json:"charset"`
 	ColumnType string   `json:"column_type"`
 	EnumValues []string `json:"enum_values"`
+	PipelineId string   `json:"pipeline_id"`
+	DatabaseId string   `json:"database_id"`
+	TableId    string   `json:"table_id"`
 }
 
 func (s *Column) Key() (key string) {
-	return "column/" + s.ID
+	return "pipeline/" + s.PipelineId + "/database/" + s.DatabaseId + "/table/" + s.TableId + "/column/" + s.ID
 }
 
 func (s *Column) Val() (val string) {

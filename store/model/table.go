@@ -5,13 +5,14 @@ import "encoding/json"
 type Table struct {
 	ID         string `json:"id"`
 	Name       string `json:"name"`
-	DatabaseID string `json:"database_id"`
 	Charset    string `json:"charset"`
 	PrimaryKey string `json:"primary_key"`
+	PipelineId string `json:"pipeline_id"`
+	DatabaseId string `json:"database_id"`
 }
 
 func (s *Table) Key() (key string) {
-	return "table/" + s.ID
+	return "pipeline/" + s.PipelineId + "/database/" + s.DatabaseId + "/table/" + s.ID
 }
 
 func (s *Table) Val() (val string) {

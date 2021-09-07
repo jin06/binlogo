@@ -3,14 +3,15 @@ package model
 import "encoding/json"
 
 type Database struct {
-	ID        string `json:"id"`
-	Name      string `json:"name"`
-	SchemasID string `json:"schema_id"`
-	Charset   string `json:"charset"`
+	ID         string `json:"id"`
+	Name       string `json:"name"`
+	SchemasID  string `json:"schema_id"`
+	Charset    string `json:"charset"`
+	PipelineId string `json:"pipeline_id"`
 }
 
 func (s *Database) Key() string {
-	return "database/" + s.ID
+	return "pipeline/" + s.PipelineId + "/database/" + s.ID
 }
 
 func (s *Database) Val() (val string) {

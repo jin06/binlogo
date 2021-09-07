@@ -20,15 +20,16 @@ func main() {
 	//store.InitDefault()
 	etcd.DefaultETCD()
 	store.Create(&model.Pipeline{
-		ID:       "123",
-		MysqlID:  "kkk",
-		Database: "sxx_product3",
-		Name:     "测试",
-		Password: "123",
+		ID:   "123",
+		Name: "测试",
 	})
 	p := model.Pipeline{
 		ID: "123",
 	}
+	store.Create(&model.Filter{
+		ID: "999",
+		PipelineId: "123",
+	})
 	store.Get(&p)
 	fmt.Println(p)
 }
