@@ -1,10 +1,27 @@
 package model
 
+import "encoding/json"
+
 type Column struct {
-	ID uint32 `json:"id"`
-	DatabaseID uint32 `json:"database_id"`
-	TableID uint32 `json:"table_id"`
-	Charset string `json:"charset"`
-	ColumnType string `json:"column_type"`
+	ID         string   `json:"id"`
+	DatabaseID string   `json:"database_id"`
+	TableID    string   `json:"table_id"`
+	Charset    string   `json:"charset"`
+	ColumnType string   `json:"column_type"`
 	EnumValues []string `json:"enum_values"`
+}
+
+func (s *Column) Key() (key string) {
+	return "column/" + s.ID
+}
+
+func (s *Column) Val() (val string) {
+	b, _ := json.Marshal(s)
+	val = string(b)
+	return
+}
+
+func (s *Column) Unmarshal(val []byte) (err error) {
+	err = json.Unmarshal(val, s)
+	return
 }
