@@ -1,4 +1,4 @@
-package output
+package pipeline
 
 type Output struct {
 

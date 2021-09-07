@@ -1,6 +1,6 @@
 package job
 
-import "github.com/jin06/binlogo/servers/job/engine"
+import "github.com/jin06/binlogo/server/job/engine"
 
 type Server struct {
 	Id string

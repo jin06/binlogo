@@ -1,4 +1,4 @@
-package filter
+package pipeline
 
 type Filter struct {
 
