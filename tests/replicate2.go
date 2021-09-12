@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"github.com/jin06/binlogo/mysql/repl"
+	repl2 "github.com/jin06/binlogo/module/mysql/repl"
 	_ "github.com/siddontang/go-mysql/driver"
 	"github.com/siddontang/go-mysql/replication"
 	"os"
@@ -10,10 +10,10 @@ import (
 )
 
 func main() {
-	syncer := repl.Dumper{
+	syncer := repl2.Dumper{
 
 	}
-	syncer.Position = repl.Position{
+	syncer.Position = repl2.Position{
 		"mysql-bin.000001",
 		uint32(120),
 	}

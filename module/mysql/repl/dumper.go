@@ -7,9 +7,9 @@ import (
 )
 
 type Dumper struct {
-	BinlogSyncer *replication.BinlogSyncer
+	BinlogSyncer   *replication.BinlogSyncer
 	BinlogStreamer *replication.BinlogStreamer
-	Config       Config
+	Config         Config
 	//Streamer     *Streamer
 }
 
@@ -33,7 +33,7 @@ func (s *Dumper) binlogPosition() mysql.Position {
 	return s.Config.Position.BinlogPosition()
 }
 
-func NewSyncer(config Config) *Dumper{
+func NewSyncer(config Config) *Dumper {
 	syncer := new(Dumper)
 	syncer.Config = config
 	syncer.initBinlogSyncer()

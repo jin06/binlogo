@@ -3,28 +3,28 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/jin06/binlogo/mysql/repl"
+	repl2 "github.com/jin06/binlogo/module/mysql/repl"
 	_ "github.com/siddontang/go-mysql/driver"
 	"os"
 	"time"
 )
 
 func main() {
-	var cfg = repl.Config{
+	var cfg = repl2.Config{
 		ServerID: 1001,
-		Master: repl.Master{
+		Master: repl2.Master{
 			Flavor:   "mysql",
 			Host:     "127.0.0.1",
 			Port:     13306,
 			User:     "root",
 			Password: "123456",
 		},
-		Position: repl.Position{
+		Position: repl2.Position{
 			File:     "mysql-bin.000001",
 			Position: uint32(120),
 		},
 	}
-	syncer := repl.NewSyncer(cfg)
+	syncer := repl2.NewSyncer(cfg)
 	syncer.Start()
 
 	for {

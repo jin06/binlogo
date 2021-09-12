@@ -4,7 +4,7 @@ import "github.com/siddontang/go-mysql/replication"
 
 type Config struct {
 	ServerID uint32
-	Master Master
+	Master   Master
 	Position Position
 }
 
