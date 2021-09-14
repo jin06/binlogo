@@ -14,14 +14,8 @@ type Pipeline struct {
 	Filter      *filter.Controller
 	DataLine    *DataLine
 	ControlLine *ControlLine
-	Options
+	Options     Options
 }
-
-type Options struct {
-	ID string
-}
-
-type Option func(*Options)
 
 type DataLine struct {
 	Input  chan *message.Message
@@ -33,19 +27,6 @@ type ControlLine struct {
 	Command chan *control.Command
 }
 
-func OptionID(id string) Option {
-	return func(ops *Options) {
-		ops.ID = id
-	}
-}
+func (p *Pipeline) Init() {
 
-func NewPipeline(opt ...Option) (p *Pipeline) {
-	options := Options{}
-	for _, v := range opt {
-		v(&options)
-	}
-	p = &Pipeline{
-		Options: options,
-	}
-	return
 }
