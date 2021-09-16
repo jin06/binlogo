@@ -3,12 +3,12 @@ package model
 import "encoding/json"
 
 type Mysql struct {
-	ID         string `json:"id"`
 	Address    string `json:"address"`
-	Port       string `json:"post"`
+	Port       int `json:"post"`
 	User       string `json:"user"`
 	Password   string `json:"password"`
 	PipelineId string `json:"pipeline_id"`
+	ServerId   int `json:"server_id"`
 }
 
 func (s *Mysql) Key() (key string) {

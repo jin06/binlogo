@@ -7,7 +7,6 @@ import (
 	"github.com/jin06/binlogo/pipeline/message"
 	"github.com/siddontang/go-mysql/mysql"
 	"github.com/siddontang/go-mysql/replication"
-	"strconv"
 )
 
 type Input struct {
@@ -31,11 +30,7 @@ func (r *Input) connect() (err error) {
 	if binlogFile == "" {
 		return errors.New("empty binlog file")
 	}
-	i, err := strconv.Atoi(r.Options.Position.BinlogPosition)
-	if err != nil {
-		return
-	}
-	binlogPos := uint32(i)
+	binlogPos := r.Options.Position.BinlogPosition
 
 	pos := mysql.Position{
 		binlogFile,
@@ -59,7 +54,18 @@ func (r *Input) sync() (err error) {
 	return
 }
 
-
 func (r *Input) DataLine() chan message.Message {
 	return r.Ch
+}
+
+func NewInput(opts ...Option) *Input {
+	options := &Options{}
+	for _, v := range opts {
+		v(options)
+	}
+	input := &Input{
+		Options: options,
+	}
+
+	return input
 }

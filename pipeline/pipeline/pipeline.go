@@ -1,6 +1,7 @@
 package pipeline
 
 import (
+	"errors"
 	"github.com/jin06/binlogo/pipeline/control"
 	"github.com/jin06/binlogo/pipeline/filter"
 	"github.com/jin06/binlogo/pipeline/input"
@@ -9,8 +10,8 @@ import (
 )
 
 type Pipeline struct {
-	Input       *input.Controller
-	Output      *output.Controller
+	Input       *input.Input
+	Output      *output.Output
 	Filter      *filter.Controller
 	DataLine    *DataLine
 	ControlLine *ControlLine
@@ -27,6 +28,28 @@ type ControlLine struct {
 	Command chan *control.Command
 }
 
-func (p *Pipeline) Init() {
+func (p *Pipeline) Init() (err error) {
+	if p.Options.Pipeline == nil {
+		return errors.New("lack pipeline info")
+	}
+	if p.Options.Mysql == nil {
+		return errors.New("lack mysql info")
+	}
+	in := input.NewInput(
+		input.OptionMysql(p.Options.Mysql),
+		input.OptionPosition(p.Options.Position),
+	)
+	p.Input = in
+	return
+}
 
+func NewPipeline(opt ...Option) (p *Pipeline) {
+	options := Options{}
+	for _, v := range opt {
+		v(&options)
+	}
+	p = &Pipeline{
+		Options: options,
+	}
+	return
 }

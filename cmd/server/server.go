@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"github.com/jin06/binlogo/config"
 	"github.com/jin06/binlogo/store"
 	"github.com/jin06/binlogo/store/etcd"
@@ -19,17 +18,27 @@ func main() {
 	config.InitCfg(configPath)
 	//store.InitDefault()
 	etcd.DefaultETCD()
+	pipeId := "123"
 	store.Create(&model.Pipeline{
-		ID:   "123",
-		Name: "测试",
+		ID:   pipeId,
+		Name: "本地测试",
 	})
-	p := model.Pipeline{
-		ID: "123",
-	}
+	store.Create(&model.Mysql{
+		Address:    "127.0.0.1",
+		Port:       3306,
+		User:       "root",
+		Password:   "123456",
+		PipelineId: pipeId,
+		ServerId:   1001,
+	})
+
 	store.Create(&model.Filter{
-		ID: "999",
-		PipelineId: "123",
+		ID:         "1",
+		PipelineId: pipeId,
 	})
-	store.Get(&p)
-	fmt.Println(p)
+	store.Create(&model.Position{
+		BinlogFile:     "mysql-bin.000001",
+		BinlogPosition: 120,
+		PipelineID:     pipeId,
+	})
 }

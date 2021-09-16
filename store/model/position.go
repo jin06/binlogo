@@ -4,7 +4,7 @@ import "encoding/json"
 
 type Position struct {
 	BinlogFile     string `json:"binlog_file"`
-	BinlogPosition string `json:"binlog_position"`
+	BinlogPosition uint32 `json:"binlog_position"`
 	GTIDSet        string `json:"gtid_set"`
 	ServerId       string `json:"server_id"`
 	ClientId       string `json:"client_id"`
