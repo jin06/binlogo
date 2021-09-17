@@ -2,7 +2,9 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"github.com/jin06/binlogo/config"
+	"github.com/jin06/binlogo/pipeline/pipeline"
 	"github.com/jin06/binlogo/store"
 	"github.com/jin06/binlogo/store/etcd"
 	"github.com/jin06/binlogo/store/model"
@@ -19,26 +21,45 @@ func main() {
 	//store.InitDefault()
 	etcd.DefaultETCD()
 	pipeId := "123"
-	store.Create(&model.Pipeline{
+	sPipeline := &model.Pipeline{
 		ID:   pipeId,
 		Name: "本地测试",
-	})
-	store.Create(&model.Mysql{
+	}
+	store.Create(sPipeline)
+	sMysql := &model.Mysql{
 		Address:    "127.0.0.1",
-		Port:       3306,
+		Port:       13306,
 		User:       "root",
 		Password:   "123456",
+		Flavor:     "mysql",
 		PipelineId: pipeId,
 		ServerId:   1001,
-	})
+	}
+	store.Create(sMysql)
 
-	store.Create(&model.Filter{
+	sFilter := &model.Filter{
 		ID:         "1",
 		PipelineId: pipeId,
-	})
-	store.Create(&model.Position{
-		BinlogFile:     "mysql-bin.000001",
+	}
+
+	store.Create(sFilter)
+
+	sPosition := &model.Position{
+		BinlogFile:     "mysql-bin.000014",
 		BinlogPosition: 120,
 		PipelineID:     pipeId,
-	})
+	}
+	store.Create(sPosition)
+	p, err := pipeline.New(
+		pipeline.OptionPipeline(sPipeline),
+		pipeline.OptionMysql(sMysql),
+		pipeline.OptionPosition(sPosition),
+	)
+	err = p.Run()
+	if err != nil {
+		fmt.Println(err)
+	}
+	select {
+
+	}
 }

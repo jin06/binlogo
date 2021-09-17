@@ -4,11 +4,12 @@ import "encoding/json"
 
 type Mysql struct {
 	Address    string `json:"address"`
-	Port       int `json:"post"`
+	Port       uint16 `json:"post"`
 	User       string `json:"user"`
 	Password   string `json:"password"`
 	PipelineId string `json:"pipeline_id"`
-	ServerId   int `json:"server_id"`
+	ServerId   uint32 `json:"server_id"`
+	Flavor     string `json:"flavor"`
 }
 
 func (s *Mysql) Key() (key string) {

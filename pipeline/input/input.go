@@ -58,14 +58,29 @@ func (r *Input) DataLine() chan message.Message {
 	return r.Ch
 }
 
-func NewInput(opts ...Option) *Input {
+func New(opts ...Option) (input *Input, err error) {
 	options := &Options{}
 	for _, v := range opts {
 		v(options)
 	}
-	input := &Input{
+	input = &Input{
 		Options: options,
 	}
+	err = input.Init()
 
-	return input
+	return
+}
+
+func (r *Input) Init() (err error) {
+	cfg := replication.BinlogSyncerConfig{
+		ServerID: r.Options.Mysql.ServerId,
+		Flavor:   r.Options.Mysql.Flavor,
+		Host:     r.Options.Mysql.Address,
+		Port:     r.Options.Mysql.Port,
+		User:     r.Options.Mysql.User,
+		Password: r.Options.Mysql.Password,
+	}
+
+	r.syncer = replication.NewBinlogSyncer(cfg)
+	return
 }
