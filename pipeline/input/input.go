@@ -7,6 +7,7 @@ import (
 	"github.com/jin06/binlogo/pipeline/message"
 	"github.com/siddontang/go-mysql/mysql"
 	"github.com/siddontang/go-mysql/replication"
+	"github.com/sirupsen/logrus"
 )
 
 type Input struct {
@@ -21,7 +22,7 @@ func (r *Input) Start() (err error) {
 	if err != nil {
 		return
 	}
-	err = r.sync()
+	err = r.handle()
 	return
 }
 
@@ -47,12 +48,36 @@ func (r *Input) connect() (err error) {
 func (r *Input) sync() (err error) {
 	go func() {
 		//ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
-		ctx := context.Background()
-		ev, _ := r.streamer.GetEvent(ctx)
-		fmt.Println(ev.Event)
+		for {
+			ctx := context.Background()
+			ev, _ := r.streamer.GetEvent(ctx)
+			fmt.Println(ev.Event)
+		}
 	}()
 	return
 }
+func (r *Input) doHandle() {
+	for {
+		logrus.Debug("get event")
+		ctx := context.Background()
+		e, er := r.streamer.GetEvent(ctx)
+		if er != nil {
+			logrus.Error(er)
+			continue
+		}
+		//logrus.Debug(string(e.RawData))
+		logrus.Debug(e.Header)
+		//logrus.Debug(e.Event)
+		r.Ch <- message.Message{Name:"tester"}
+	}
+	return
+}
+
+func (r *Input) handle() (err error) {
+	go r.doHandle()
+	return
+}
+
 
 func (r *Input) DataLine() chan message.Message {
 	return r.Ch

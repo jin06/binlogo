@@ -56,9 +56,18 @@ func main() {
 		pipeline.OptionPosition(sPosition),
 	)
 	err = p.Run()
+
 	if err != nil {
-		fmt.Println(err)
+		panic(err)
 	}
+	logrus.Debug("start pipeline")
+	go func() {
+		for {
+			logrus.Debug("wait input")
+			msg := <- p.Input.Ch
+			fmt.Println(msg)
+		}
+	}()
 	select {
 
 	}
