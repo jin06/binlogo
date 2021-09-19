@@ -69,6 +69,7 @@ func (r *Input) doHandle() {
 		logrus.Debug(e.Header)
 		//logrus.Debug(e.Event)
 		r.Ch <- message.Message{Name:"tester"}
+		logrus.Debug("set message")
 	}
 	return
 }
@@ -107,5 +108,7 @@ func (r *Input) Init() (err error) {
 	}
 
 	r.syncer = replication.NewBinlogSyncer(cfg)
+	r.Ch = make(chan message.Message, 100000)
 	return
 }
+
