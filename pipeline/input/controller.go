@@ -10,6 +10,6 @@ func (c *Controller) Start() error {
 	return c.Input.Start()
 }
 
-func (c *Controller) DataLine() chan message.Message {
+func (c *Controller) DataLine() chan *message.Message {
 	return c.Input.DataLine()
 }

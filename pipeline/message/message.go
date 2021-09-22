@@ -1,19 +1,19 @@
 package message
 
 type Message struct {
-	Name string
 	Content *Content
 }
 
 type Content struct {
-	Head *Head
-	Event *Event
+	Head *Head        `json:"head"`
+	Data interface{} `json:"data"`
 }
 
 type Head struct {
-	Time uint32
+	Type     string `json:"type"`
+	Time     uint32 `json:"time"`
+	Database string `json:"database"`
+	Table    string `json:"table"`
 }
 
-type Event struct {
-	Type EventType
-}
+

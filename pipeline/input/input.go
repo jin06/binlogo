@@ -8,12 +8,13 @@ import (
 	"github.com/siddontang/go-mysql/mysql"
 	"github.com/siddontang/go-mysql/replication"
 	"github.com/sirupsen/logrus"
+	"os"
 )
 
 type Input struct {
 	syncer   *replication.BinlogSyncer
 	streamer *replication.BinlogStreamer
-	Ch       chan message.Message
+	Ch       chan *message.Message
 	Options  *Options
 }
 
@@ -68,7 +69,15 @@ func (r *Input) doHandle() {
 		//logrus.Debug(string(e.RawData))
 		logrus.Debug(e.Header)
 		//logrus.Debug(e.Event)
-		r.Ch <- message.Message{Name:"tester"}
+		msg, err := event(e)
+		if err != nil {
+
+		}
+		fmt.Printf("raw data %v \n", e.RawData)
+		fmt.Printf("header %v \n", e.Header)
+		fmt.Printf("event %v \n", e.Event)
+		r.Ch <- msg
+		e.Event.Dump(os.Stdout)
 		logrus.Debug("set message")
 	}
 	return
@@ -79,8 +88,7 @@ func (r *Input) handle() (err error) {
 	return
 }
 
-
-func (r *Input) DataLine() chan message.Message {
+func (r *Input) DataLine() chan *message.Message {
 	return r.Ch
 }
 
@@ -108,7 +116,44 @@ func (r *Input) Init() (err error) {
 	}
 
 	r.syncer = replication.NewBinlogSyncer(cfg)
-	r.Ch = make(chan message.Message, 100000)
+	r.Ch = make(chan *message.Message, 100000)
 	return
 }
 
+func event(e *replication.BinlogEvent) (msg *message.Message, err error) {
+	eventType := e.Header.EventType
+	msg = &message.Message{}
+	switch eventType {
+	case replication.UPDATE_ROWS_EVENTv2:
+		{
+			if val, ok := e.Event.(*replication.RowsEvent); ok {
+				fmt.Println("update_rows_eventv2 :")
+				//val.Table.Dump(os.Stdout)
+				fmt.Println(val.Table.ColumnNameString())
+				val.Table.Dump(os.Stdout)
+				//time.Sleep(10 * time.Second)
+				msg.Content = &message.Content{}
+				msg.Content.Head = &message.Head{
+					Type:     message.TYPE_INSERT,
+					Database: string(val.Table.Schema),
+					Table:    string(val.Table.Table),
+					Time:     e.Header.Timestamp,
+				}
+				msg.Content.Data = message.Update{
+					New: map[string]string{
+					},
+				}
+
+				return
+			} else {
+				err = errors.New("event type error: " + eventType.String())
+				return
+			}
+		}
+	case replication.WRITE_ROWS_EVENTv2:
+		{
+
+		}
+	}
+	return
+}

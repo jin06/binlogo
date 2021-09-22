@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"github.com/jin06/binlogo/config"
@@ -65,7 +66,9 @@ func main() {
 		for {
 			logrus.Debug("wait input")
 			msg := <- p.Input.Ch
-			fmt.Println(msg)
+			//fmt.Println("println message", msg)
+			b, _ := json.Marshal(msg)
+			fmt.Println(string(b))
 		}
 	}()
 	select {
