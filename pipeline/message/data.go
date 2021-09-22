@@ -8,6 +8,7 @@ type Insert struct {
 }
 
 type Update struct {
-	Old map[string]string `json:"old"`
-	New map[string]string `json:"new"`
+	Old map[string]interface{} `json:"old"`
+	New map[string]interface{} `json:"new"`
+
 }
