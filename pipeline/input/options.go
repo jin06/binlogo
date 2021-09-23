@@ -1,6 +1,8 @@
 package input
 
-import "github.com/jin06/binlogo/store/model"
+import (
+	"github.com/jin06/binlogo/store/model"
+)
 
 type Options struct {
 	Position *model.Position

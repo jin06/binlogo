@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"flag"
 	"fmt"
 	"github.com/jin06/binlogo/config"
@@ -13,6 +12,7 @@ import (
 )
 
 func main() {
+
 	var configPath string
 	logrus.SetLevel(logrus.DebugLevel)
 	//defaultPath := "./../../config/binlogo.yaml"
@@ -64,13 +64,11 @@ func main() {
 	logrus.Debug("start pipeline")
 	go func() {
 		for {
-			msg := <-p.Input.Ch
-			//fmt.Println("println message", msg)
-			b, _ := json.Marshal(msg)
+			msg := <-p.Filter.OutChan
 			if msg != nil {
 				fmt.Println(msg.Content.Head.Type)
 			}
-			fmt.Println(string(b))
+			fmt.Println(msg.Json())
 		}
 	}()
 	select {}

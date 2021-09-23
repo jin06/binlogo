@@ -13,7 +13,7 @@ import (
 type Input struct {
 	syncer   *replication.BinlogSyncer
 	streamer *replication.BinlogStreamer
-	Ch       chan *message.Message
+	OutChan  chan *message.Message
 	Options  *Options
 }
 
@@ -72,7 +72,9 @@ func (r *Input) doHandle() {
 		if err != nil {
 			panic(err)
 		}
-		r.Ch <- msg
+		if msg != nil {
+			r.OutChan <- msg
+		}
 	}
 	return
 }
@@ -83,7 +85,7 @@ func (r *Input) handle() (err error) {
 }
 
 func (r *Input) DataLine() chan *message.Message {
-	return r.Ch
+	return r.OutChan
 }
 
 func New(opts ...Option) (input *Input, err error) {
@@ -110,6 +112,6 @@ func (r *Input) Init() (err error) {
 	}
 
 	r.syncer = replication.NewBinlogSyncer(cfg)
-	r.Ch = make(chan *message.Message, 100000)
+	//r.Ch = make(chan *message.Message, 100000)
 	return
 }

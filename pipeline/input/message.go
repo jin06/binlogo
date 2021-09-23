@@ -9,30 +9,30 @@ import (
 
 func inputMessage(e *replication.BinlogEvent) (msg *message.Message, err error) {
 	eventType := e.Header.EventType
+	msg = message.New()
 	switch eventType {
 	case replication.UPDATE_ROWS_EVENTv2:
 		{
-			return updateMessage(e)
+			err = updateMessage(e, msg)
 		}
 	case replication.WRITE_ROWS_EVENTv2:
 		{
-			return insertMessage(e)
+			err = insertMessage(e, msg)
 		}
 	case replication.DELETE_ROWS_EVENTv2:
 		{
-			return deleteMessage(e)
+			err = deleteMessage(e, msg)
 		}
 	default:
+		return nil, err
 	}
 	return
 }
 
-func updateMessage(e *replication.BinlogEvent) (msg *message.Message, err error) {
-	msg = &message.Message{}
+func updateMessage(e *replication.BinlogEvent, msg *message.Message) (err error) {
 	if val, ok := e.Event.(*replication.RowsEvent); ok {
-		msg.Content = &message.Content{}
 		msg.Content.Head = &message.Head{
-			Type:     message.TYPE_UPDATE,
+			Type:     message.TYPE_UPDATE.String(),
 			Database: string(val.Table.Schema),
 			Table:    string(val.Table.Table),
 			Time:     e.Header.Timestamp,
@@ -58,12 +58,10 @@ func updateMessage(e *replication.BinlogEvent) (msg *message.Message, err error)
 	return
 }
 
-func insertMessage(e *replication.BinlogEvent) (msg *message.Message, err error) {
-	msg = &message.Message{}
+func insertMessage(e *replication.BinlogEvent, msg *message.Message) (err error) {
 	if val, ok := e.Event.(*replication.RowsEvent); ok {
-		msg.Content = &message.Content{}
 		msg.Content.Head = &message.Head{
-			Type:     message.TYPE_INSERT,
+			Type:     message.TYPE_INSERT.String(),
 			Database: string(val.Table.Schema),
 			Table:    string(val.Table.Table),
 			Time:     e.Header.Timestamp,
@@ -82,12 +80,10 @@ func insertMessage(e *replication.BinlogEvent) (msg *message.Message, err error)
 	return
 }
 
-func deleteMessage(e *replication.BinlogEvent) (msg *message.Message, err error) {
-	msg = &message.Message{}
+func deleteMessage(e *replication.BinlogEvent, msg *message.Message) (err error) {
 	if val, ok := e.Event.(*replication.RowsEvent); ok {
-		msg.Content = &message.Content{}
 		msg.Content.Head = &message.Head{
-			Type:     message.TYPE_DELETE,
+			Type:     message.TYPE_DELETE.String(),
 			Database: string(val.Table.Schema),
 			Table:    string(val.Table.Table),
 			Time:     e.Header.Timestamp,
