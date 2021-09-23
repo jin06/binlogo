@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"github.com/jin06/binlogo/config"
 	"github.com/jin06/binlogo/pipeline/pipeline"
 	"github.com/jin06/binlogo/store"
@@ -62,14 +61,5 @@ func main() {
 		panic(err)
 	}
 	logrus.Debug("start pipeline")
-	go func() {
-		for {
-			msg := <-p.Filter.OutChan
-			if msg != nil {
-				fmt.Println(msg.Content.Head.Type)
-			}
-			fmt.Println(msg.Json())
-		}
-	}()
 	select {}
 }

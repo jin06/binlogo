@@ -3,7 +3,6 @@ package input
 import (
 	"context"
 	"errors"
-	"fmt"
 	"github.com/jin06/binlogo/pipeline/message"
 	"github.com/siddontang/go-mysql/mysql"
 	"github.com/siddontang/go-mysql/replication"
@@ -18,8 +17,7 @@ type Input struct {
 }
 
 func (r *Input) Start() (err error) {
-	err = r.connect()
-	if err != nil {
+	if err = r.connect(); err != nil {
 		return
 	}
 	err = r.handle()
@@ -45,35 +43,24 @@ func (r *Input) connect() (err error) {
 	return
 }
 
-func (r *Input) sync() (err error) {
-	go func() {
-		//ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
-		for {
-			ctx := context.Background()
-			ev, _ := r.streamer.GetEvent(ctx)
-			fmt.Println(ev.Event)
-		}
-	}()
-	return
-}
 func (r *Input) doHandle() {
 	for {
-		logrus.Debug("get event")
+		logrus.Debug("Sync binlog from mysql")
 		ctx := context.Background()
 		e, er := r.streamer.GetEvent(ctx)
 		if er != nil {
 			logrus.Error(er)
 			continue
 		}
-		//logrus.Debug(string(e.RawData))
-		logrus.Debug(e.Header)
-		//logrus.Debug(e.Event)
+		logrus.Debug("Binlog event header : ", e.Header)
 		msg, err := inputMessage(e)
 		if err != nil {
 			panic(err)
 		}
 		if msg != nil {
 			r.OutChan <- msg
+		} else {
+			logrus.Debug("The event is not a data change event")
 		}
 	}
 	return

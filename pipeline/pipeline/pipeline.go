@@ -66,6 +66,9 @@ func (p *Pipeline) Init() (err error) {
 	if err = p.initFilter(); err != nil {
 		return
 	}
+	if err = p.initOutput(); err != nil {
+		return
+	}
 	return
 }
 
@@ -93,12 +96,21 @@ func (p *Pipeline) initFilter() (err error) {
 	return
 }
 
+func (p *Pipeline) initOutput() (err error) {
+	p.Output, err = output.New()
+	p.Output.InChan = p.OutChan.Filter
+	return
+}
+
 func (p *Pipeline) Run() (err error) {
 	logrus.Debug("mysql position", p.Input.Options.Position)
 	if err = p.Input.Start(); err != nil {
 		return
 	}
 	if err = p.Filter.Start(); err != nil {
+		return
+	}
+	if err = p.Output.Start(); err != nil {
 		return
 	}
 	return
