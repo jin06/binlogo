@@ -64,14 +64,14 @@ func main() {
 	logrus.Debug("start pipeline")
 	go func() {
 		for {
-			logrus.Debug("wait input")
-			msg := <- p.Input.Ch
+			msg := <-p.Input.Ch
 			//fmt.Println("println message", msg)
 			b, _ := json.Marshal(msg)
+			if msg != nil {
+				fmt.Println(msg.Content.Head.Type)
+			}
 			fmt.Println(string(b))
 		}
 	}()
-	select {
-
-	}
+	select {}
 }

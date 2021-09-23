@@ -1,6 +1,13 @@
 package message
 
+const (
+	STATUS_NEW = iota
+)
+
+type STATUS int16
+
 type Message struct {
+	Status  int16
 	Content *Content
 }
 
