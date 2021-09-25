@@ -2,7 +2,6 @@ package pipeline
 
 import (
 	"errors"
-	"github.com/jin06/binlogo/pipeline/control"
 	"github.com/jin06/binlogo/pipeline/filter"
 	"github.com/jin06/binlogo/pipeline/input"
 	"github.com/jin06/binlogo/pipeline/message"
@@ -17,6 +16,7 @@ type Pipeline struct {
 	OutChan     *OutChan
 	ControlLine *ControlLine
 	Options     Options
+	Role        Role
 }
 
 func New(opt ...Option) (p *Pipeline, err error) {
@@ -49,7 +49,6 @@ type OutChan struct {
 }
 
 type ControlLine struct {
-	Command chan *control.Command
 }
 
 func (p *Pipeline) Init() (err error) {
@@ -114,4 +113,12 @@ func (p *Pipeline) Run() (err error) {
 		return
 	}
 	return
+}
+
+func (p *Pipeline) IsLeader() bool {
+	return p.Role == RoleLeader
+}
+
+func (p *Pipeline) IsFollower() bool {
+	return p.Role == RoleFollower
 }
