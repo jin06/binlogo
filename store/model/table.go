@@ -3,16 +3,16 @@ package model
 import "encoding/json"
 
 type Table struct {
-	ID         string `json:"id"`
-	Name       string `json:"name"`
-	Charset    string `json:"charset"`
-	PrimaryKey string `json:"primary_key"`
-	PipelineId string `json:"pipeline_id"`
-	DatabaseId string `json:"database_id"`
+	ID           string `json:"id"`
+	Name         string `json:"name"`
+	Charset      string `json:"charset"`
+	PrimaryKey   string `json:"primary_key"`
+	PipelineName string `json:"pipeline_name"`
+	DatabaseName string `json:"database_name"`
 }
 
 func (s *Table) Key() (key string) {
-	return "pipeline/" + s.PipelineId + "/database/" + s.DatabaseId + "/table/" + s.ID
+	return "pipeline/" + s.PipelineName + "/database/" + s.DatabaseName + "/table/" + s.Name
 }
 
 func (s *Table) Val() (val string) {

@@ -55,9 +55,7 @@ func (p *Pipeline) Init() (err error) {
 	if p.Options.Pipeline == nil {
 		return errors.New("lack pipeline info")
 	}
-	if p.Options.Mysql == nil {
-		return errors.New("lack mysql info")
-	}
+
 	p.initDataLine()
 	if err = p.initInput(); err != nil {
 		return
@@ -81,7 +79,7 @@ func (p *Pipeline) initDataLine() {
 
 func (p *Pipeline) initInput() (err error) {
 	p.Input, err = input.New(
-		input.OptionMysql(p.Options.Mysql),
+		input.OptionMysql(p.Options.Pipeline.Mysql),
 		input.OptionPosition(p.Options.Position),
 	)
 	p.Input.OutChan = p.OutChan.Input

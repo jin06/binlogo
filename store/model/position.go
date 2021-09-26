@@ -8,11 +8,11 @@ type Position struct {
 	GTIDSet        string `json:"gtid_set"`
 	ServerId       string `json:"server_id"`
 	ClientId       string `json:"client_id"`
-	PipelineID     string `json:"pipeline_id"`
+	PipelineName   string `json:"pipeline_name"`
 }
 
 func (s *Position) Key() (key string) {
-	return "pipeline/" + s.PipelineID + "/position"
+	return "pipeline/" + s.PipelineName + "/position"
 }
 
 func (s *Position) Val() (val string) {

@@ -3,18 +3,19 @@ package model
 import "encoding/json"
 
 type Column struct {
-	ID         string   `json:"id"`
-	Charset    string   `json:"charset"`
-	Type       string   `json:"type"`
-	EnumValues []string `json:"enum_values"`
-	PipelineId string   `json:"pipeline_id"`
-	DatabaseId string   `json:"database_id"`
-	TableId    string   `json:"table_id"`
-	Signed     string   `json:"signed"`
+	ID           string   `json:"id"`
+	Name         string   `json:"name"`
+	Charset      string   `json:"charset"`
+	Type         string   `json:"type"`
+	EnumValues   []string `json:"enum_values"`
+	PipelineName string   `json:"pipeline_name"`
+	DatabaseName string   `json:"database_name"`
+	TableName    string   `json:"table_name"`
+	Signed       string   `json:"signed"`
 }
 
 func (s *Column) Key() (key string) {
-	return "pipeline/" + s.PipelineId + "/database/" + s.DatabaseId + "/table/" + s.TableId + "/column/" + s.ID
+	return "pipeline/" + s.PipelineName + "/database/" + s.DatabaseName + "/table/" + s.TableName + "/column/" + s.Name
 }
 
 func (s *Column) Val() (val string) {

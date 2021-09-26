@@ -20,39 +20,31 @@ func main() {
 	config.InitCfg(configPath)
 	//store.InitDefault()
 	etcd.DefaultETCD()
-	pipeId := "123"
 	sPipeline := &model.Pipeline{
-		ID:   pipeId,
-		Name: "本地测试",
+		Name:      "test",
+		AliasName: "本地测试",
+		Mysql: &model.Mysql{
+			Address:  "127.0.0.1",
+			Port:     13306,
+			User:     "root",
+			Password: "123456",
+			Flavor:   "mysql",
+			ServerId: 1001,
+		},
+		Filters: []*model.Filter{
+			{
+			},
+		},
 	}
 	store.Create(sPipeline)
-	sMysql := &model.Mysql{
-		Address:    "127.0.0.1",
-		Port:       13306,
-		User:       "root",
-		Password:   "123456",
-		Flavor:     "mysql",
-		PipelineId: pipeId,
-		ServerId:   1001,
-	}
-	store.Create(sMysql)
-
-	sFilter := &model.Filter{
-		ID:         "1",
-		PipelineId: pipeId,
-	}
-
-	store.Create(sFilter)
 
 	sPosition := &model.Position{
 		BinlogFile:     "mysql-bin.000014",
 		BinlogPosition: 120,
-		PipelineID:     pipeId,
 	}
 	store.Create(sPosition)
 	p, err := pipeline.New(
 		pipeline.OptionPipeline(sPipeline),
-		pipeline.OptionMysql(sMysql),
 		pipeline.OptionPosition(sPosition),
 	)
 	err = p.Run()
