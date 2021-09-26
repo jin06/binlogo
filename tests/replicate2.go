@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	repl2 "github.com/jin06/binlogo/module/mysql/repl"
+	repl2 "github.com/jin06/binlogo/pkg/mysql/repl"
 	_ "github.com/siddontang/go-mysql/driver"
 	"github.com/siddontang/go-mysql/replication"
 	"os"

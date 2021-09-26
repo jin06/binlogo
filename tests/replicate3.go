@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
-	repl2 "github.com/jin06/binlogo/module/mysql/repl"
+	repl2 "github.com/jin06/binlogo/pkg/mysql/repl"
 	_ "github.com/siddontang/go-mysql/driver"
 	"os"
 	"time"

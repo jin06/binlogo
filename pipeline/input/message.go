@@ -94,7 +94,7 @@ func deleteMessage(e *replication.BinlogEvent, msg *message.Message) (err error)
 			old["todo"+strconv.Itoa(col)] = cVal
 		}
 
-		msg.Content.Data = message.Update{
+		msg.Content.Data = message.Delete{
 			Old: old,
 		}
 	} else {

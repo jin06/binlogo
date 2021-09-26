@@ -82,7 +82,7 @@ func (f *Filter) Handle() {
 	return
 }
 
-func (f *Filter) Start() (err error) {
+func (f *Filter) Run() (err error) {
 	f.Handle()
 	return
 }

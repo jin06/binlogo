@@ -2,7 +2,7 @@ package api
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/jin06/binlogo/servers/api/routers"
+	"github.com/jin06/binlogo/server/api/routers"
 )
 
 type APIServer struct {

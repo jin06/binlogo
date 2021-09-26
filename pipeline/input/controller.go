@@ -7,7 +7,7 @@ type Controller struct {
 }
 
 func (c *Controller) Start() error {
-	return c.Input.Start()
+	return c.Input.Run()
 }
 
 func (c *Controller) DataLine() chan *message.Message {

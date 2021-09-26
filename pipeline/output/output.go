@@ -1,10 +1,10 @@
 package output
 
 import (
-	"fmt"
 	"github.com/jin06/binlogo/pipeline/message"
 	"github.com/jin06/binlogo/pipeline/output/sender"
-	"github.com/sirupsen/logrus"
+	"github.com/jin06/binlogo/pipeline/output/sender/kafka"
+	"github.com/jin06/binlogo/store/model"
 )
 
 type Output struct {
@@ -13,7 +13,7 @@ type Output struct {
 	Options *Options
 }
 
-func New(opts ...Option) (out *Output,err error) {
+func New(opts ...Option) (out *Output, err error) {
 	options := &Options{}
 	for _, v := range opts {
 		v(options)
@@ -26,16 +26,22 @@ func New(opts ...Option) (out *Output,err error) {
 }
 
 func (o *Output) Init() (err error) {
+	switch o.Options.Output.Sender.Type {
+	case model.SENDER_TYPE_KAFKA:
+		fallthrough
+	default:
+		o.Sender, err = kafka.New(
+			&kafka.Options{
+				Kafka: o.Options.Output.Sender.Kafka,
+			},
+		)
+	}
+
 	return
 }
 
 func (o *Output) doHandle() {
-	for {
-		logrus.Debug("Output wait message ")
-		msg := <-o.InChan
-		fmt.Println("Output handle message : ")
-		fmt.Println(msg.Json())
-	}
+	o.Sender.Send(o.InChan)
 }
 
 func (o *Output) handle() {
@@ -43,7 +49,7 @@ func (o *Output) handle() {
 	return
 }
 
-func (o *Output) Start() (err error) {
+func (o *Output) Run() (err error) {
 	o.handle()
 	return
 }

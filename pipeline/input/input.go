@@ -16,7 +16,7 @@ type Input struct {
 	Options  *Options
 }
 
-func (r *Input) Start() (err error) {
+func (r *Input) Run() (err error) {
 	if err = r.connect(); err != nil {
 		return
 	}

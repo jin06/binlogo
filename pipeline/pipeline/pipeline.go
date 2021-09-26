@@ -101,13 +101,13 @@ func (p *Pipeline) initOutput() (err error) {
 
 func (p *Pipeline) Run() (err error) {
 	logrus.Debug("mysql position", p.Input.Options.Position)
-	if err = p.Input.Start(); err != nil {
+	if err = p.Input.Run(); err != nil {
 		return
 	}
-	if err = p.Filter.Start(); err != nil {
+	if err = p.Filter.Run(); err != nil {
 		return
 	}
-	if err = p.Output.Start(); err != nil {
+	if err = p.Output.Run(); err != nil {
 		return
 	}
 	return
