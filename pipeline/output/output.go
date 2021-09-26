@@ -3,17 +3,26 @@ package output
 import (
 	"fmt"
 	"github.com/jin06/binlogo/pipeline/message"
+	"github.com/jin06/binlogo/pipeline/output/sender"
 	"github.com/sirupsen/logrus"
 )
 
 type Output struct {
-	InChan chan *message.Message
+	InChan  chan *message.Message
+	Sender  sender.Sender
+	Options *Options
 }
 
-func New() (*Output, error) {
-	out := &Output{}
-	err := out.Init()
-	return out, err
+func New(opts ...Option) (out *Output,err error) {
+	options := &Options{}
+	for _, v := range opts {
+		v(options)
+	}
+	out = &Output{
+		Options: options,
+	}
+	err = out.Init()
+	return
 }
 
 func (o *Output) Init() (err error) {

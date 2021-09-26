@@ -94,7 +94,7 @@ func (p *Pipeline) initFilter() (err error) {
 }
 
 func (p *Pipeline) initOutput() (err error) {
-	p.Output, err = output.New()
+	p.Output, err = output.New(output.OptionOutput(p.Options.Pipeline.Output))
 	p.Output.InChan = p.OutChan.Filter
 	return
 }
