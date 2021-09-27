@@ -1,6 +1,9 @@
 package message
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"github.com/jin06/binlogo/store/model"
+)
 
 const (
 	STATUS_NEW = iota
@@ -9,9 +12,10 @@ const (
 type STATUS int16
 
 type Message struct {
-	Status  int16
-	Filter  bool
-	Content *Content
+	Status         int16
+	Filter         bool
+	BinlogPosition *model.Position
+	Content        *Content
 }
 
 func New() *Message {

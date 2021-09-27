@@ -10,6 +10,7 @@ import (
 func inputMessage(e *replication.BinlogEvent) (msg *message.Message, err error) {
 	eventType := e.Header.EventType
 	msg = message.New()
+	//pos := &model.Position{}
 	switch eventType {
 	case replication.UPDATE_ROWS_EVENTv2:
 		{
@@ -24,7 +25,7 @@ func inputMessage(e *replication.BinlogEvent) (msg *message.Message, err error) 
 			err = deleteMessage(e, msg)
 		}
 	default:
-		return nil, err
+		err = emptyMessage(e, msg)
 	}
 	return
 }
@@ -100,5 +101,14 @@ func deleteMessage(e *replication.BinlogEvent, msg *message.Message) (err error)
 	} else {
 		err = errors.New("event type error: " + e.Header.EventType.String())
 	}
+	return
+}
+
+func emptyMessage(e *replication.BinlogEvent, msg *message.Message) (err error) {
+	msg.Filter = true
+	msg.Content.Head = &message.Head{
+		Type: 	message.TYPE_EMPTY.String(),
+	}
+	msg.Content.Data = ""
 	return
 }

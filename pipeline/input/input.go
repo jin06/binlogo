@@ -3,7 +3,9 @@ package input
 import (
 	"context"
 	"errors"
+	"fmt"
 	"github.com/jin06/binlogo/pipeline/message"
+	"github.com/jin06/binlogo/store/model"
 	"github.com/siddontang/go-mysql/mysql"
 	"github.com/siddontang/go-mysql/replication"
 	"github.com/sirupsen/logrus"
@@ -54,6 +56,14 @@ func (r *Input) doHandle() {
 		}
 		logrus.Debug("Binlog event header : ", e.Header)
 		msg, err := inputMessage(e)
+		pos := r.syncer.GetNextPosition()
+		fmt.Println(pos)
+		msg.BinlogPosition = &model.Position{
+			BinlogFile:     pos.Name,
+			BinlogPosition: pos.Pos,
+			GTIDSet:        r.Options.Position.GTIDSet,
+			PipelineName:   r.Options.Position.PipelineName,
+		}
 		if err != nil {
 			panic(err)
 		}

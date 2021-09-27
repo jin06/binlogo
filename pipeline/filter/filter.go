@@ -71,9 +71,7 @@ func (f *Filter) doHandle(ctx context.Context) {
 			continue
 		}
 		logrus.Debug("Filter message: ", msg)
-		if msg.Filter == false {
-			f.OutChan <- msg
-		}
+		f.OutChan <- msg
 	}
 }
 

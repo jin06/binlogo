@@ -3,6 +3,7 @@ package message
 type MessageType byte
 
 var (
+	TYPE_EMPTY        MessageType = 0
 	TYPE_INSERT       MessageType = 1
 	TYPE_UPDATE       MessageType = 2
 	TYPE_DELETE       MessageType = 3
@@ -31,6 +32,10 @@ func (mt MessageType) String() string {
 	case TYPE_ALTER_TABLE:
 		{
 			return "alter_table"
+		}
+	case TYPE_EMPTY:
+		{
+			return "empty"
 		}
 	}
 	return ""

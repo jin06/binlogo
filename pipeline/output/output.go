@@ -4,7 +4,9 @@ import (
 	"github.com/jin06/binlogo/pipeline/message"
 	"github.com/jin06/binlogo/pipeline/output/sender"
 	"github.com/jin06/binlogo/pipeline/output/sender/kafka"
+	"github.com/jin06/binlogo/store"
 	"github.com/jin06/binlogo/store/model"
+	"github.com/sirupsen/logrus"
 )
 
 type Output struct {
@@ -40,8 +42,36 @@ func (o *Output) Init() (err error) {
 	return
 }
 
+func recordPosition(msg *message.Message) (bool, error) {
+	return store.Update(msg.BinlogPosition)
+}
+
 func (o *Output) doHandle() {
-	o.Sender.Send(o.InChan)
+	for {
+		logrus.Debug("Wait send message")
+		var msg *message.Message
+		msg = <-o.InChan
+		logrus.Debug("Output read message: ", msg)
+		if msg.Filter {
+			continue
+		}
+		ok, err := o.Sender.Send(msg)
+		if err != nil {
+			logrus.Error("Send message error: ", err)
+			continue
+		}
+		if !ok {
+			logrus.Error("Send message failed")
+			continue
+		}
+		ok, err = recordPosition(msg)
+		if err != nil {
+			logrus.Error(err)
+		}
+		if !ok {
+			logrus.Error("Record position error")
+		}
+	}
 }
 
 func (o *Output) handle() {

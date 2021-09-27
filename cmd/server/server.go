@@ -35,6 +35,17 @@ func main() {
 			{
 			},
 		},
+		Output: &model.Output{
+			Sender: &model.Sender{
+				Type: model.SENDER_TYPE_KAFKA,
+				Kafka: &model.Kafka{
+					Brokers: []string{
+						"kafka-banana.shan.svc.cluster.local:9092",
+					},
+					Topic: "binlogo-test1",
+				},
+			},
+		},
 	}
 	store.Create(sPipeline)
 
