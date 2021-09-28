@@ -59,7 +59,7 @@ func (o *Output) doHandle() {
 		logrus.Debug("Wait send message")
 		var msg *message.Message
 		msg = <-o.InChan
-		logrus.Debug("Output read message: ", msg)
+		logrus.Debugf("Output read message: %v \n", *msg)
 		if !msg.Filter {
 			ok, err := o.Sender.Send(msg)
 			if err != nil {

@@ -2,6 +2,7 @@ package message
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/jin06/binlogo/store/model"
 )
 
@@ -59,4 +60,23 @@ func (msg *Message) JsonContent() (string, error) {
 		return "", err
 	}
 	return string(b), nil
+}
+
+func (msg *Message) ToString() string {
+	return fmt.Sprintf(
+		`
+	Status: %v
+	Filter: %v
+	BingloPosition.File: %v
+	BingloPosition.Pos: %v
+	Content.Head: %+v
+	Content.Data: %+v
+			`,
+		msg.Status,
+		msg.Filter,
+		msg.BinlogPosition.BinlogFile,
+		msg.BinlogPosition.BinlogPosition,
+		*msg.Content.Head,
+		msg.Content.Data,
+	)
 }

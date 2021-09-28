@@ -15,7 +15,7 @@ func New() (std *Stdout, err error) {
 }
 
 func (s *Stdout) Send(msg *message.Message) (ok bool, err error) {
-	_, err = fmt.Fprint(os.Stdout, msg)
+	_, err = fmt.Fprintln(os.Stdout, msg.ToString())
 	if err == nil {
 		ok = true
 	}
