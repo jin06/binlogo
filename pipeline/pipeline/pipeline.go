@@ -6,6 +6,9 @@ import (
 	"github.com/jin06/binlogo/pipeline/input"
 	"github.com/jin06/binlogo/pipeline/message"
 	"github.com/jin06/binlogo/pipeline/output"
+	"github.com/jin06/binlogo/store"
+	"github.com/jin06/binlogo/store/model"
+	"github.com/siddontang/go-log/log"
 	"github.com/sirupsen/logrus"
 )
 
@@ -19,6 +22,38 @@ type Pipeline struct {
 	Role        Role
 }
 
+func NewFromStore(name string) (p *Pipeline, err error) {
+	pipeModel := &model.Pipeline{
+		Name: name,
+	}
+	ok, err := store.Get(pipeModel)
+	if err != nil {
+		return
+	}
+	if !ok {
+		err = errors.New("No pipeline data ")
+		return
+	}
+	posModel := &model.Position{
+		PipelineName: name,
+	}
+	ok, err = store.Get(posModel)
+	if err != nil {
+		return
+	}
+	if !ok {
+		//errors.New("No position data ")
+		log.Warn("No position data")
+		//return
+	}
+	logrus.Debug("Position data: ", posModel)
+
+	return New(
+		OptionPipeline(pipeModel),
+		OptionPosition(posModel),
+	)
+}
+
 func New(opt ...Option) (p *Pipeline, err error) {
 	options := Options{}
 	for _, v := range opt {
@@ -28,17 +63,6 @@ func New(opt ...Option) (p *Pipeline, err error) {
 		Options: options,
 	}
 	err = p.Init()
-	return
-}
-
-func NewPipeline(opt ...Option) (p *Pipeline) {
-	options := Options{}
-	for _, v := range opt {
-		v(&options)
-	}
-	p = &Pipeline{
-		Options: options,
-	}
 	return
 }
 
@@ -120,3 +144,4 @@ func (p *Pipeline) IsLeader() bool {
 func (p *Pipeline) IsFollower() bool {
 	return p.Role == RoleFollower
 }
+

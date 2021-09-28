@@ -2,7 +2,6 @@ package input
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"github.com/jin06/binlogo/pipeline/message"
 	"github.com/jin06/binlogo/store/model"
@@ -29,7 +28,8 @@ func (r *Input) Run() (err error) {
 func (r *Input) connect() (err error) {
 	binlogFile := r.Options.Position.BinlogFile
 	if binlogFile == "" {
-		return errors.New("empty binlog file")
+		logrus.Warn("Empty binlog file")
+		//return errors.New("empty binlog file")
 	}
 	binlogPos := r.Options.Position.BinlogPosition
 
@@ -111,4 +111,7 @@ func (r *Input) Init() (err error) {
 	r.syncer = replication.NewBinlogSyncer(cfg)
 	//r.Ch = make(chan *message.Message, 100000)
 	return
+}
+
+func (r *Input) newestPosition() {
 }

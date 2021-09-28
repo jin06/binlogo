@@ -20,6 +20,17 @@ func main() {
 	config.InitCfg(configPath)
 	//store.InitDefault()
 	etcd.DefaultETCD()
+
+	p2, err := pipeline.NewFromStore("test")
+	if err != nil {
+		panic(err)
+	}
+	err = p2.Run()
+	if err != nil {
+		panic(err)
+	}
+	select {}
+
 	sPipeline := &model.Pipeline{
 		Name:      "test",
 		AliasName: "本地测试",
