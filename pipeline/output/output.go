@@ -4,6 +4,7 @@ import (
 	"github.com/jin06/binlogo/pipeline/message"
 	"github.com/jin06/binlogo/pipeline/output/sender"
 	"github.com/jin06/binlogo/pipeline/output/sender/kafka"
+	"github.com/jin06/binlogo/pipeline/output/sender/stdout"
 	"github.com/jin06/binlogo/store"
 	"github.com/jin06/binlogo/store/model"
 	"github.com/sirupsen/logrus"
@@ -29,6 +30,8 @@ func New(opts ...Option) (out *Output, err error) {
 
 func (o *Output) Init() (err error) {
 	switch o.Options.Output.Sender.Type {
+	case model.SNEDER_TYPE_STDOUT:
+		o.Sender, err = stdout.New()
 	case model.SENDER_TYPE_KAFKA:
 		fallthrough
 	default:
@@ -43,6 +46,11 @@ func (o *Output) Init() (err error) {
 }
 
 func recordPosition(msg *message.Message) (bool, error) {
+	logrus.Debugf(
+		"Record new replication position, file %s, pos %v",
+		msg.BinlogPosition.BinlogFile,
+		msg.BinlogPosition.BinlogPosition,
+	)
 	return store.Update(msg.BinlogPosition)
 }
 
@@ -52,19 +60,18 @@ func (o *Output) doHandle() {
 		var msg *message.Message
 		msg = <-o.InChan
 		logrus.Debug("Output read message: ", msg)
-		if msg.Filter {
-			continue
+		if !msg.Filter {
+			ok, err := o.Sender.Send(msg)
+			if err != nil {
+				logrus.Error("Send message error: ", err)
+				continue
+			}
+			if !ok {
+				logrus.Error("Send message failed")
+				continue
+			}
 		}
-		ok, err := o.Sender.Send(msg)
-		if err != nil {
-			logrus.Error("Send message error: ", err)
-			continue
-		}
-		if !ok {
-			logrus.Error("Send message failed")
-			continue
-		}
-		ok, err = recordPosition(msg)
+		ok, err := recordPosition(msg)
 		if err != nil {
 			logrus.Error(err)
 		}

@@ -48,7 +48,7 @@ func main() {
 		},
 		Output: &model.Output{
 			Sender: &model.Sender{
-				Type: model.SENDER_TYPE_KAFKA,
+				Type: model.SNEDER_TYPE_STDOUT,
 				Kafka: &model.Kafka{
 					Brokers: []string{
 						"kafka-banana.shan.svc.cluster.local:9092",
@@ -59,6 +59,7 @@ func main() {
 		},
 	}
 	store.Create(sPipeline)
+	//os.Exit(1)
 
 	sPosition := &model.Position{
 		BinlogFile:     "mysql-bin.000014",
