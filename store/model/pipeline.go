@@ -3,11 +3,12 @@ package model
 import "encoding/json"
 
 type Pipeline struct {
-	Name      string   `json:"name"`
-	AliasName string   `json:"aliasName"`
+	Name      string    `json:"name"`
+	AliasName string    `json:"aliasName"`
 	Mysql     *Mysql    `json:"mysql"`
 	Filters   []*Filter `json:"filters"`
 	Output    *Output   `json:"output"`
+	Replicas  int       `json:"replicas"`
 }
 
 func (s *Pipeline) Key() (key string) {

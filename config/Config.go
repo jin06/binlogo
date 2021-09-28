@@ -16,7 +16,7 @@ type Config struct {
 		Name string `config:"name"`
 	} `config:"node"`
 	Api struct {
-		Port uint8 `port`
+		Port uint8 `config:"port"`
 	} `config:"api"`
 	Store struct {
 		Type string `config:"type"`
@@ -28,5 +28,8 @@ type Config struct {
 
 func InitCfg(path string) {
 	loader := confita.NewLoader(file.NewBackend(path))
-	loader.Load(context.Background(), &Cfg)
+	err := loader.Load(context.Background(), &Cfg)
+	if err != nil {
+		panic(err)
+	}
 }
