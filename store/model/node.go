@@ -2,8 +2,16 @@ package model
 
 import "encoding/json"
 
+type NodeRole string
+
+const (
+	ROLE_MASTER NodeRole = "master"
+	ROLE_SLAVE  NodeRole = "slave"
+)
+
 type Node struct {
-	Name string `json:"name"`
+	Name string   `json:"name"`
+	Role NodeRole `json:"role"`
 }
 
 func (s *Node) Key() (key string) {

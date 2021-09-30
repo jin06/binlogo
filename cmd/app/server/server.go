@@ -1,4 +1,4 @@
-package main
+package server
 
 import (
 	"flag"
@@ -10,8 +10,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func main() {
-
+func RunServer() {
 	var configPath string
 	logrus.SetLevel(logrus.DebugLevel)
 	//defaultPath := "./../../config/binlogo.yaml"
@@ -78,3 +77,4 @@ func main() {
 	logrus.Debug("start pipeline")
 	select {}
 }
+

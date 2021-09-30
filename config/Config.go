@@ -2,6 +2,7 @@ package config
 
 import (
 	"context"
+	"fmt"
 	"github.com/heetch/confita"
 	"github.com/heetch/confita/backend/file"
 )
@@ -29,6 +30,7 @@ type Config struct {
 func InitCfg(path string) {
 	loader := confita.NewLoader(file.NewBackend(path))
 	err := loader.Load(context.Background(), &Cfg)
+	fmt.Println("config", Cfg)
 	if err != nil {
 		panic(err)
 	}
