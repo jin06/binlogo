@@ -14,7 +14,7 @@ func RunServer() {
 	var configPath string
 	logrus.SetLevel(logrus.DebugLevel)
 	//defaultPath := "./../../config/binlogo.yaml"
-	defaultPath := "config/binlogo.yaml"
+	defaultPath := "/Users/jinlong/code/jin06/binlogo/config/binlogo.yaml"
 	flag.StringVar(&configPath, "config", defaultPath, "config path")
 	config.InitCfg(configPath)
 	//store.InitDefault()

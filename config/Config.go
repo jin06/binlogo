@@ -17,7 +17,7 @@ type Config struct {
 		Name string `config:"name"`
 	} `config:"node"`
 	Api struct {
-		Port uint8 `config:"port"`
+		Port uint `config:"port"`
 	} `config:"api"`
 	Store struct {
 		Type string `config:"type"`
@@ -27,10 +27,17 @@ type Config struct {
 	} `config:"store"`
 }
 
+//func (c *Config) String() string {
+//	return fmt.Sprintf(
+//		"%v", c,
+//	)
+//}
+
 func InitCfg(path string) {
 	loader := confita.NewLoader(file.NewBackend(path))
 	err := loader.Load(context.Background(), &Cfg)
-	fmt.Println("config", Cfg)
+	//fmt.Println(Cfg.String())
+	fmt.Println(Cfg)
 	if err != nil {
 		panic(err)
 	}
