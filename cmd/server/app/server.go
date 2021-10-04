@@ -1,4 +1,4 @@
-package server
+package app
 
 import (
 	"github.com/jin06/binlogo/pipeline/pipeline"
