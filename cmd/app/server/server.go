@@ -1,24 +1,19 @@
 package server
 
 import (
-	"flag"
-	"github.com/jin06/binlogo/config"
 	"github.com/jin06/binlogo/pipeline/pipeline"
 	"github.com/jin06/binlogo/store"
-	"github.com/jin06/binlogo/store/etcd"
 	"github.com/jin06/binlogo/store/model"
 	"github.com/sirupsen/logrus"
 )
 
 func RunServer() {
-	var configPath string
-	logrus.SetLevel(logrus.DebugLevel)
+	//var configPath string
+	//logrus.SetLevel(logrus.DebugLevel)
 	//defaultPath := "./../../config/binlogo.yaml"
-	defaultPath := "/Users/jinlong/code/jin06/binlogo/config/binlogo.yaml"
-	flag.StringVar(&configPath, "config", defaultPath, "config path")
-	config.InitCfg(configPath)
+	//flag.StringVar(&configPath, "config", defaultPath, "config path")
 	//store.InitDefault()
-	etcd.DefaultETCD()
+	//etcd.DefaultETCD()
 
 	p2, err := pipeline.NewFromStore("test")
 	if err != nil {

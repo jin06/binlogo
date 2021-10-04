@@ -2,10 +2,10 @@ package etcd
 
 import (
 	"context"
-	"github.com/jin06/binlogo/config"
 	"github.com/jin06/binlogo/store/etcd/options"
 	"github.com/jin06/binlogo/store/model"
 	"github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 	"go.etcd.io/etcd/clientv3"
 	"time"
 )
@@ -13,9 +13,12 @@ import (
 var E *ETCD
 
 func DefaultETCD() {
+	prefix := "binlogo/" + viper.GetString("cluster.name")
 	etcd, err := NewETCD(
-		options.Endpoints(config.Cfg.Store.Etcd.Endpoints),
-		options.Prefix("binlogo/"+config.Cfg.Cluster.Name),
+		//options.Endpoints(config.Cfg.Store.Etcd.Endpoints),
+		options.Endpoints(viper.GetStringSlice("store.etcd.endpoints")),
+		//options.Prefix("binlogo/"+config.Cfg.Cluster.Name),
+		options.Prefix(prefix),
 		options.Timeout(5*time.Second),
 	)
 	if err != nil {

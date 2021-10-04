@@ -1,12 +1,5 @@
 package config
 
-import (
-	"context"
-	"fmt"
-	"github.com/heetch/confita"
-	"github.com/heetch/confita/backend/file"
-)
-
 var Cfg Config
 
 type Config struct {
@@ -33,12 +26,12 @@ type Config struct {
 //	)
 //}
 
-func InitCfg(path string) {
-	loader := confita.NewLoader(file.NewBackend(path))
-	err := loader.Load(context.Background(), &Cfg)
+//func InitCfg(path string) {
+	//loader := confita.NewLoader(file.NewBackend(path))
+	//err := loader.Load(context.Background(), &Cfg)
 	//fmt.Println(Cfg.String())
-	fmt.Println(Cfg)
-	if err != nil {
-		panic(err)
-	}
-}
+	//fmt.Println(Cfg)
+	//if err != nil {
+	//	panic(err)
+	//}
+//}

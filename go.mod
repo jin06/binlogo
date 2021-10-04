@@ -9,13 +9,14 @@ require (
 	github.com/gin-gonic/gin v1.7.2
 	github.com/google/uuid v1.2.0 // indirect
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0 // indirect
-	github.com/hashicorp/consul/api v1.3.0
-	github.com/heetch/confita v0.10.0
+	github.com/hashicorp/consul/api v1.10.1
+	github.com/heetch/confita v0.10.0 // indirect
 	github.com/jmoiron/sqlx v1.2.0 // indirect
 	github.com/siddontang/go-log v0.0.0-20190221022429-1e957dd83bed
 	github.com/siddontang/go-mysql v0.0.0-20200424072754-803944a6e4ea
 	github.com/sirupsen/logrus v1.4.2
 	github.com/spf13/cobra v1.2.1
+	github.com/spf13/viper v1.9.0
 	go.etcd.io/etcd v3.3.25+incompatible
 	sigs.k8s.io/yaml v1.3.0 // indirect
 
