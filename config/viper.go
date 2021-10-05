@@ -1,20 +1,23 @@
 package config
 
 import (
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
+	"os"
 )
 
 //func init() {
 //	InitViperFromFile()
 //}
 
-func InitViperFromFile() {
-	configName := "binlogo"
-	configPath := "./config/"
-	viper.SetConfigName(configName)
-	viper.SetConfigType("yaml")
-	viper.AddConfigPath(configPath)
+func InitViperFromFile(file string) {
+	if file != "" {
+		viper.SetConfigFile(file)
+	} else {
+		file = "./config/binlogo.yaml"
+	}
 	if err := viper.ReadInConfig(); err != nil {
-		panic(err)
+		logrus.Error(err.Error())
+		os.Exit(1)
 	}
 }

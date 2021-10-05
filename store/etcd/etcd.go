@@ -7,6 +7,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"go.etcd.io/etcd/clientv3"
+	"os"
 	"time"
 )
 
@@ -22,7 +23,8 @@ func DefaultETCD() {
 		options.Timeout(5*time.Second),
 	)
 	if err != nil {
-		panic(err)
+		logrus.Error(err)
+		os.Exit(1)
 	}
 	E = etcd
 	logrus.Info("default etcd init...")
