@@ -1,3 +1,4 @@
+env: dev
 cluster:
   name: cluster1
 node:

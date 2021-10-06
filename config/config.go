@@ -3,6 +3,7 @@ package config
 var Cfg Config
 
 type Config struct {
+	Env     Env `config:"env"`
 	Cluster struct {
 		Name string `config:"name"`
 	} `config:"cluster"`
@@ -20,18 +21,10 @@ type Config struct {
 	} `config:"store"`
 }
 
-//func (c *Config) String() string {
-//	return fmt.Sprintf(
-//		"%v", c,
-//	)
-//}
+type Env string
 
-//func InitCfg(path string) {
-	//loader := confita.NewLoader(file.NewBackend(path))
-	//err := loader.Load(context.Background(), &Cfg)
-	//fmt.Println(Cfg.String())
-	//fmt.Println(Cfg)
-	//if err != nil {
-	//	panic(err)
-	//}
-//}
+const (
+	ENV_PRO  = "production"
+	ENV_DEV  = "dev"
+	ENV_TEST = "test"
+)
