@@ -15,8 +15,8 @@ const ttl = 5
 
 func New(opts ...Option) (r *Register) {
 	r = &Register{
-		ttl:  ttl,
-		etcd: etcd.E,
+		ttl:           ttl,
+		etcd:          etcd.E,
 		leaseDuration: time.Second,
 	}
 	logrus.Debug("Node register lease duration ", r.leaseDuration)
@@ -28,12 +28,12 @@ func New(opts ...Option) (r *Register) {
 }
 
 type Register struct {
-	lease   clientv3.Lease
-	leaseID clientv3.LeaseID
+	lease         clientv3.Lease
+	leaseID       clientv3.LeaseID
 	leaseDuration time.Duration
-	node    *model.Node
-	ttl     int64
-	etcd    *etcd.ETCD
+	node          *model.Node
+	ttl           int64
+	etcd          *etcd.ETCD
 }
 
 func (r *Register) Run() (err error) {
@@ -43,10 +43,12 @@ func (r *Register) Run() (err error) {
 	}
 	go func() {
 		tc := time.NewTicker(r.leaseDuration)
-		select {
-		case <-tc.C:
-			{
-				_ = r.keep()
+		for {
+			select {
+			case <-tc.C:
+				{
+					_ = r.keep()
+				}
 			}
 		}
 	}()
