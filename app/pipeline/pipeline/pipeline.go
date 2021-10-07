@@ -6,8 +6,8 @@ import (
 	input2 "github.com/jin06/binlogo/app/pipeline/input"
 	message2 "github.com/jin06/binlogo/app/pipeline/message"
 	output2 "github.com/jin06/binlogo/app/pipeline/output"
-	"github.com/jin06/binlogo/store"
-	"github.com/jin06/binlogo/store/model"
+	store2 "github.com/jin06/binlogo/pkg/store"
+	model2 "github.com/jin06/binlogo/pkg/store/model"
 	"github.com/siddontang/go-log/log"
 	"github.com/sirupsen/logrus"
 )
@@ -23,10 +23,10 @@ type Pipeline struct {
 }
 
 func NewFromStore(name string) (p *Pipeline, err error) {
-	pipeModel := &model.Pipeline{
+	pipeModel := &model2.Pipeline{
 		Name: name,
 	}
-	ok, err := store.Get(pipeModel)
+	ok, err := store2.Get(pipeModel)
 	if err != nil {
 		return
 	}
@@ -34,10 +34,10 @@ func NewFromStore(name string) (p *Pipeline, err error) {
 		err = errors.New("No pipeline data ")
 		return
 	}
-	posModel := &model.Position{
+	posModel := &model2.Position{
 		PipelineName: name,
 	}
-	ok, err = store.Get(posModel)
+	ok, err = store2.Get(posModel)
 	if err != nil {
 		return
 	}

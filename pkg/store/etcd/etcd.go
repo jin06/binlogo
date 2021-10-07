@@ -2,8 +2,8 @@ package etcd
 
 import (
 	"context"
-	"github.com/jin06/binlogo/store/etcd/options"
-	"github.com/jin06/binlogo/store/model"
+	options2 "github.com/jin06/binlogo/pkg/store/etcd/options"
+	model2 "github.com/jin06/binlogo/pkg/store/model"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"go.etcd.io/etcd/clientv3"
@@ -17,10 +17,10 @@ func DefaultETCD() {
 	prefix := "binlogo/" + viper.GetString("cluster.name")
 	etcd, err := NewETCD(
 		//options.Endpoints(config.Cfg.Store.Etcd.Endpoints),
-		options.Endpoints(viper.GetStringSlice("store.etcd.endpoints")),
+		options2.Endpoints(viper.GetStringSlice("store.etcd.endpoints")),
 		//options.Prefix("binlogo/"+config.Cfg.Cluster.Name),
-		options.Prefix(prefix),
-		options.Timeout(5*time.Second),
+		options2.Prefix(prefix),
+		options2.Timeout(5*time.Second),
 	)
 	if err != nil {
 		logrus.Error(err)
@@ -32,11 +32,11 @@ func DefaultETCD() {
 
 type ETCD struct {
 	Client *clientv3.Client
-	options.Options
+	options2.Options
 }
 
-func NewETCD(opt ...options.Option) (etcd *ETCD, err error) {
-	ops := options.Options{}
+func NewETCD(opt ...options2.Option) (etcd *ETCD, err error) {
+	ops := options2.Options{}
 	for _, o := range opt {
 		o(&ops)
 	}
@@ -77,7 +77,7 @@ func (e *ETCD) Write(key string, val string) (err error) {
 	return
 }
 
-func (e *ETCD) Create(m model.Model,opts ...clientv3.OpOption) (ok bool, err error) {
+func (e *ETCD) Create(m model2.Model,opts ...clientv3.OpOption) (ok bool, err error) {
 	ctx, cancel := context.WithTimeout(context.TODO(), e.Timeout)
 	defer cancel()
 	key := "/" + e.Prefix + "/" + m.Key()
@@ -90,7 +90,7 @@ func (e *ETCD) Create(m model.Model,opts ...clientv3.OpOption) (ok bool, err err
 	return
 }
 
-func (e *ETCD) Update(m model.Model) (ok bool, err error) {
+func (e *ETCD) Update(m model2.Model) (ok bool, err error) {
 	ctx, cancel := context.WithTimeout(context.TODO(), e.Timeout)
 	defer cancel()
 	key := "/" + e.Prefix + "/" + m.Key()
@@ -103,7 +103,7 @@ func (e *ETCD) Update(m model.Model) (ok bool, err error) {
 	return
 }
 
-func (e *ETCD) Delete(m model.Model) (ok bool, err error) {
+func (e *ETCD) Delete(m model2.Model) (ok bool, err error) {
 	ctx, cancel := context.WithTimeout(context.TODO(), e.Timeout)
 	defer cancel()
 	key := "/" + e.Prefix + "/" + m.Key()
@@ -115,7 +115,7 @@ func (e *ETCD) Delete(m model.Model) (ok bool, err error) {
 	return
 }
 
-func (e *ETCD) Get(m model.Model) (ok bool, err error) {
+func (e *ETCD) Get(m model2.Model) (ok bool, err error) {
 	ctx, cancel := context.WithTimeout(context.Background(), e.Timeout)
 	defer cancel()
 	key := "/" + e.Prefix + "/" + m.Key()

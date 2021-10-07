@@ -1,14 +1,14 @@
 package register
 
 import (
-	"github.com/jin06/binlogo/store/etcd"
-	"github.com/jin06/binlogo/store/model"
+	etcd2 "github.com/jin06/binlogo/pkg/store/etcd"
+	model2 "github.com/jin06/binlogo/pkg/store/model"
 	"time"
 )
 
 type Option func(options *Register)
 
-func OptionNode(node *model.Node) Option {
+func OptionNode(node *model2.Node) Option {
 	return func(r *Register) {
 		r.node = node
 	}
@@ -20,7 +20,7 @@ func OptionTTL(ttl int64) Option {
 	}
 }
 
-func OptionETCD(etcd *etcd.ETCD) Option {
+func OptionETCD(etcd *etcd2.ETCD) Option {
 	return func(r *Register) {
 		r.etcd = etcd
 	}

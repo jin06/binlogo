@@ -1,21 +1,23 @@
 package pipeline
 
-import "github.com/jin06/binlogo/store/model"
+import (
+	model2 "github.com/jin06/binlogo/pkg/store/model"
+)
 
 type Options struct {
-	Pipeline *model.Pipeline
-	Position *model.Position
+	Pipeline *model2.Pipeline
+	Position *model2.Position
 }
 
 type Option func(*Options)
 
-func OptionPipeline(option *model.Pipeline) Option {
+func OptionPipeline(option *model2.Pipeline) Option {
 	return func(options *Options) {
 		options.Pipeline = option
 	}
 }
 
-func OptionPosition(option *model.Position) Option {
+func OptionPosition(option *model2.Position) Option {
 	return func(options *Options) {
 		options.Position = option
 	}

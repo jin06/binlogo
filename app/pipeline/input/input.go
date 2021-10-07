@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	message2 "github.com/jin06/binlogo/app/pipeline/message"
-	"github.com/jin06/binlogo/store/model"
+	model2 "github.com/jin06/binlogo/pkg/store/model"
 	"github.com/siddontang/go-mysql/mysql"
 	"github.com/siddontang/go-mysql/replication"
 	"github.com/sirupsen/logrus"
@@ -58,7 +58,7 @@ func (r *Input) doHandle() {
 		msg, err := inputMessage(e)
 		pos := r.syncer.GetNextPosition()
 		fmt.Println(pos)
-		msg.BinlogPosition = &model.Position{
+		msg.BinlogPosition = &model2.Position{
 			BinlogFile:     pos.Name,
 			BinlogPosition: pos.Pos,
 			GTIDSet:        r.Options.Position.GTIDSet,

@@ -4,8 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/jin06/binlogo/store/etcd"
-	"github.com/jin06/binlogo/store/model"
+	etcd2 "github.com/jin06/binlogo/pkg/store/etcd"
+	model2 "github.com/jin06/binlogo/pkg/store/model"
 	"github.com/sirupsen/logrus"
 	"go.etcd.io/etcd/clientv3"
 	"time"
@@ -16,7 +16,7 @@ const ttl = 5
 func New(opts ...Option) (r *Register) {
 	r = &Register{
 		ttl:           ttl,
-		etcd:          etcd.E,
+		etcd:          etcd2.E,
 		leaseDuration: time.Second,
 	}
 	logrus.Debug("Node register lease duration ", r.leaseDuration)
@@ -31,9 +31,9 @@ type Register struct {
 	lease         clientv3.Lease
 	leaseID       clientv3.LeaseID
 	leaseDuration time.Duration
-	node          *model.Node
+	node          *model2.Node
 	ttl           int64
-	etcd          *etcd.ETCD
+	etcd          *etcd2.ETCD
 }
 
 func (r *Register) Run() (err error) {

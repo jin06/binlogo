@@ -2,7 +2,7 @@ package node
 
 import (
 	register2 "github.com/jin06/binlogo/app/server/node/register"
-	"github.com/jin06/binlogo/store"
+	store2 "github.com/jin06/binlogo/pkg/store"
 	"time"
 )
 
@@ -79,7 +79,7 @@ func (n *Node) Init() (err error) {
 }
 
 func (n *Node) Run() (err error) {
-	ok, err := store.Get(n.Options.Node)
+	ok, err := store2.Get(n.Options.Node)
 	if err != nil {
 		return
 	}

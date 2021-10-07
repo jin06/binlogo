@@ -5,8 +5,8 @@ import (
 	sender2 "github.com/jin06/binlogo/app/pipeline/output/sender"
 	kafka2 "github.com/jin06/binlogo/app/pipeline/output/sender/kafka"
 	stdout2 "github.com/jin06/binlogo/app/pipeline/output/sender/stdout"
-	"github.com/jin06/binlogo/store"
-	"github.com/jin06/binlogo/store/model"
+	store2 "github.com/jin06/binlogo/pkg/store"
+	model2 "github.com/jin06/binlogo/pkg/store/model"
 	"github.com/sirupsen/logrus"
 )
 
@@ -30,9 +30,9 @@ func New(opts ...Option) (out *Output, err error) {
 
 func (o *Output) Init() (err error) {
 	switch o.Options.Output.Sender.Type {
-	case model.SNEDER_TYPE_STDOUT:
+	case model2.SNEDER_TYPE_STDOUT:
 		o.Sender, err = stdout2.New()
-	case model.SENDER_TYPE_KAFKA:
+	case model2.SENDER_TYPE_KAFKA:
 		fallthrough
 	default:
 		o.Sender, err = kafka2.New(
@@ -51,7 +51,7 @@ func recordPosition(msg *message2.Message) (bool, error) {
 		msg.BinlogPosition.BinlogFile,
 		msg.BinlogPosition.BinlogPosition,
 	)
-	return store.Update(msg.BinlogPosition)
+	return store2.Update(msg.BinlogPosition)
 }
 
 func (o *Output) doHandle() {

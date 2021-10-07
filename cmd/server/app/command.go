@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/jin06/binlogo/configs"
 	"github.com/jin06/binlogo/pkg/blog"
-	"github.com/jin06/binlogo/store/etcd"
+	etcd2 "github.com/jin06/binlogo/pkg/store/etcd"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -26,7 +26,7 @@ func NewCommand() (cmd *cobra.Command) {
 		Run: func(cmd *cobra.Command, args []string) {
 			blog.Env(configs.Env(viper.GetString("env")))
 			configs.InitViperFromFile(viper.GetString("config"))
-			etcd.DefaultETCD()
+			etcd2.DefaultETCD()
 			//RunServer()
 			RunNode()
 		},

@@ -3,7 +3,7 @@ package message
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/jin06/binlogo/store/model"
+	model2 "github.com/jin06/binlogo/pkg/store/model"
 )
 
 const (
@@ -15,7 +15,7 @@ type STATUS int16
 type Message struct {
 	Status         int16
 	Filter         bool
-	BinlogPosition *model.Position
+	BinlogPosition *model2.Position
 	Content        *Content
 }
 

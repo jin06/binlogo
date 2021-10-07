@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/jin06/binlogo/store/model"
+	model2 "github.com/jin06/binlogo/pkg/store/model"
 	"go.etcd.io/etcd/clientv3"
 	"time"
 )
@@ -21,7 +21,7 @@ func main()  {
 	defer cli.Close()
 	timeout := time.Second * 10
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
-	database := new(model.Database)
+	database := new(model2.Database)
 	database.Name = "testdata"
 	js, err := json.Marshal(database)
 	if err != nil {

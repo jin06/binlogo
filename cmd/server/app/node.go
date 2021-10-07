@@ -3,13 +3,13 @@ package app
 import (
 	"fmt"
 	node2 "github.com/jin06/binlogo/app/server/node"
-	"github.com/jin06/binlogo/store/model"
+	model2 "github.com/jin06/binlogo/pkg/store/model"
 	"github.com/spf13/viper"
 	"os"
 )
 
 func RunNode() {
-	nModel := &model.Node{
+	nModel := &model2.Node{
 	}
 	nModel.Name = viper.GetString("node.name")
 	_node, err := node2.New(node2.OptionNode(nModel))
