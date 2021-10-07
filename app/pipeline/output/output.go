@@ -1,18 +1,18 @@
 package output
 
 import (
-	"github.com/jin06/binlogo/pipeline/message"
-	"github.com/jin06/binlogo/pipeline/output/sender"
-	"github.com/jin06/binlogo/pipeline/output/sender/kafka"
-	"github.com/jin06/binlogo/pipeline/output/sender/stdout"
+	message2 "github.com/jin06/binlogo/app/pipeline/message"
+	sender2 "github.com/jin06/binlogo/app/pipeline/output/sender"
+	kafka2 "github.com/jin06/binlogo/app/pipeline/output/sender/kafka"
+	stdout2 "github.com/jin06/binlogo/app/pipeline/output/sender/stdout"
 	"github.com/jin06/binlogo/store"
 	"github.com/jin06/binlogo/store/model"
 	"github.com/sirupsen/logrus"
 )
 
 type Output struct {
-	InChan  chan *message.Message
-	Sender  sender.Sender
+	InChan  chan *message2.Message
+	Sender  sender2.Sender
 	Options *Options
 }
 
@@ -31,12 +31,12 @@ func New(opts ...Option) (out *Output, err error) {
 func (o *Output) Init() (err error) {
 	switch o.Options.Output.Sender.Type {
 	case model.SNEDER_TYPE_STDOUT:
-		o.Sender, err = stdout.New()
+		o.Sender, err = stdout2.New()
 	case model.SENDER_TYPE_KAFKA:
 		fallthrough
 	default:
-		o.Sender, err = kafka.New(
-			&kafka.Options{
+		o.Sender, err = kafka2.New(
+			&kafka2.Options{
 				Kafka: o.Options.Output.Sender.Kafka,
 			},
 		)
@@ -45,7 +45,7 @@ func (o *Output) Init() (err error) {
 	return
 }
 
-func recordPosition(msg *message.Message) (bool, error) {
+func recordPosition(msg *message2.Message) (bool, error) {
 	logrus.Debugf(
 		"Record new replication position, file %s, pos %v",
 		msg.BinlogPosition.BinlogFile,
@@ -57,7 +57,7 @@ func recordPosition(msg *message.Message) (bool, error) {
 func (o *Output) doHandle() {
 	for {
 		logrus.Debug("Wait send message")
-		var msg *message.Message
+		var msg *message2.Message
 		msg = <-o.InChan
 		logrus.Debugf("Output read message: %v \n", *msg)
 		if !msg.Filter {

@@ -5,7 +5,7 @@ type Role uint8
 var (
 	RoleMaster Role = 01
 	RoleWorker Role = 02
-	RoleAPI Role = 04
+	RoleAPI    Role = 04
 )
 
 type Factory struct {

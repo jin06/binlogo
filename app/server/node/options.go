@@ -8,7 +8,7 @@ type Options struct {
 
 type Option func(options *Options)
 
-func OptionNode(node *model.Node) Option{
+func OptionNode(node *model.Node) Option {
 	return func(options *Options) {
 		options.Node = node
 	}

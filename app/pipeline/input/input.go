@@ -3,7 +3,7 @@ package input
 import (
 	"context"
 	"fmt"
-	"github.com/jin06/binlogo/pipeline/message"
+	message2 "github.com/jin06/binlogo/app/pipeline/message"
 	"github.com/jin06/binlogo/store/model"
 	"github.com/siddontang/go-mysql/mysql"
 	"github.com/siddontang/go-mysql/replication"
@@ -13,7 +13,7 @@ import (
 type Input struct {
 	syncer   *replication.BinlogSyncer
 	streamer *replication.BinlogStreamer
-	OutChan  chan *message.Message
+	OutChan  chan *message2.Message
 	Options  *Options
 }
 
@@ -81,7 +81,7 @@ func (r *Input) handle() (err error) {
 	return
 }
 
-func (r *Input) DataLine() chan *message.Message {
+func (r *Input) DataLine() chan *message2.Message {
 	return r.OutChan
 }
 

@@ -2,10 +2,10 @@ package pipeline
 
 import (
 	"errors"
-	"github.com/jin06/binlogo/pipeline/filter"
-	"github.com/jin06/binlogo/pipeline/input"
-	"github.com/jin06/binlogo/pipeline/message"
-	"github.com/jin06/binlogo/pipeline/output"
+	filter2 "github.com/jin06/binlogo/app/pipeline/filter"
+	input2 "github.com/jin06/binlogo/app/pipeline/input"
+	message2 "github.com/jin06/binlogo/app/pipeline/message"
+	output2 "github.com/jin06/binlogo/app/pipeline/output"
 	"github.com/jin06/binlogo/store"
 	"github.com/jin06/binlogo/store/model"
 	"github.com/siddontang/go-log/log"
@@ -13,9 +13,9 @@ import (
 )
 
 type Pipeline struct {
-	Input       *input.Input
-	Output      *output.Output
-	Filter      *filter.Filter
+	Input       *input2.Input
+	Output      *output2.Output
+	Filter      *filter2.Filter
 	OutChan     *OutChan
 	ControlLine *ControlLine
 	Options     Options
@@ -67,9 +67,9 @@ func New(opt ...Option) (p *Pipeline, err error) {
 }
 
 type OutChan struct {
-	Input  chan *message.Message
-	Filter chan *message.Message
-	Out    chan *message.Message
+	Input  chan *message2.Message
+	Filter chan *message2.Message
+	Out    chan *message2.Message
 }
 
 type ControlLine struct {
@@ -96,29 +96,29 @@ func (p *Pipeline) Init() (err error) {
 func (p *Pipeline) initDataLine() {
 	capacity := 100000
 	p.OutChan = &OutChan{
-		Input:  make(chan *message.Message, capacity),
-		Filter: make(chan *message.Message, capacity),
+		Input:  make(chan *message2.Message, capacity),
+		Filter: make(chan *message2.Message, capacity),
 	}
 }
 
 func (p *Pipeline) initInput() (err error) {
-	p.Input, err = input.New(
-		input.OptionMysql(p.Options.Pipeline.Mysql),
-		input.OptionPosition(p.Options.Position),
+	p.Input, err = input2.New(
+		input2.OptionMysql(p.Options.Pipeline.Mysql),
+		input2.OptionPosition(p.Options.Position),
 	)
 	p.Input.OutChan = p.OutChan.Input
 	return
 }
 
 func (p *Pipeline) initFilter() (err error) {
-	p.Filter, err = filter.New()
+	p.Filter, err = filter2.New()
 	p.Filter.InChan = p.OutChan.Input
 	p.Filter.OutChan = p.OutChan.Filter
 	return
 }
 
 func (p *Pipeline) initOutput() (err error) {
-	p.Output, err = output.New(output.OptionOutput(p.Options.Pipeline.Output))
+	p.Output, err = output2.New(output2.OptionOutput(p.Options.Pipeline.Output))
 	p.Output.InChan = p.OutChan.Filter
 	return
 }

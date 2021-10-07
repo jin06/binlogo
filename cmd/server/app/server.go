@@ -1,7 +1,7 @@
 package app
 
 import (
-	"github.com/jin06/binlogo/pipeline/pipeline"
+	pipeline2 "github.com/jin06/binlogo/app/pipeline/pipeline"
 	"github.com/jin06/binlogo/store"
 	"github.com/jin06/binlogo/store/model"
 	"github.com/sirupsen/logrus"
@@ -15,7 +15,7 @@ func RunServer() {
 	//store.InitDefault()
 	//etcd.DefaultETCD()
 
-	p2, err := pipeline.NewFromStore("test")
+	p2, err := pipeline2.NewFromStore("test")
 	if err != nil {
 		panic(err)
 	}
@@ -60,9 +60,9 @@ func RunServer() {
 		BinlogPosition: 120,
 	}
 	store.Create(sPosition)
-	p, err := pipeline.New(
-		pipeline.OptionPipeline(sPipeline),
-		pipeline.OptionPosition(sPosition),
+	p, err := pipeline2.New(
+		pipeline2.OptionPipeline(sPipeline),
+		pipeline2.OptionPosition(sPosition),
 	)
 	err = p.Run()
 

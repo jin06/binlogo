@@ -2,14 +2,14 @@ package input
 
 import (
 	"errors"
-	"github.com/jin06/binlogo/pipeline/message"
+	message2 "github.com/jin06/binlogo/app/pipeline/message"
 	"github.com/siddontang/go-mysql/replication"
 	"strconv"
 )
 
-func inputMessage(e *replication.BinlogEvent) (msg *message.Message, err error) {
+func inputMessage(e *replication.BinlogEvent) (msg *message2.Message, err error) {
 	eventType := e.Header.EventType
-	msg = message.New()
+	msg = message2.New()
 	//pos := &model.Position{}
 	switch eventType {
 	case replication.UPDATE_ROWS_EVENTv2:
@@ -30,10 +30,10 @@ func inputMessage(e *replication.BinlogEvent) (msg *message.Message, err error) 
 	return
 }
 
-func updateMessage(e *replication.BinlogEvent, msg *message.Message) (err error) {
+func updateMessage(e *replication.BinlogEvent, msg *message2.Message) (err error) {
 	if val, ok := e.Event.(*replication.RowsEvent); ok {
-		msg.Content.Head = &message.Head{
-			Type:     message.TYPE_UPDATE.String(),
+		msg.Content.Head = &message2.Head{
+			Type:     message2.TYPE_UPDATE.String(),
 			Database: string(val.Table.Schema),
 			Table:    string(val.Table.Table),
 			Time:     e.Header.Timestamp,
@@ -49,7 +49,7 @@ func updateMessage(e *replication.BinlogEvent, msg *message.Message) (err error)
 			newer["todo"+strconv.Itoa(col)] = cVal
 		}
 
-		msg.Content.Data = message.Update{
+		msg.Content.Data = message2.Update{
 			Old: old,
 			New: newer,
 		}
@@ -59,10 +59,10 @@ func updateMessage(e *replication.BinlogEvent, msg *message.Message) (err error)
 	return
 }
 
-func insertMessage(e *replication.BinlogEvent, msg *message.Message) (err error) {
+func insertMessage(e *replication.BinlogEvent, msg *message2.Message) (err error) {
 	if val, ok := e.Event.(*replication.RowsEvent); ok {
-		msg.Content.Head = &message.Head{
-			Type:     message.TYPE_INSERT.String(),
+		msg.Content.Head = &message2.Head{
+			Type:     message2.TYPE_INSERT.String(),
 			Database: string(val.Table.Schema),
 			Table:    string(val.Table.Table),
 			Time:     e.Header.Timestamp,
@@ -72,7 +72,7 @@ func insertMessage(e *replication.BinlogEvent, msg *message.Message) (err error)
 			newer["todo"+strconv.Itoa(col)] = cVal
 		}
 
-		msg.Content.Data = message.Insert{
+		msg.Content.Data = message2.Insert{
 			New: newer,
 		}
 	} else {
@@ -81,10 +81,10 @@ func insertMessage(e *replication.BinlogEvent, msg *message.Message) (err error)
 	return
 }
 
-func deleteMessage(e *replication.BinlogEvent, msg *message.Message) (err error) {
+func deleteMessage(e *replication.BinlogEvent, msg *message2.Message) (err error) {
 	if val, ok := e.Event.(*replication.RowsEvent); ok {
-		msg.Content.Head = &message.Head{
-			Type:     message.TYPE_DELETE.String(),
+		msg.Content.Head = &message2.Head{
+			Type:     message2.TYPE_DELETE.String(),
 			Database: string(val.Table.Schema),
 			Table:    string(val.Table.Table),
 			Time:     e.Header.Timestamp,
@@ -95,7 +95,7 @@ func deleteMessage(e *replication.BinlogEvent, msg *message.Message) (err error)
 			old["todo"+strconv.Itoa(col)] = cVal
 		}
 
-		msg.Content.Data = message.Delete{
+		msg.Content.Data = message2.Delete{
 			Old: old,
 		}
 	} else {
@@ -104,10 +104,10 @@ func deleteMessage(e *replication.BinlogEvent, msg *message.Message) (err error)
 	return
 }
 
-func emptyMessage(e *replication.BinlogEvent, msg *message.Message) (err error) {
+func emptyMessage(e *replication.BinlogEvent, msg *message2.Message) (err error) {
 	msg.Filter = true
-	msg.Content.Head = &message.Head{
-		Type: 	message.TYPE_EMPTY.String(),
+	msg.Content.Head = &message2.Head{
+		Type: message2.TYPE_EMPTY.String(),
 	}
 	msg.Content.Data = ""
 	return

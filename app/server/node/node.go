@@ -1,7 +1,7 @@
 package node
 
 import (
-	"github.com/jin06/binlogo/server/node/register"
+	register2 "github.com/jin06/binlogo/app/server/node/register"
 	"github.com/jin06/binlogo/store"
 	"time"
 )
@@ -11,7 +11,7 @@ type Node struct {
 	Mode     *NodeMode
 	Options  *Options
 	Name     string
-	Register *register.Register
+	Register *register2.Register
 }
 
 type NodeRole byte
@@ -61,7 +61,7 @@ func New(opts ...Option) (node *Node, err error) {
 	options := &Options{}
 	node = &Node{
 		Options:  options,
-		Register: &register.Register{},
+		Register: &register2.Register{},
 	}
 	for _, v := range opts {
 		v(options)
@@ -71,9 +71,9 @@ func New(opts ...Option) (node *Node, err error) {
 }
 
 func (n *Node) Init() (err error) {
-	n.Register = register.New(
-		register.OptionNode(n.Options.Node),
-		register.OptionLeaseDuration(2*time.Second),
+	n.Register = register2.New(
+		register2.OptionNode(n.Options.Node),
+		register2.OptionLeaseDuration(2*time.Second),
 	)
 	return
 }

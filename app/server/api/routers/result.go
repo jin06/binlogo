@@ -6,7 +6,7 @@ type Result struct {
 	Data interface{} `json:"data"`
 }
 
-func NewSuccess()  *Result{
+func NewSuccess()  *Result {
 	ret := &Result{
 		Code : 200,
 		Message :"ok",

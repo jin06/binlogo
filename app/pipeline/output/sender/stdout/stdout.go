@@ -2,7 +2,7 @@ package stdout
 
 import (
 	"fmt"
-	"github.com/jin06/binlogo/pipeline/message"
+	message2 "github.com/jin06/binlogo/app/pipeline/message"
 	"os"
 )
 
@@ -14,7 +14,7 @@ func New() (std *Stdout, err error) {
 	return
 }
 
-func (s *Stdout) Send(msg *message.Message) (ok bool, err error) {
+func (s *Stdout) Send(msg *message2.Message) (ok bool, err error) {
 	_, err = fmt.Fprintln(os.Stdout, msg.ToString())
 	if err == nil {
 		ok = true

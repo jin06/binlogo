@@ -2,13 +2,13 @@ package filter
 
 import (
 	"context"
-	"github.com/jin06/binlogo/pipeline/message"
+	message2 "github.com/jin06/binlogo/app/pipeline/message"
 	"github.com/sirupsen/logrus"
 )
 
 type Filter struct {
-	InChan  chan *message.Message
-	OutChan chan *message.Message
+	InChan  chan *message2.Message
+	OutChan chan *message2.Message
 	Options *Options
 	Ctx     context.Context
 }
@@ -40,10 +40,10 @@ type Rule struct {
 	Type     RuleType
 	Database string
 	Table    string
-	MsgType  message.MessageType
+	MsgType  message2.MessageType
 }
 
-func (f *Filter) filer(msg *message.Message) (err error) {
+func (f *Filter) filer(msg *message2.Message) (err error) {
 	if len(f.Options.Rules) > 0 {
 		for _, v := range f.Options.Rules {
 			switch v.Type {

@@ -3,7 +3,7 @@ package kafka
 import (
 	"encoding/json"
 	"github.com/Shopify/sarama"
-	"github.com/jin06/binlogo/pipeline/message"
+	message2 "github.com/jin06/binlogo/app/pipeline/message"
 	"github.com/sirupsen/logrus"
 )
 
@@ -33,11 +33,11 @@ func (s *Kafka) Init() (err error) {
 	return
 }
 
-func (s *Kafka) Send(msg *message.Message) (ok bool, err error) {
+func (s *Kafka) Send(msg *message2.Message) (ok bool, err error) {
 	return s.doSend(msg)
 }
 
-func (s *Kafka) doSend(msg *message.Message) (ok bool, err error) {
+func (s *Kafka) doSend(msg *message2.Message) (ok bool, err error) {
 	key := kafkaKey{
 		database: msg.Content.Head.Database,
 		table:    msg.Content.Head.Table,
