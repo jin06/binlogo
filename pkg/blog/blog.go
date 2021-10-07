@@ -1,7 +1,7 @@
 package blog
 
 import (
-	"github.com/jin06/binlogo/config"
+	"github.com/jin06/binlogo/configs"
 	"github.com/sirupsen/logrus"
 )
 
@@ -9,18 +9,18 @@ func init() {
 	logrus.SetLevel(logrus.DebugLevel)
 }
 
-func Env(env config.Env) {
+func Env(env configs.Env) {
 	level := logrus.DebugLevel
 	switch env {
-	case config.ENV_PRO:
+	case configs.ENV_PRO:
 		{
 			level = logrus.InfoLevel
 		}
-	case config.ENV_DEV:
+	case configs.ENV_DEV:
 		{
 			level = logrus.DebugLevel
 		}
-	case config.ENV_TEST:
+	case configs.ENV_TEST:
 		{
 			level = logrus.DebugLevel
 		}

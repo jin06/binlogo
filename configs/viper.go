@@ -1,4 +1,4 @@
-package config
+package configs
 
 import (
 	"github.com/sirupsen/logrus"
@@ -14,7 +14,7 @@ func InitViperFromFile(file string) {
 	if file != "" {
 		viper.SetConfigFile(file)
 	} else {
-		file = "./config/binlogo.yaml"
+		file = "./configs/binlogo.yaml"
 	}
 	if err := viper.ReadInConfig(); err != nil {
 		logrus.Error(err.Error())
