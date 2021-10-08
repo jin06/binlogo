@@ -15,7 +15,7 @@ const (
 type Node struct {
 	Name string   `json:"name"`
 	Role NodeRole `json:"role"`
-	Ip   *net.IP  `json:"ip"`
+	Ip   net.IP  `json:"ip"`
 }
 
 func (s *Node) Key() (key string) {

@@ -77,7 +77,7 @@ func (e *ETCD) Write(key string, val string) (err error) {
 	return
 }
 
-func (e *ETCD) Create(m model2.Model,opts ...clientv3.OpOption) (ok bool, err error) {
+func (e *ETCD) Create(m model2.Model, opts ...clientv3.OpOption) (ok bool, err error) {
 	ctx, cancel := context.WithTimeout(context.TODO(), e.Timeout)
 	defer cancel()
 	key := "/" + e.Prefix + "/" + m.Key()

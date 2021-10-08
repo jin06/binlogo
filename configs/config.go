@@ -1,5 +1,7 @@
 package configs
 
+import "time"
+
 var Cfg Config
 
 type Config struct {
@@ -18,6 +20,7 @@ type Config struct {
 		Etcd struct {
 			Endpoints []string `config:"endpoints"`
 		} `config:"etcd"`
+		DialTimeout time.Duration `config:"dial_timeout"`
 	} `config:"store"`
 }
 

@@ -1,6 +1,8 @@
 package node
 
 import (
+	"context"
+	"github.com/jin06/binlogo/app/server/node/election"
 	register2 "github.com/jin06/binlogo/app/server/node/register"
 	store2 "github.com/jin06/binlogo/pkg/store"
 	"time"
@@ -12,6 +14,7 @@ type Node struct {
 	Options  *Options
 	Name     string
 	Register *register2.Register
+	election *election.Election
 }
 
 type NodeRole byte
@@ -78,19 +81,34 @@ func (n *Node) Init() (err error) {
 	return
 }
 
-func (n *Node) Run() (err error) {
+func (n *Node) Run(ctx context.Context) (err error) {
 	ok, err := store2.Get(n.Options.Node)
+
 	if err != nil {
 		return
 	}
 	if ok {
 		//todo
-		panic("123")
+		//panic("exist node")
 	}
-	err = n.Register.Run()
+	ctx1, cancel1 := context.WithCancel(ctx)
+	defer cancel1()
+	err = n.Register.Run(ctx1)
 	if err != nil {
 		return
 	}
+
+	ctx2, cancel2 := context.WithCancel(ctx)
+	defer cancel2()
+	n.election, err = election.New(
+		election.OptionNode(n.Options.Node),
+		election.OptionTTL(5),
+	)
+	if err != nil {
+		return
+	}
+	n.election.Run(ctx2)
+	defer cancel2()
 
 	select {}
 	return

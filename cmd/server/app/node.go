@@ -1,6 +1,7 @@
 package app
 
 import (
+	"context"
 	"fmt"
 	node2 "github.com/jin06/binlogo/app/server/node"
 	model2 "github.com/jin06/binlogo/pkg/store/model"
@@ -17,7 +18,8 @@ func RunNode() {
 		fmt.Println(err.Error())
 		os.Exit(1)
 	}
-	err = _node.Run()
+	ctx := context.Background()
+	err = _node.Run(ctx)
 	if err != nil {
 		fmt.Println(err)
 	}

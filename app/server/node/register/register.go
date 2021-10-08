@@ -6,8 +6,10 @@ import (
 	"fmt"
 	etcd2 "github.com/jin06/binlogo/pkg/store/etcd"
 	model2 "github.com/jin06/binlogo/pkg/store/model"
+	"github.com/jin06/binlogo/pkg/util/ip"
 	"github.com/sirupsen/logrus"
 	"go.etcd.io/etcd/clientv3"
+	"os"
 	"time"
 )
 
@@ -36,7 +38,7 @@ type Register struct {
 	etcd          *etcd2.ETCD
 }
 
-func (r *Register) Run() (err error) {
+func (r *Register) Run(ctx context.Context) (err error) {
 	err = r.reg()
 	if err != nil {
 		return
@@ -49,6 +51,11 @@ func (r *Register) Run() (err error) {
 				{
 					_ = r.keep()
 				}
+			case <-ctx.Done():
+				{
+					logrus.Warn("register exit")
+					return
+				}
 			}
 		}
 	}()
@@ -57,6 +64,16 @@ func (r *Register) Run() (err error) {
 }
 
 func (r *Register) reg() (err error) {
+
+	if r.node.Ip == nil {
+		r.node.Ip, err = ip.LocalIp()
+		if err != nil {
+			logrus.Error("Get local ip error ", err)
+			os.Exit(1)
+			return
+		}
+	}
+
 	r.lease = clientv3.NewLease(r.etcd.Client)
 	rep, err := r.lease.Grant(context.TODO(), r.ttl)
 	if err != nil {
