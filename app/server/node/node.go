@@ -4,39 +4,20 @@ import (
 	"context"
 	"github.com/jin06/binlogo/app/server/node/election"
 	register2 "github.com/jin06/binlogo/app/server/node/register"
+	"github.com/jin06/binlogo/app/server/node/scheduler"
+	"github.com/jin06/binlogo/pkg/node/role"
 	store2 "github.com/jin06/binlogo/pkg/store"
+	"github.com/sirupsen/logrus"
 	"time"
 )
 
 type Node struct {
-	Role     *NodeRole
-	Mode     *NodeMode
-	Options  *Options
-	Name     string
-	Register *register2.Register
-	election *election.Election
-}
-
-type NodeRole byte
-
-const (
-	ROLE_MASTER NodeRole = 1
-	ROLE_SLAVE  NodeRole = 2
-)
-
-func (n NodeRole) String() string {
-	switch n {
-	case ROLE_MASTER:
-		{
-			return "master"
-		}
-	case ROLE_SLAVE:
-		{
-			return "slave"
-		}
-
-	}
-	return ""
+	Mode      *NodeMode
+	Options   *Options
+	Name      string
+	Register  *register2.Register
+	election  *election.Election
+	Scheduler *scheduler.Scheduler
 }
 
 type NodeMode byte
@@ -110,6 +91,27 @@ func (n *Node) Run(ctx context.Context) (err error) {
 	n.election.Run(ctx2)
 	defer cancel2()
 
+	ctx3, cancel3 := context.WithCancel(ctx)
+	n.scheduler(ctx3)
+	defer cancel3()
+
 	select {}
 	return
+}
+
+func (n *Node) Role() role.Role {
+	return n.election.Role()
+}
+
+func (n *Node) scheduler(ctx context.Context) {
+	go func() {
+		for range time.Tick(time.Second * 5) {
+			logrus.Debug("scheduler ...")
+			if n.Role() == role.LEADER {
+				n.Scheduler.Run(ctx)
+			} else {
+				n.Scheduler.Stop(ctx)
+			}
+		}
+	}()
 }
