@@ -4,6 +4,7 @@ import (
 	pipeline2 "github.com/jin06/binlogo/app/pipeline/pipeline"
 	store2 "github.com/jin06/binlogo/pkg/store"
 	model2 "github.com/jin06/binlogo/pkg/store/model"
+	"github.com/jin06/binlogo/pkg/store/model/pipeline"
 	"github.com/sirupsen/logrus"
 )
 
@@ -25,7 +26,7 @@ func RunServer() {
 	}
 	select {}
 
-	sPipeline := &model2.Pipeline{
+	sPipeline := &pipeline.Pipeline{
 		Name:      "test",
 		AliasName: "本地测试",
 		Mysql: &model2.Mysql{

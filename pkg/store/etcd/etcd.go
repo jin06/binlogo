@@ -14,7 +14,8 @@ import (
 var E *ETCD
 
 func DefaultETCD() {
-	prefix := "binlogo/" + viper.GetString("cluster.name")
+	//prefix := "binlogo/" + viper.GetString("cluster.name")
+	prefix := Prefix()
 	etcd, err := NewETCD(
 		//options.Endpoints(config.Cfg.Store.Etcd.Endpoints),
 		options2.Endpoints(viper.GetStringSlice("store.etcd.endpoints")),
@@ -67,7 +68,9 @@ func (e *ETCD) Read(key string) (resp string, err error) {
 	}
 	return string(res.Kvs[0].Value), err
 }
-
+func Read(key string) (resp string, err error) {
+	return E.Read(key)
+}
 func (e *ETCD) Write(key string, val string) (err error) {
 	logrus.Debug("etcd start")
 	ctx, cancel := context.WithTimeout(context.Background(), e.Timeout)
@@ -75,6 +78,10 @@ func (e *ETCD) Write(key string, val string) (err error) {
 	_, err = e.Client.Put(ctx, key, val)
 	defer cancel()
 	return
+}
+
+func Write(key string, val string) (err error) {
+	return E.Write(key, val)
 }
 
 func (e *ETCD) Create(m model2.Model, opts ...clientv3.OpOption) (ok bool, err error) {
@@ -90,6 +97,9 @@ func (e *ETCD) Create(m model2.Model, opts ...clientv3.OpOption) (ok bool, err e
 	return
 }
 
+func Create(m model2.Model, opts ...clientv3.OpOption) (bool, error) {
+	return E.Create(m, opts...)
+}
 func (e *ETCD) Update(m model2.Model) (ok bool, err error) {
 	ctx, cancel := context.WithTimeout(context.TODO(), e.Timeout)
 	defer cancel()
@@ -101,6 +111,10 @@ func (e *ETCD) Update(m model2.Model) (ok bool, err error) {
 	}
 	ok = true
 	return
+}
+
+func Update(m model2.Model) (bool, error) {
+	return E.Update(m)
 }
 
 func (e *ETCD) Delete(m model2.Model) (ok bool, err error) {
@@ -115,6 +129,9 @@ func (e *ETCD) Delete(m model2.Model) (ok bool, err error) {
 	return
 }
 
+func Delete(m model2.Model) (bool, error) {
+	return E.Delete(m)
+}
 func (e *ETCD) Get(m model2.Model) (ok bool, err error) {
 	ctx, cancel := context.WithTimeout(context.Background(), e.Timeout)
 	defer cancel()
@@ -131,4 +148,8 @@ func (e *ETCD) Get(m model2.Model) (ok bool, err error) {
 	}
 	ok = true
 	return
+}
+
+func Get(m model2.Model) (bool, error) {
+	return E.Get(m)
 }

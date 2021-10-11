@@ -7,6 +7,7 @@ import (
 	"github.com/jin06/binlogo/app/server/node/scheduler"
 	"github.com/jin06/binlogo/pkg/node/role"
 	store2 "github.com/jin06/binlogo/pkg/store"
+	"github.com/jin06/binlogo/pkg/watcher/wathcer_pipeline"
 	"github.com/sirupsen/logrus"
 	"time"
 )
@@ -59,6 +60,7 @@ func (n *Node) Init() (err error) {
 		register2.OptionNode(n.Options.Node),
 		register2.OptionLeaseDuration(2*time.Second),
 	)
+	n.Scheduler = scheduler.New()
 	return
 }
 
@@ -94,6 +96,14 @@ func (n *Node) Run(ctx context.Context) (err error) {
 	ctx3, cancel3 := context.WithCancel(ctx)
 	n.scheduler(ctx3)
 	defer cancel3()
+
+	logrus.Debug("watch")
+	w, err := wathcer_pipeline.New("/binlogo/cluster1/pipeline/test")
+	if err != nil {
+		logrus.Error(err)
+		return
+	}
+	w.Watch(ctx)
 
 	select {}
 	return

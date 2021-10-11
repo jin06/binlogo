@@ -8,6 +8,7 @@ import (
 	output2 "github.com/jin06/binlogo/app/pipeline/output"
 	store2 "github.com/jin06/binlogo/pkg/store"
 	model2 "github.com/jin06/binlogo/pkg/store/model"
+	"github.com/jin06/binlogo/pkg/store/model/pipeline"
 	"github.com/siddontang/go-log/log"
 	"github.com/sirupsen/logrus"
 )
@@ -23,7 +24,7 @@ type Pipeline struct {
 }
 
 func NewFromStore(name string) (p *Pipeline, err error) {
-	pipeModel := &model2.Pipeline{
+	pipeModel := &pipeline.Pipeline{
 		Name: name,
 	}
 	ok, err := store2.Get(pipeModel)

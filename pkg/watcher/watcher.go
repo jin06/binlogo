@@ -1,5 +1,7 @@
 package watcher
 
-type Watcher interface {
+import "github.com/jin06/binlogo/pkg/store/model"
 
+type Watcher interface {
+	Watch() chan model.Model
 }
