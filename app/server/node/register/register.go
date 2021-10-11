@@ -81,7 +81,7 @@ func (r *Register) reg() (err error) {
 	}
 	r.leaseID = rep.ID
 	ok, err := r.etcd.Create(r.node, clientv3.WithLease(r.leaseID))
-	fmt.Println("tick")
+	logrus.Debug("register tick")
 	if err != nil {
 		fmt.Println("reg error: ", err)
 		return

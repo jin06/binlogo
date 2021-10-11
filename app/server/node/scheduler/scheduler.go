@@ -14,6 +14,11 @@ type Scheduler struct {
 }
 
 func (s *Scheduler) Run(ctx context.Context) {
+	s._schedule(ctx)
+	return
+}
+
+func (s *Scheduler) _schedule(ctx context.Context) {
 	go func() {
 		for {
 			err := s.scheduleOne()
