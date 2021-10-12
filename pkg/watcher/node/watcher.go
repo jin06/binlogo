@@ -1,4 +1,4 @@
-package wathcer_node
+package node
 
 import "context"
 

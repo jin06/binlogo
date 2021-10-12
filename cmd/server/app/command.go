@@ -24,10 +24,11 @@ func NewCommand() (cmd *cobra.Command) {
 		Short: "Generate mysql data increment",
 		Long:  "Generate mysql data increment",
 		Run: func(cmd *cobra.Command, args []string) {
-			blog.Env(configs.Env(viper.GetString("env")))
 			configs.InitViperFromFile(viper.GetString("config"))
 			etcd2.DefaultETCD()
+			blog.Env(configs.Env(viper.GetString("env")))
 			//RunServer()
+			blog.Infoln("init configs finish")
 			RunNode()
 		},
 	}

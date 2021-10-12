@@ -19,6 +19,7 @@ func (q *Queue) getOne() (p *pipeline.Pipeline) {
 	p = <-q.readyQueue
 	return p
 }
+
 func (q *Queue) putOne(p *pipeline.Pipeline) (err error) {
 	q.readyQueue <- p
 	return

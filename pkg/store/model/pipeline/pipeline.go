@@ -36,3 +36,4 @@ func (s *Pipeline) Unmarshal(val []byte) (err error) {
 	err = json.Unmarshal(val, s)
 	return
 }
+

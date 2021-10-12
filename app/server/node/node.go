@@ -98,7 +98,7 @@ func (n *Node) Run(ctx context.Context) (err error) {
 	defer cancel3()
 
 	logrus.Debug("watch")
-	w, err := wathcer_pipeline.New("/binlogo/cluster1/pipeline/test")
+	w, err := pipeline.New("/binlogo/cluster1/pipeline/test")
 	if err != nil {
 		logrus.Error(err)
 		return
