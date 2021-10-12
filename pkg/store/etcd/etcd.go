@@ -2,6 +2,7 @@ package etcd
 
 import (
 	"context"
+	"fmt"
 	options2 "github.com/jin06/binlogo/pkg/store/etcd/options"
 	model2 "github.com/jin06/binlogo/pkg/store/model"
 	"github.com/sirupsen/logrus"
@@ -147,6 +148,25 @@ func (e *ETCD) Get(m model2.Model) (ok bool, err error) {
 		return
 	}
 	ok = true
+	return
+}
+
+func (e *ETCD) List(key string) (list []model2.Model, err error) {
+	ctx, cancel := context.WithTimeout(context.Background(), e.Timeout)
+	defer cancel()
+	key = "/" + e.Prefix + "/" + key
+	res, err := e.Client.Get(ctx, key)
+	if err != nil {
+		return
+	}
+	if len(res.Kvs) == 0 {
+		return
+	}
+	for _, v := range res.Kvs {
+		fmt.Println(string(v.Key))
+		fmt.Println(string(v.Value))
+	}
+
 	return
 }
 
