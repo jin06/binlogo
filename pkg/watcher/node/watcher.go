@@ -10,6 +10,6 @@ func (w *NodeWatcher) Run(ctx context.Context) {
 	return
 }
 
-func New() (w *NodeWatcher, err error) {
+func New(key string) (w *NodeWatcher, err error) {
 	return
 }

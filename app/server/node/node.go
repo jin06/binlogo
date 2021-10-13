@@ -2,12 +2,13 @@ package node
 
 import (
 	"context"
+	"fmt"
 	"github.com/jin06/binlogo/app/server/node/election"
 	register2 "github.com/jin06/binlogo/app/server/node/register"
 	"github.com/jin06/binlogo/app/server/node/scheduler"
 	"github.com/jin06/binlogo/pkg/node/role"
 	store2 "github.com/jin06/binlogo/pkg/store"
-	"github.com/jin06/binlogo/pkg/watcher/wathcer_pipeline"
+	"github.com/jin06/binlogo/pkg/watcher/pipeline"
 	"github.com/sirupsen/logrus"
 	"time"
 )
@@ -117,11 +118,13 @@ func (n *Node) scheduler(ctx context.Context) {
 	go func() {
 		for range time.Tick(time.Second * 5) {
 			logrus.Debug("scheduler ...")
-			if n.Role() == role.LEADER {
+			fmt.Println(n.Role(), role.LEADER)
+			if  n.Role() == role.LEADER {
 				n.Scheduler.Run(ctx)
 			} else {
 				n.Scheduler.Stop(ctx)
 			}
 		}
+
 	}()
 }

@@ -65,9 +65,10 @@ func (e *Election) Run(ctx context.Context) {
 			select {
 			case myRole := <-roCh:
 				{
-					e.lock.Lock()
+					//e.lock.Lock()
+					fmt.Println("myRole ", myRole)
 					e.role = myRole
-					e.lock.Unlock()
+					//e.lock.Unlock()
 				}
 			}
 		}
@@ -116,6 +117,7 @@ func (e *Election) campaign(ctx context.Context) (roleCh chan role.Role) {
 				for _, v := range res.Kvs {
 					if e.campaignVal == string(v.Value) {
 						logrus.Info("I'm leader")
+						//roleCh <- role.LEADER
 						break
 					} else {
 						logrus.Info("I'm not leader")

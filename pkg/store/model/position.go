@@ -10,7 +10,7 @@ type Position struct {
 }
 
 func (s *Position) Key() (key string) {
-	return "pipeline/" + s.PipelineName + "/position"
+	return "run/position/" + s.PipelineName
 }
 
 func (s *Position) Val() (val string) {

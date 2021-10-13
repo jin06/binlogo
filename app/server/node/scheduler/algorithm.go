@@ -18,8 +18,14 @@ func (a *algorithm) cal() (err error) {
 	if err != nil {
 		return err
 	}
-	a.calScores()
-	a.calBestNode()
+	err = a.calScores()
+	if err != nil {
+		return
+	}
+	err = a.calBestNode()
+	if err != nil {
+		return
+	}
 	return
 }
 

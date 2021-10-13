@@ -3,6 +3,7 @@ package etcd
 import (
 	"context"
 	"fmt"
+	"github.com/jin06/binlogo/pkg/blog"
 	options2 "github.com/jin06/binlogo/pkg/store/etcd/options"
 	model2 "github.com/jin06/binlogo/pkg/store/model"
 	"github.com/sirupsen/logrus"
@@ -155,10 +156,15 @@ func (e *ETCD) List(key string) (list []model2.Model, err error) {
 	ctx, cancel := context.WithTimeout(context.Background(), e.Timeout)
 	defer cancel()
 	key = "/" + e.Prefix + "/" + key
-	res, err := e.Client.Get(ctx, key)
+	blog.Debug("list key: ", key)
+	res, err := e.Client.Get(ctx, key, clientv3.WithPrefix(),clientv3.WithFromKey())
 	if err != nil {
 		return
 	}
+	//fmt.Println(res)
+	//fmt.Println(res.Kvs)
+	//fmt.Println(res.Count)
+
 	if len(res.Kvs) == 0 {
 		return
 	}
