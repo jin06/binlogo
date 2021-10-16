@@ -1,4 +1,4 @@
-package model
+package pipeline
 
 type Filter struct {
 	Type string `json:"type"`

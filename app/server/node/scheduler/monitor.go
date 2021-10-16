@@ -24,7 +24,7 @@ func newMonitor() (m *Monitor, err error) {
 	}
 	m.notBindPipelineCh = make(chan *pipeline2.Pipeline, 10000)
 	prefix := etcd.Prefix()
-	m.pipelineWatcher, err = pipeline.New(prefix + "/pipeline")
+	m.pipelineWatcher, err = pipeline.New( prefix + "/pipeline")
 	m.nodeWatcher, err = node.New(prefix + "/nodes")
 	return
 }
@@ -42,10 +42,12 @@ func (m *Monitor) run(ctx context.Context) {
 			case p := <-m.pipelineWatcher.Queue:
 				{
 					blog.Debug("monitor queue \n", p)
-					if ok, err := m.isBind(p); err != nil {
+					if ok, err := m.isBind(p); err == nil {
 						if !ok {
 							m.notBindPipelineCh <- p
 						}
+					}else {
+						blog.Debug("check bind error", err)
 					}
 				}
 			}

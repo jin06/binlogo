@@ -89,7 +89,7 @@ func Write(key string, val string) (err error) {
 func (e *ETCD) Create(m model2.Model, opts ...clientv3.OpOption) (ok bool, err error) {
 	ctx, cancel := context.WithTimeout(context.TODO(), e.Timeout)
 	defer cancel()
-	key := "/" + e.Prefix + "/" + m.Key()
+	key := e.Prefix + "/" + m.Key()
 	val := m.Val()
 	_, err = e.Client.Put(ctx, key, val, opts...)
 	if err != nil {
@@ -105,9 +105,9 @@ func Create(m model2.Model, opts ...clientv3.OpOption) (bool, error) {
 func (e *ETCD) Update(m model2.Model) (ok bool, err error) {
 	ctx, cancel := context.WithTimeout(context.TODO(), e.Timeout)
 	defer cancel()
-	key := "/" + e.Prefix + "/" + m.Key()
+	key := e.Prefix + "/" + m.Key()
 	val := m.Val()
-	_, err = e.Client.Put(ctx, key, val)
+	_,err = e.Client.Put(ctx, key, val)
 	if err != nil {
 		return
 	}
@@ -122,7 +122,7 @@ func Update(m model2.Model) (bool, error) {
 func (e *ETCD) Delete(m model2.Model) (ok bool, err error) {
 	ctx, cancel := context.WithTimeout(context.TODO(), e.Timeout)
 	defer cancel()
-	key := "/" + e.Prefix + "/" + m.Key()
+	key := e.Prefix + "/" + m.Key()
 	_, err = e.Client.Delete(ctx, key)
 	if err != nil {
 		return
@@ -137,7 +137,7 @@ func Delete(m model2.Model) (bool, error) {
 func (e *ETCD) Get(m model2.Model) (ok bool, err error) {
 	ctx, cancel := context.WithTimeout(context.Background(), e.Timeout)
 	defer cancel()
-	key := "/" + e.Prefix + "/" + m.Key()
+	key := e.Prefix + "/" + m.Key()
 	res, err := e.Client.Get(ctx, key)
 	if err != nil {
 		return
@@ -152,12 +152,36 @@ func (e *ETCD) Get(m model2.Model) (ok bool, err error) {
 	return
 }
 
+func (e *ETCD) GetH(m model2.ModelH) (ok bool, err error) {
+	ctx, cancel := context.WithTimeout(context.Background(), e.Timeout)
+	defer cancel()
+	key := e.Prefix + "/" + m.Key()
+	res, err := e.Client.Get(ctx, key)
+	if err != nil {
+		return
+	}
+	if len(res.Kvs) == 0 {
+		return
+	}
+	if err = m.Unmarshal(res.Kvs[0].Value); err != nil {
+		return
+	}
+	h := &model2.Header{
+		Revision: res.Header.Revision,
+	}
+	m.SetHeader(h)
+
+	ok = true
+	return
+}
+
+// todo change list
 func (e *ETCD) List(key string) (list []model2.Model, err error) {
 	ctx, cancel := context.WithTimeout(context.Background(), e.Timeout)
 	defer cancel()
-	key = "/" + e.Prefix + "/" + key
+	key = e.Prefix + "/" + key
 	blog.Debug("list key: ", key)
-	res, err := e.Client.Get(ctx, key, clientv3.WithPrefix(),clientv3.WithFromKey())
+	res, err := e.Client.Get(ctx, key, clientv3.WithPrefix(), clientv3.WithFromKey())
 	if err != nil {
 		return
 	}
@@ -179,3 +203,4 @@ func (e *ETCD) List(key string) (list []model2.Model, err error) {
 func Get(m model2.Model) (bool, error) {
 	return E.Get(m)
 }
+

@@ -13,6 +13,16 @@ type algorithm struct {
 	bestNode       *model.Node
 }
 
+func newAlgorithm(p *pipeline.Pipeline) *algorithm{
+	a := &algorithm{}
+	a.pipeline = p
+	a.allNodes = []*model.Node{}
+	a.potentialNodes = []*model.Node{}
+	a.nodesScores = map[string]int{}
+	a.bestNode = &model.Node{}
+	return a
+}
+
 func (a *algorithm) cal() (err error) {
 	err = a.calPotentialNodes()
 	if err != nil {

@@ -53,7 +53,7 @@ func cmdCreatePipe() (cmd *cobra.Command) {
 			sPipeline := &pipeline.Pipeline{
 				Name:      "test",
 				AliasName: "本地测试",
-				Mysql: &model2.Mysql{
+				Mysql: &pipeline.Mysql{
 					Address:  "127.0.0.1",
 					Port:     13306,
 					User:     "root",
@@ -61,11 +61,11 @@ func cmdCreatePipe() (cmd *cobra.Command) {
 					Flavor:   "mysql",
 					ServerId: 1001,
 				},
-				Filters: []*model2.Filter{
+				Filters: []*pipeline.Filter{
 					{
 					},
 				},
-				Output: &model2.Output{
+				Output: &pipeline.Output{
 					Sender: &model2.Sender{
 						Type: model2.SNEDER_TYPE_STDOUT,
 						Kafka: &model2.Kafka{

@@ -7,7 +7,6 @@ import (
 	"github.com/jin06/binlogo/configs"
 	"github.com/jin06/binlogo/pkg/node/role"
 	"github.com/jin06/binlogo/pkg/store/model"
-	"github.com/jin06/binlogo/pkg/util/ip"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"go.etcd.io/etcd/clientv3/concurrency"
@@ -28,7 +27,7 @@ type Election struct {
 
 func New(opts ...Option) (e *Election, err error) {
 	e = &Election{
-		ttl: 5,
+		ttl: 1,
 		prefix: fmt.Sprintf(
 			"/%v/%v/election",
 			configs.APP,
@@ -46,13 +45,14 @@ func New(opts ...Option) (e *Election, err error) {
 func (e *Election) Init() (err error) {
 	e.client, err = clientv3.New(clientv3.Config{
 		Endpoints:   viper.GetStringSlice("store.etcd.endpoints"),
-		DialTimeout: 5 * time.Second,
+		DialTimeout: 2 * time.Second,
 	})
-	ipVal, err := ip.LocalIp()
-	if err != nil {
-		return
-	}
-	e.campaignVal = ipVal.String()
+	//ipVal, err := ip.LocalIp()
+	//if err != nil {
+	//	return
+	//}
+	//e.campaignVal = ipVal.String()
+	e.campaignVal = viper.GetString("node.name")
 
 	e.lock = sync.Mutex{}
 	return
@@ -80,7 +80,7 @@ func (e *Election) campaign(ctx context.Context) (roleCh chan role.Role) {
 	go func() {
 		for {
 			roleCh <- role.FOLLOWER
-			sen, err := concurrency.NewSession(e.client)
+			sen, err := concurrency.NewSession(e.client, concurrency.WithTTL(e.ttl))
 			if err != nil {
 				logrus.Error("Election error")
 				time.Sleep(time.Second * 5)

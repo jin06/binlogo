@@ -34,6 +34,7 @@ func (w *PipelineWatcher) putQueue(ctx context.Context) {
 			case m := <-w.General.Queue:
 				{
 					if val, ok := m.(*pipeline.Pipeline); ok {
+						//fmt.Printf(":kdjfkjd%v\n", val)
 						w.Queue <- val
 					}
 				}

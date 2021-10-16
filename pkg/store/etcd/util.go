@@ -7,5 +7,5 @@ import (
 )
 
 func Prefix() string {
-	return fmt.Sprintf("%s/%s", configs.APP, viper.GetString("cluster.name"))
+	return fmt.Sprintf("/%s/%s", configs.APP, viper.GetString("cluster.name"))
 }

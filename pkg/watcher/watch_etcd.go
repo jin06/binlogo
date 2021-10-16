@@ -55,11 +55,12 @@ func (w *General) WatchEtcd(ctx context.Context, object func() model.Model) {
 }
 
 func (w *General) WatchEtcdList(ctx context.Context, object func() model.Model) {
+	//fmt.Println(w.key)
 	watchCh := w.Etcd.Client.Watch(ctx, w.key, clientv3.WithPrefix())
 	go func() {
 		for {
 			select {
-			case resp := <-watchCh:
+			case resp := <- watchCh:
 				{
 					if resp.Err() != nil {
 						logrus.Error(resp.Err())
@@ -70,6 +71,7 @@ func (w *General) WatchEtcdList(ctx context.Context, object func() model.Model) 
 						if err != nil {
 							blog.Error(err)
 						}
+						//logrus.Debug("watch list object : ", obj)
 						w.Queue <- obj
 					}
 				}

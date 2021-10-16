@@ -1,16 +1,16 @@
 package output
 
 import (
-	model2 "github.com/jin06/binlogo/pkg/store/model"
+	"github.com/jin06/binlogo/pkg/store/model/pipeline"
 )
 
 type Options struct {
-	Output *model2.Output
+	Output *pipeline.Output
 }
 
 type Option func(options *Options)
 
-func OptionOutput(val *model2.Output) Option {
+func OptionOutput(val *pipeline.Output) Option {
 	return func(options *Options) {
 		options.Output = val
 	}

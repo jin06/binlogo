@@ -3,7 +3,8 @@ package scheduler
 import (
 	"context"
 	"github.com/jin06/binlogo/pkg/blog"
-	"github.com/jin06/binlogo/pkg/store/model"
+	"github.com/jin06/binlogo/pkg/store/dao"
+	"github.com/jin06/binlogo/pkg/store/model/pipeline"
 	"github.com/sirupsen/logrus"
 	"sync"
 	"time"
@@ -35,7 +36,8 @@ func (s *Scheduler) Run(ctx context.Context) {
 	s.cancel = cancel
 	s._schedule(ctx2)
 	blog.Debug("scheduler.run")
-	s._monitor(ctx2)
+	//s._monitor(ctx2)
+	s.monitor.run(ctx2)
 	s.status = SCHEDULER_RUN
 	return
 }
@@ -44,44 +46,26 @@ func (s *Scheduler) _schedule(ctx context.Context) {
 	go func() {
 		for {
 			select {
+			case <- time.Tick(time.Second):{
+			}
 			case <-ctx.Done():
 				{
 					return
 				}
-			case <-time.Tick(time.Second):
+			//case p := <-s.queue.readyQueue:
+			case p := <-s.monitor.notBindPipelineCh:
 				{
-					err := s.scheduleOne()
-					if err != nil {
+					if err := s.scheduleOne(p); err != nil {
 						blog.Error(err)
 					}
 				}
 			}
+
 		}
 	}()
 	return
 }
 
-func (s *Scheduler) _monitor(ctx context.Context) {
-	go func() {
-		s.monitor.run(ctx)
-		for {
-			select {
-			case <-ctx.Done():
-				{
-					return
-				}
-			case p := <-s.monitor.notBindPipelineCh:
-				{
-					err := s.queue.putOne(p)
-					if err != nil {
-						blog.Error(err)
-					}
-				}
-
-			}
-		}
-	}()
-}
 func (s *Scheduler) Stop(ctx context.Context) {
 	s.runLock.Lock()
 	defer s.runLock.Unlock()
@@ -93,19 +77,19 @@ func (s *Scheduler) Stop(ctx context.Context) {
 	return
 }
 
-func (s *Scheduler) scheduleOne() (err error) {
-	blog.Debug("schedule one")
-	p := s.queue.getOne()
-	allNodes := []*model.Node{}
-	a := algorithm{
-		pipeline: p,
-		allNodes: allNodes,
-	}
+func (s *Scheduler) scheduleOne(p *pipeline.Pipeline) (err error) {
+	//blog.Debug("schedule one")
+	//p := s.queue.getOne()
+	a := newAlgorithm(p)
 	err = a.cal()
 	if err != nil {
 		logrus.Error(err)
 	}
 	blog.Debugf("best node for %s is %s \n", p.Name, a.bestNode.Name)
+	err = dao.UpdatePipelineBind(p.Name, a.bestNode.Name)
+	if err != nil {
+		blog.Error(err)
+	}
 	return
 }
 

@@ -1,4 +1,4 @@
-package model
+package pipeline
 
 type Mysql struct {
 	Address    string `json:"address"`
