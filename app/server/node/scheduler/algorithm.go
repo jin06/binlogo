@@ -1,6 +1,8 @@
 package scheduler
 
 import (
+	"errors"
+	"github.com/jin06/binlogo/pkg/store/dao"
 	"github.com/jin06/binlogo/pkg/store/model"
 	"github.com/jin06/binlogo/pkg/store/model/pipeline"
 )
@@ -24,6 +26,10 @@ func newAlgorithm(p *pipeline.Pipeline) *algorithm{
 }
 
 func (a *algorithm) cal() (err error) {
+	a.allNodes, err = dao.AllNodes()
+	if err != nil {
+		return
+	}
 	err = a.calPotentialNodes()
 	if err != nil {
 		return err
@@ -51,6 +57,8 @@ func (a *algorithm) calScores() (err error) {
 func (a *algorithm) calBestNode() (err error) {
 	if len(a.potentialNodes) > 0 {
 		a.bestNode = a.potentialNodes[0]
+	} else {
+		err = errors.New("no potential node")
 	}
 	return
 }

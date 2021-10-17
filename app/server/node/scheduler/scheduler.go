@@ -5,14 +5,12 @@ import (
 	"github.com/jin06/binlogo/pkg/blog"
 	"github.com/jin06/binlogo/pkg/store/dao"
 	"github.com/jin06/binlogo/pkg/store/model/pipeline"
-	"github.com/sirupsen/logrus"
 	"sync"
 	"time"
 )
 
 type Scheduler struct {
 	options *Options
-	queue   *Queue
 	lock    sync.Mutex
 	monitor *Monitor
 	status  string
@@ -78,12 +76,12 @@ func (s *Scheduler) Stop(ctx context.Context) {
 }
 
 func (s *Scheduler) scheduleOne(p *pipeline.Pipeline) (err error) {
-	//blog.Debug("schedule one")
+	blog.Debugf("schedule one: %v", p)
 	//p := s.queue.getOne()
 	a := newAlgorithm(p)
 	err = a.cal()
 	if err != nil {
-		logrus.Error(err)
+		return
 	}
 	blog.Debugf("best node for %s is %s \n", p.Name, a.bestNode.Name)
 	err = dao.UpdatePipelineBind(p.Name, a.bestNode.Name)
@@ -104,7 +102,6 @@ func New(opts ...Option) (s *Scheduler) {
 	for _, v := range opts {
 		v(options)
 	}
-	s.queue = newQueue()
 	s.runLock = sync.Mutex{}
 	s.monitor, err = newMonitor()
 	s.status = SCHEDULER_STOP

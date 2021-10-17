@@ -28,13 +28,13 @@ func UpdatePipelineBind(pName string, nName string) (err error) {
 		blog.Error(err)
 	}
 	pb.PipelineBind.Bindings[pName] = nName
+	key := etcd.Prefix() + "/" + pb.Key()
 	txn := c.Txn(context.Background()).If(clientv3.Compare(clientv3.CreateRevision(pb.Key()), "=", pb.Revision))
-	txn = txn.Then(clientv3.OpPut(pb.Key(), pb.Val()))
+	txn = txn.Then(clientv3.OpPut(key, pb.Val()))
 	resp , err := txn.Commit()
 	if err != nil {
 		return
 	}
 	fmt.Println(resp.Succeeded)
-
 	return
 }

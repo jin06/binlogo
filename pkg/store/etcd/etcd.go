@@ -169,6 +169,8 @@ func (e *ETCD) GetH(m model2.ModelH) (ok bool, err error) {
 	h := &model2.Header{
 		Revision: res.Header.Revision,
 	}
+	fmt.Println(res.Kvs[0].Version)
+	fmt.Println(res.Kvs[0].ModRevision)
 	m.SetHeader(h)
 
 	ok = true
@@ -203,4 +205,5 @@ func (e *ETCD) List(key string) (list []model2.Model, err error) {
 func Get(m model2.Model) (bool, error) {
 	return E.Get(m)
 }
+
 

@@ -13,6 +13,7 @@ type General struct {
 	Etcd  *etcd.ETCD
 	key   string
 	Queue chan model.Model
+	Queue2 chan *clientv3.Event
 }
 
 func NewGeneral(key string) (w *General, err error) {
@@ -22,6 +23,10 @@ func NewGeneral(key string) (w *General, err error) {
 		Etcd:  etcd.E,
 	}
 	return
+}
+
+func (w *General) GetKey() string{
+	return w.key
 }
 
 func (w *General) WatchEtcd(ctx context.Context, object func() model.Model) {
@@ -85,3 +90,34 @@ func (w *General) WatchEtcdList(ctx context.Context, object func() model.Model) 
 	}()
 	return
 }
+
+func (w *General) WatchEtcd2(ctx context.Context, opts ...clientv3.OpOption) chan *clientv3.Event{
+	watchCh := w.Etcd.Client.Watch(ctx, w.key, opts...)
+	eventCh := make(chan *clientv3.Event, 10000)
+	w.Queue2 = eventCh
+	go func() {
+		for {
+			select {
+			case resp := <- watchCh:
+				{
+					if resp.Err() != nil {
+						logrus.Error(resp.Err())
+					}
+					for _, val := range resp.Events {
+						w.Queue2 <- val
+					}
+				}
+			case <-ctx.Done():
+				{
+					return
+				}
+			}
+		}
+	}()
+	return eventCh
+}
+
+func (w *General) WatchEtcdList2(ctx context.Context) chan *clientv3.Event {
+	return w.WatchEtcd2(ctx, clientv3.WithPrefix())
+}
+

@@ -2,7 +2,10 @@ package scheduler
 
 import (
 	"context"
+	"fmt"
+	"github.com/coreos/etcd/mvcc/mvccpb"
 	"github.com/jin06/binlogo/pkg/blog"
+	"github.com/jin06/binlogo/pkg/store/dao"
 	"github.com/jin06/binlogo/pkg/store/etcd"
 	"github.com/jin06/binlogo/pkg/store/model"
 	pipeline2 "github.com/jin06/binlogo/pkg/store/model/pipeline"
@@ -24,7 +27,7 @@ func newMonitor() (m *Monitor, err error) {
 	}
 	m.notBindPipelineCh = make(chan *pipeline2.Pipeline, 10000)
 	prefix := etcd.Prefix()
-	m.pipelineWatcher, err = pipeline.New( prefix + "/pipeline")
+	m.pipelineWatcher, err = pipeline.New(prefix + "/pipeline")
 	m.nodeWatcher, err = node.New(prefix + "/nodes")
 	return
 }
@@ -33,6 +36,7 @@ func (m *Monitor) run(ctx context.Context) {
 	blog.Debug("monitor run")
 	go func() {
 		m.pipelineWatcher.WatchList(ctx)
+		m.nodeWatcher.WatchList(ctx)
 		for {
 			select {
 			case <-ctx.Done():
@@ -46,9 +50,39 @@ func (m *Monitor) run(ctx context.Context) {
 						if !ok {
 							m.notBindPipelineCh <- p
 						}
-					}else {
+					} else {
 						blog.Debug("check bind error", err)
 					}
+				}
+			case n := <-m.nodeWatcher.Queue:
+				{
+				fmt.Println(909090)
+				fmt.Println(n.Event.Type)
+					if n.Event.Type == mvccpb.DELETE {
+						if val, ok := n.Model.(*model.Node); ok {
+							fmt.Printf("---> %v\n", val)
+							pb, err := m.pipelineBind()
+							if err != nil {
+								blog.Error(err)
+								continue
+							}
+							var bind bool
+							var pipe string
+							fmt.Println("end vvv aa")
+							for pk, pv := range pb.Bindings {
+								if pv == val.Name {
+									bind = true
+									pipe = pk
+									break
+								}
+							}
+							fmt.Println("end vvv")
+							if bind {
+								m.notBindPipelineCh <- &pipeline2.Pipeline{Name: pipe}
+							}
+						}
+					}
+					blog.Debug("monitor node queue \n", n)
 				}
 			}
 		}
@@ -57,25 +91,11 @@ func (m *Monitor) run(ctx context.Context) {
 }
 
 func (m *Monitor) allPipelines() (res []*pipeline2.Pipeline, err error) {
-	res = []*pipeline2.Pipeline{}
-	resp, err := etcd.E.List("")
-	for _, v := range resp {
-		if val, ok := v.(*pipeline2.Pipeline); ok {
-			res = append(res, val)
-		}
-	}
-	return
+	return dao.AllPipelines()
 }
 
 func (m *Monitor) allNodes() (res []*model.Node, err error) {
-	res = []*model.Node{}
-	resp, err := etcd.E.List("")
-	for _, v := range resp {
-		if val, ok := v.(*model.Node); ok {
-			res = append(res, val)
-		}
-	}
-	return
+	return dao.AllNodes()
 }
 
 func (m *Monitor) pipelineBind() (pb *scheduler.PipelineBind, err error) {

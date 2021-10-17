@@ -3,7 +3,8 @@ package register
 import (
 	"context"
 	"errors"
-	"fmt"
+	"github.com/coreos/etcd/etcdserver/api/v3rpc/rpctypes"
+	"github.com/jin06/binlogo/pkg/blog"
 	etcd2 "github.com/jin06/binlogo/pkg/store/etcd"
 	model2 "github.com/jin06/binlogo/pkg/store/model"
 	"github.com/jin06/binlogo/pkg/util/ip"
@@ -49,7 +50,22 @@ func (r *Register) Run(ctx context.Context) (err error) {
 			select {
 			case <-tc.C:
 				{
-					_ = r.keep()
+					er := r.keep()
+					if er != nil {
+						blog.Error(er)
+					}
+					if er == rpctypes.ErrLeaseNotFound {
+						err = r.reg()
+						blog.Error(err)
+					}
+
+					ok, err2 := r.watch()
+					if err2 != nil {
+						blog.Error(err2)
+					}
+					if !ok {
+						err = r.reg()
+					}
 				}
 			case <-ctx.Done():
 				{
@@ -81,9 +97,9 @@ func (r *Register) reg() (err error) {
 	}
 	r.leaseID = rep.ID
 	ok, err := r.etcd.Create(r.node, clientv3.WithLease(r.leaseID))
-	logrus.Debug("register tick")
+	//logrus.Debug("register tick")
 	if err != nil {
-		fmt.Println("reg error: ", err)
+		//fmt.Println("reg error: ", err)
 		return
 	}
 	if !ok {
@@ -95,12 +111,22 @@ func (r *Register) reg() (err error) {
 func (r *Register) keep() (err error) {
 	resp, err := r.lease.KeepAliveOnce(context.TODO(), r.leaseID)
 	if err != nil {
-		logrus.Error(err)
+		//logrus.Error(err)
+		return err
 	}
 	logrus.Debugf("Node lease %v seconds.", resp.TTL)
 	return
 }
 func (r *Register) revoke() (err error) {
 	_, err = r.etcd.Client.Revoke(context.TODO(), r.leaseID)
+	return
+}
+
+func (r *Register) watch() (ok bool, err error) {
+	regNode := &model2.Node{Name: r.node.Name}
+	ok, err = etcd2.Get(regNode)
+	if err != nil {
+		return
+	}
 	return
 }
