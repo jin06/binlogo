@@ -6,7 +6,7 @@ import (
 	"github.com/coreos/etcd/etcdserver/api/v3rpc/rpctypes"
 	"github.com/jin06/binlogo/pkg/blog"
 	etcd2 "github.com/jin06/binlogo/pkg/store/etcd"
-	model2 "github.com/jin06/binlogo/pkg/store/model"
+	node2 "github.com/jin06/binlogo/pkg/store/model/node"
 	"github.com/jin06/binlogo/pkg/util/ip"
 	"github.com/sirupsen/logrus"
 	"go.etcd.io/etcd/clientv3"
@@ -34,7 +34,7 @@ type Register struct {
 	lease         clientv3.Lease
 	leaseID       clientv3.LeaseID
 	leaseDuration time.Duration
-	node          *model2.Node
+	node          *node2.Node
 	ttl           int64
 	etcd          *etcd2.ETCD
 }
@@ -123,7 +123,7 @@ func (r *Register) revoke() (err error) {
 }
 
 func (r *Register) watch() (ok bool, err error) {
-	regNode := &model2.Node{Name: r.node.Name}
+	regNode := &node2.Node{Name: r.node.Name}
 	ok, err = etcd2.Get(regNode)
 	if err != nil {
 		return

@@ -9,17 +9,6 @@ import (
 	"go.etcd.io/etcd/clientv3"
 )
 
-//func UpdatePipelineBind(pb *scheduler.PipelineBind) (err error) {
-//	ok, err := etcd.Update(pb)
-//	if err != nil {
-//		return
-//	}
-//	if !ok {
-//		err = errors.New("update pipeline bind fail")
-//	}
-//	return
-//}
-
 func UpdatePipelineBind(pName string, nName string) (err error) {
 	pb := scheduler.NewPipelineBindH()
 	c := etcd.E.Client
@@ -37,4 +26,8 @@ func UpdatePipelineBind(pName string, nName string) (err error) {
 	}
 	fmt.Println(resp.Succeeded)
 	return
+}
+
+func deletePipelineBind(nName string) {
+
 }

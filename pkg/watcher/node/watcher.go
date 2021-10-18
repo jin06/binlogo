@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/coreos/etcd/mvcc/mvccpb"
 	"github.com/jin06/binlogo/pkg/blog"
-	"github.com/jin06/binlogo/pkg/store/model"
+	"github.com/jin06/binlogo/pkg/store/model/node"
 	"github.com/jin06/binlogo/pkg/watcher"
 )
 
@@ -40,7 +40,7 @@ func (w *NodeWatcher) _watch(ctx context.Context, option byte) {
 				{
 					val := &watcher.Event{
 					}
-					m := &model.Node{}
+					m := &node.Node{}
 					val.Event = e
 					val.Model = m
 					if e.Type == mvccpb.DELETE {

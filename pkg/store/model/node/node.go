@@ -1,4 +1,4 @@
-package model
+package node
 
 import (
 	"encoding/json"
@@ -12,10 +12,18 @@ const (
 	ROLE_SLAVE  NodeRole = "slave"
 )
 
+type NodeStatus string
+
+const (
+	STATUS_ON  = "on"
+	STATUS_OFF = "off"
+)
+
 type Node struct {
-	Name string   `json:"name"`
-	Role NodeRole `json:"role"`
-	Ip   net.IP  `json:"ip"`
+	Name   string     `json:"name"`
+	Role   NodeRole   `json:"role"`
+	Ip     net.IP     `json:"ip"`
+	Status NodeStatus `json:"status"`
 }
 
 func (s *Node) Key() (key string) {
@@ -32,4 +40,3 @@ func (s *Node) Unmarshal(val []byte) (err error) {
 	err = json.Unmarshal(val, s)
 	return
 }
-

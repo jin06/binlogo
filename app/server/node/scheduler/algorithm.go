@@ -3,25 +3,25 @@ package scheduler
 import (
 	"errors"
 	"github.com/jin06/binlogo/pkg/store/dao"
-	"github.com/jin06/binlogo/pkg/store/model"
+	"github.com/jin06/binlogo/pkg/store/model/node"
 	"github.com/jin06/binlogo/pkg/store/model/pipeline"
 )
 
 type algorithm struct {
 	pipeline       *pipeline.Pipeline
-	allNodes       []*model.Node
-	potentialNodes []*model.Node
+	allNodes       []*node.Node
+	potentialNodes []*node.Node
 	nodesScores    map[string]int
-	bestNode       *model.Node
+	bestNode       *node.Node
 }
 
 func newAlgorithm(p *pipeline.Pipeline) *algorithm{
 	a := &algorithm{}
 	a.pipeline = p
-	a.allNodes = []*model.Node{}
-	a.potentialNodes = []*model.Node{}
+	a.allNodes = []*node.Node{}
+	a.potentialNodes = []*node.Node{}
 	a.nodesScores = map[string]int{}
-	a.bestNode = &model.Node{}
+	a.bestNode = &node.Node{}
 	return a
 }
 

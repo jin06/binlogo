@@ -1,16 +1,16 @@
 package node
 
 import (
-	model2 "github.com/jin06/binlogo/pkg/store/model"
+	"github.com/jin06/binlogo/pkg/store/model/node"
 )
 
 type Options struct {
-	Node *model2.Node
+	Node *node.Node
 }
 
 type Option func(options *Options)
 
-func OptionNode(node *model2.Node) Option {
+func OptionNode(node *node.Node) Option {
 	return func(options *Options) {
 		options.Node = node
 	}

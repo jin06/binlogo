@@ -6,7 +6,7 @@ import (
 	"github.com/coreos/etcd/clientv3"
 	"github.com/jin06/binlogo/configs"
 	"github.com/jin06/binlogo/pkg/node/role"
-	"github.com/jin06/binlogo/pkg/store/model"
+	node2 "github.com/jin06/binlogo/pkg/store/model/node"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"go.etcd.io/etcd/clientv3/concurrency"
@@ -15,7 +15,7 @@ import (
 )
 
 type Election struct {
-	node        *model.Node
+	node        *node2.Node
 	election    *concurrency.Election
 	client      *clientv3.Client
 	campaignVal string

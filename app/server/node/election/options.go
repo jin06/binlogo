@@ -1,10 +1,12 @@
 package election
 
-import "github.com/jin06/binlogo/pkg/store/model"
+import (
+	"github.com/jin06/binlogo/pkg/store/model/node"
+)
 
 type Option func(e *Election)
 
-func OptionNode(node *model.Node) Option {
+func OptionNode(node *node.Node) Option {
 	return func(e *Election) {
 		e.node = node
 	}

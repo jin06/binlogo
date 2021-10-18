@@ -2,13 +2,13 @@ package register
 
 import (
 	etcd2 "github.com/jin06/binlogo/pkg/store/etcd"
-	model2 "github.com/jin06/binlogo/pkg/store/model"
+	"github.com/jin06/binlogo/pkg/store/model/node"
 	"time"
 )
 
 type Option func(options *Register)
 
-func OptionNode(node *model2.Node) Option {
+func OptionNode(node *node.Node) Option {
 	return func(r *Register) {
 		r.node = node
 	}

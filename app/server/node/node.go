@@ -8,7 +8,6 @@ import (
 	"github.com/jin06/binlogo/app/server/node/scheduler"
 	"github.com/jin06/binlogo/pkg/node/role"
 	store2 "github.com/jin06/binlogo/pkg/store"
-	"github.com/jin06/binlogo/pkg/watcher/pipeline"
 	"github.com/sirupsen/logrus"
 	"time"
 )
@@ -98,13 +97,13 @@ func (n *Node) Run(ctx context.Context) (err error) {
 	n.scheduler(ctx3)
 	defer cancel3()
 
-	logrus.Debug("watch")
-	w, err := pipeline.New("/binlogo/cluster1/pipeline/test")
-	if err != nil {
-		logrus.Error(err)
-		return
-	}
-	w.Watch(ctx)
+	//logrus.Debug("watch")
+	//w, err := pipeline.New("/binlogo/cluster1/pipeline/test")
+	//if err != nil {
+	//	logrus.Error(err)
+	//	return
+	//}
+	//w.Watch(ctx)
 
 	select {}
 	return
