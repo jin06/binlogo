@@ -134,6 +134,7 @@ func (e *ETCD) Delete(m model2.Model) (ok bool, err error) {
 func Delete(m model2.Model) (bool, error) {
 	return E.Delete(m)
 }
+
 func (e *ETCD) Get(m model2.Model) (ok bool, err error) {
 	ctx, cancel := context.WithTimeout(context.Background(), e.Timeout)
 	defer cancel()

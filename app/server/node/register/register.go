@@ -2,11 +2,12 @@ package register
 
 import (
 	"context"
-	"errors"
 	"github.com/coreos/etcd/etcdserver/api/v3rpc/rpctypes"
 	"github.com/jin06/binlogo/pkg/blog"
+	"github.com/jin06/binlogo/pkg/store/dao"
 	etcd2 "github.com/jin06/binlogo/pkg/store/etcd"
 	node2 "github.com/jin06/binlogo/pkg/store/model/node"
+	"github.com/jin06/binlogo/pkg/store/model/register"
 	"github.com/jin06/binlogo/pkg/util/ip"
 	"github.com/sirupsen/logrus"
 	"go.etcd.io/etcd/clientv3"
@@ -90,21 +91,17 @@ func (r *Register) reg() (err error) {
 		}
 	}
 
+	if err = dao.CreateNodeIfNotExist(r.node); err != nil {
+		return
+	}
+
 	r.lease = clientv3.NewLease(r.etcd.Client)
-	rep, err := r.lease.Grant(context.TODO(), r.ttl)
-	if err != nil {
-		return
+	if rep, err2 := r.lease.Grant(context.TODO(), r.ttl); err2 != nil {
+		return err2
+	} else {
+		r.leaseID = rep.ID
 	}
-	r.leaseID = rep.ID
-	ok, err := r.etcd.Create(r.node, clientv3.WithLease(r.leaseID))
-	//logrus.Debug("register tick")
-	if err != nil {
-		//fmt.Println("reg error: ", err)
-		return
-	}
-	if !ok {
-		return errors.New("register failed")
-	}
+	err = dao.RegRNode(&register.RegisterNode{Name: r.node.Name}, r.leaseID)
 	return
 }
 
