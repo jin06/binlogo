@@ -2,28 +2,34 @@ package pipeline
 
 import (
 	"context"
-	model2 "github.com/jin06/binlogo/pkg/store/model"
+	"fmt"
+	"github.com/coreos/etcd/mvcc/mvccpb"
+	"github.com/jin06/binlogo/pkg/blog"
+	"github.com/jin06/binlogo/pkg/store/model"
 	"github.com/jin06/binlogo/pkg/store/model/pipeline"
 	"github.com/jin06/binlogo/pkg/watcher"
 )
 
 type PipelineWatcher struct {
 	*watcher.General
-	modelFunc func() model2.Model
-	Queue     chan *pipeline.Pipeline
+	modelFunc func() model.Model
+	Queue     chan *watcher.Event
 }
 
 func New(key string) (w *PipelineWatcher, err error) {
 	w = &PipelineWatcher{}
 	w.General, err = watcher.NewGeneral(key)
-	w.Queue = make(chan *pipeline.Pipeline, 10000)
-	w.modelFunc = func() model2.Model {
-		return &pipeline.Pipeline{}
-	}
+	w.Queue = make(chan *watcher.Event, 1000)
 	return
 }
 
-func (w *PipelineWatcher) putQueue(ctx context.Context) {
+func (w *PipelineWatcher) _watch(ctx context.Context, option byte) {
+	if option == 1 {
+		w.General.WatchEtcd2(ctx)
+	}
+	if option == 2 {
+		w.General.WatchEtcdList2(ctx)
+	}
 	go func() {
 		for {
 			select {
@@ -31,12 +37,27 @@ func (w *PipelineWatcher) putQueue(ctx context.Context) {
 				{
 					return
 				}
-			case m := <-w.General.Queue:
+			case e := <-w.General.Queue2:
 				{
-					if val, ok := m.(*pipeline.Pipeline); ok {
-						//fmt.Printf(":kdjfkjd%v\n", val)
-						w.Queue <- val
+					val := &watcher.Event{
 					}
+					m := &pipeline.Pipeline{}
+					val.Event = e
+					val.Model = m
+					if e.Type == mvccpb.DELETE {
+						_, err := fmt.Sscanf(string(e.Kv.Key), w.General.GetKey()+"/%s", &m.Name)
+						if err != nil {
+							blog.Error(err)
+							continue
+						}
+					} else {
+						err := m.Unmarshal(e.Kv.Value)
+						if err != nil {
+							blog.Error(err)
+							continue
+						}
+					}
+					w.Queue <- val
 				}
 			}
 		}
@@ -44,12 +65,9 @@ func (w *PipelineWatcher) putQueue(ctx context.Context) {
 }
 
 func (w *PipelineWatcher) Watch(ctx context.Context) {
-	w.General.WatchEtcd(ctx, w.modelFunc)
-	w.putQueue(ctx)
-
+	w._watch(ctx, 1)
 }
 
 func (w *PipelineWatcher) WatchList(ctx context.Context) {
-	w.General.WatchEtcdList(ctx, w.modelFunc)
-	w.putQueue(ctx)
+	w._watch(ctx, 2)
 }

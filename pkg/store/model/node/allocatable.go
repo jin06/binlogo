@@ -1,7 +1,7 @@
 package node
 
 type Allocatable struct {
-	Cpu    uint   `json:"cpu"`
+	Cpu    float64  `json:"cpu"`
 	Disk   uint64 `json:"disk"`
-	Memory uint   `json:"memory"`
+	Memory uint64   `json:"memory"`
 }

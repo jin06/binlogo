@@ -168,7 +168,7 @@ func (e *ETCD) GetH(m model2.ModelH) (ok bool, err error) {
 		return
 	}
 	h := &model2.Header{
-		Revision: res.Header.Revision,
+		Revision: res.Kvs[0].CreateRevision,
 	}
 	fmt.Println(res.Kvs[0].Version)
 	fmt.Println(res.Kvs[0].ModRevision)

@@ -23,7 +23,7 @@ const (
 	SCHEDULER_STOP = "stop"
 )
 
-func (s *Scheduler) Run(ctx context.Context) {
+func (s *Scheduler) Run(ctx context.Context) (err error) {
 	s.runLock.Lock()
 	defer s.runLock.Unlock()
 	if s.status == SCHEDULER_RUN {
@@ -44,8 +44,9 @@ func (s *Scheduler) _schedule(ctx context.Context) {
 	go func() {
 		for {
 			select {
-			case <- time.Tick(time.Second):{
-			}
+			case <-time.Tick(time.Second):
+				{
+				}
 			case <-ctx.Done():
 				{
 					return
@@ -84,7 +85,7 @@ func (s *Scheduler) scheduleOne(p *pipeline.Pipeline) (err error) {
 		return
 	}
 	blog.Debugf("best node for %s is %s \n", p.Name, a.bestNode.Name)
-	err = dao.UpdatePipelineBind(p.Name, a.bestNode.Name)
+	_, err = dao.UpdatePipelineBind(p.Name, a.bestNode.Name)
 	if err != nil {
 		blog.Error(err)
 	}

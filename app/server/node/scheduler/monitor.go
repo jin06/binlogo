@@ -29,40 +29,47 @@ func newMonitor() (m *Monitor, err error) {
 	m.notBindPipelineCh = make(chan *pipeline2.Pipeline, 10000)
 	prefix := etcd.Prefix()
 	m.pipelineWatcher, err = pipeline.New(prefix + "/pipeline")
-	m.nodeWatcher, err = node.New(prefix + "/nodes")
+	m.nodeWatcher, err = node.New(prefix + "/register/nodes")
 	return
 }
 
-func (m *Monitor) run(ctx context.Context) {
+func (m *Monitor) run(ctx context.Context) error {
 	blog.Debug("monitor run")
 	go func() {
 		m.pipelineWatcher.WatchList(ctx)
 		m.nodeWatcher.WatchList(ctx)
-		m.queueAllPipelines()
+		if err := m.check(); err != nil {
+			blog.Error(err)
+		}
 		for {
 			select {
 			case <-ctx.Done():
 				{
 					return
 				}
-			case p := <-m.pipelineWatcher.Queue:
+			case n := <-m.pipelineWatcher.Queue:
 				{
-					blog.Debug("monitor queue \n", p)
-					if ok, err := m.isBind(p); err == nil {
-						if !ok {
-							m.notBindPipelineCh <- p
+					if n.Event.Type == mvccpb.DELETE {
+						if val, ok := n.Model.(*pipeline2.Pipeline); ok {
+							_, err := dao.DeletePipelineBind(val.Name)
+							if err != nil {
+								blog.Error("Delete pipeline bind failed: ", err)
+							}
 						}
-					} else {
-						blog.Debug("check bind error", err)
+					}
+					if n.Event.Type == mvccpb.PUT {
+						if val, ok := n.Model.(*pipeline2.Pipeline); ok {
+							err := dao.UpdatePipelineBindIfNotExist(val.Name, "")
+							if err != nil {
+								blog.Error("Update pipeline bind failed ", err)
+							}
+						}
 					}
 				}
 			case n := <-m.nodeWatcher.Queue:
 				{
-					fmt.Println(909090)
-					fmt.Println(n.Event.Type)
 					if n.Event.Type == mvccpb.DELETE {
 						if val, ok := n.Model.(*node2.Node); ok {
-							fmt.Printf("---> %v\n", val)
 							pb, err := m.pipelineBind()
 							if err != nil {
 								blog.Error(err)
@@ -70,7 +77,6 @@ func (m *Monitor) run(ctx context.Context) {
 							}
 							var bind bool
 							var pipe string
-							fmt.Println("end vvv aa")
 							for pk, pv := range pb.Bindings {
 								if pv == val.Name {
 									bind = true
@@ -78,22 +84,36 @@ func (m *Monitor) run(ctx context.Context) {
 									break
 								}
 							}
-							fmt.Println("end vvv")
 							if bind {
-								m.notBindPipelineCh <- &pipeline2.Pipeline{Name: pipe}
+								//m.notBindPipelineCh <- &pipeline2.Pipeline{Name: pipe}
+								_, err = dao.UpdatePipelineBind(pipe, "")
+								if err != nil {
+									blog.Error(err)
+								}
 							}
 						}
 					}
 					blog.Debug("monitor node queue \n", n)
 				}
-			case <-time.Tick(time.Second * 30):
+			case <-time.Tick(time.Second * 60):
 				{
-					m.queueAllPipelines()
+					//m.queueAllPipelines()
+					if err := m.check(); err != nil {
+						blog.Error(err)
+					}
+				}
+			case <-time.Tick(5 * time.Second):
+				{
+					err := m.putNotBindPipeToQueue()
+					if err != nil {
+						blog.Error("Put not bind pipeline to queue error: ", err)
+					}
 				}
 			}
+			// todo watch pipeline bind
 		}
 	}()
-	return
+	return nil
 }
 
 func (m *Monitor) allPipelines() (res []*pipeline2.Pipeline, err error) {
@@ -105,9 +125,7 @@ func (m *Monitor) allNodes() (res []*node2.Node, err error) {
 }
 
 func (m *Monitor) pipelineBind() (pb *scheduler.PipelineBind, err error) {
-	pb = &scheduler.PipelineBind{}
-	_, err = etcd.E.Get(pb)
-	return
+	return dao.GetPipelineBind()
 }
 
 func (m *Monitor) isBind(p *pipeline2.Pipeline) (is bool, err error) {
@@ -125,12 +143,40 @@ func (m *Monitor) isBind(p *pipeline2.Pipeline) (is bool, err error) {
 	return
 }
 
-func (m *Monitor) checkAllPipelines() (res []*pipeline2.Pipeline, err error) {
-	res = []*pipeline2.Pipeline{}
+func (m *Monitor) checkAllPipelineBind() (err error) {
 	pipes, err := m.allPipelines()
 	if err != nil {
 		return
 	}
+	pb, err := m.pipelineBind()
+	if err != nil {
+		return
+	}
+
+	mapPipes := map[string]bool{}
+
+	for _, v := range pipes {
+		mapPipes[v.Name] = true
+		if _, ok := pb.Bindings[v.Name]; !ok {
+			_, err2 := dao.UpdatePipelineBind(v.Name, "")
+			if err2 != nil {
+				blog.Error(err2)
+			}
+		}
+	}
+	for k, _ := range pb.Bindings {
+		if _, ok := mapPipes[k]; !ok {
+			_, er := dao.DeletePipelineBind(k)
+			if er != nil {
+				blog.Error(er)
+			}
+		}
+	}
+
+	return
+}
+
+func (m *Monitor) checkAllNodeBind() (err error) {
 	nodes, err := m.allNodes()
 	if err != nil {
 		return
@@ -143,24 +189,38 @@ func (m *Monitor) checkAllPipelines() (res []*pipeline2.Pipeline, err error) {
 	for _, v := range nodes {
 		mNodes[v.Name] = true
 	}
-	for _, v := range pipes {
-		if nodeName, ok := pb.Bindings[v.Name]; ok {
-			if _, t := mNodes[nodeName]; !t {
-				res = append(res, v)
+	for k, v := range pb.Bindings {
+		if _, ok := mNodes[v]; !ok {
+			_, err = dao.UpdatePipelineBind(k, "")
+			if err != nil {
+				return
 			}
-		} else {
-			res = append(res, v)
 		}
 	}
 	return
 }
 
-func (m *Monitor) queueAllPipelines() {
-	pipes, err := m.checkAllPipelines()
+func (m *Monitor) check() (err error) {
+	fmt.Println("---->")
+	err = m.checkAllPipelineBind()
 	if err != nil {
-		blog.Error("Check all pipelines error: ", err)
+		return
 	}
-	for _, v := range pipes {
-		m.notBindPipelineCh <- v
+	err = m.checkAllNodeBind()
+	fmt.Println("----> end")
+	return
+}
+
+func (m *Monitor) putNotBindPipeToQueue() (err error) {
+	pb, err := m.pipelineBind()
+	if err != nil {
+		return
 	}
+	for k, v := range pb.Bindings {
+		if v == "" {
+			fmt.Println(999)
+			m.notBindPipelineCh <- &pipeline2.Pipeline{Name: k}
+		}
+	}
+	return
 }

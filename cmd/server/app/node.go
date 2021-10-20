@@ -2,25 +2,33 @@ package app
 
 import (
 	"context"
-	"fmt"
 	node2 "github.com/jin06/binlogo/app/server/node"
+	"github.com/jin06/binlogo/configs"
+	"github.com/jin06/binlogo/pkg/store/dao"
 	"github.com/jin06/binlogo/pkg/store/model/node"
+	"github.com/jin06/binlogo/pkg/util/ip"
 	"github.com/spf13/viper"
-	"os"
 )
 
-func RunNode() {
+func RunNode() (err error) {
 	nModel := &node.Node{
+		Name :viper.GetString("node.name"),
+		Status: node.STATUS_ON,
+		Version: configs.VERSITON,
 	}
-	nModel.Name = viper.GetString("node.name")
-	_node, err := node2.New(node2.OptionNode(nModel))
-	if err != nil {
-		fmt.Println(err.Error())
-		os.Exit(1)
+	if nModel.Ip == nil {
+		if nModel.Ip, err = ip.LocalIp(); err != nil {
+			return
+		}
+	}
+	if err = dao.CreateNodeIfNotExist(nModel); err != nil {
+		return
+	}
+	var _node *node2.Node
+	if _node, err = node2.New(node2.OptionNode(nModel)); err != nil {
+		return
 	}
 	ctx := context.Background()
 	err = _node.Run(ctx)
-	if err != nil {
-		fmt.Println(err)
-	}
+	return
 }

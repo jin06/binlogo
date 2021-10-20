@@ -7,6 +7,7 @@ import (
 	etcd2 "github.com/jin06/binlogo/pkg/store/etcd"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"os"
 )
 
 func NewCommand() (cmd *cobra.Command) {
@@ -29,7 +30,10 @@ func NewCommand() (cmd *cobra.Command) {
 			blog.Env(configs.Env(viper.GetString("env")))
 			//RunServer()
 			blog.Infoln("init configs finish")
-			RunNode()
+			if err := RunNode(); err != nil {
+				fmt.Println(err.Error())
+				os.Exit(1)
+			}
 		},
 	}
 

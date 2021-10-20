@@ -8,10 +8,8 @@ import (
 	etcd2 "github.com/jin06/binlogo/pkg/store/etcd"
 	node2 "github.com/jin06/binlogo/pkg/store/model/node"
 	"github.com/jin06/binlogo/pkg/store/model/register"
-	"github.com/jin06/binlogo/pkg/util/ip"
 	"github.com/sirupsen/logrus"
 	"go.etcd.io/etcd/clientv3"
-	"os"
 	"time"
 )
 
@@ -81,20 +79,6 @@ func (r *Register) Run(ctx context.Context) (err error) {
 }
 
 func (r *Register) reg() (err error) {
-
-	if r.node.Ip == nil {
-		r.node.Ip, err = ip.LocalIp()
-		if err != nil {
-			logrus.Error("Get local ip error ", err)
-			os.Exit(1)
-			return
-		}
-	}
-
-	if err = dao.CreateNodeIfNotExist(r.node); err != nil {
-		return
-	}
-
 	r.lease = clientv3.NewLease(r.etcd.Client)
 	if rep, err2 := r.lease.Grant(context.TODO(), r.ttl); err2 != nil {
 		return err2

@@ -15,7 +15,7 @@ type algorithm struct {
 	bestNode       *node.Node
 }
 
-func newAlgorithm(p *pipeline.Pipeline) *algorithm{
+func newAlgorithm(p *pipeline.Pipeline) *algorithm {
 	a := &algorithm{}
 	a.pipeline = p
 	a.allNodes = []*node.Node{}
@@ -26,7 +26,7 @@ func newAlgorithm(p *pipeline.Pipeline) *algorithm{
 }
 
 func (a *algorithm) cal() (err error) {
-	a.allNodes, err = dao.AllNodes()
+	a.allNodes, err = dao.AllWorkNodes()
 	if err != nil {
 		return
 	}
@@ -34,7 +34,7 @@ func (a *algorithm) cal() (err error) {
 	if err != nil {
 		return err
 	}
-	err = a.calScores()
+	 err = a.calScores()
 	if err != nil {
 		return
 	}
@@ -50,15 +50,23 @@ func (a *algorithm) calPotentialNodes() (err error) {
 	return
 }
 
-func (a *algorithm) calScores() (err error) {
+func (a *algorithm) calScores() ( err error) {
+	a.nodesScores  = map[string]int{}
 	return
 }
 
 func (a *algorithm) calBestNode() (err error) {
-	if len(a.potentialNodes) > 0 {
-		a.bestNode = a.potentialNodes[0]
-	} else {
+	if len(a.potentialNodes) == 0 {
 		err = errors.New("no potential node")
+		return
 	}
+	pb, err := dao.GetPipelineBind()
+	if err != nil {
+		return
+	}
+	//for k,v := range pb.Bindings {
+	//
+	//}
+
 	return
 }

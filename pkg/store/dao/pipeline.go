@@ -18,8 +18,8 @@ func UpdatePipeline(d *pipeline.Pipeline) (bool, error) {
 
 func AllPipelines() (list []*pipeline.Pipeline, err error) {
 	list = []*pipeline.Pipeline{}
-	key := etcd.Prefix() + "/pipeline"
-	res, err := etcd.E.Client.Get(context.Background(), key, clientv3.WithPrefix(), clientv3.WithFromKey())
+	key := etcd.Prefix() + "/pipeline/"
+	res, err := etcd.E.Client.Get(context.Background(), key, clientv3.WithPrefix())
 	if err != nil {
 		return
 	}

@@ -56,10 +56,9 @@ func GetNode(name string) (n *node.Node, err error) {
 }
 
 func AllNodes() (list []*node.Node, err error) {
-
 	list = []*node.Node{}
 	key := etcd.E.Prefix + "/nodes"
-	res, err := etcd.E.Client.Get(context.Background(), key, clientv3.WithPrefix(), clientv3.WithFromKey())
+	res, err := etcd.E.Client.Get(context.Background(), key, clientv3.WithPrefix())
 	if err != nil {
 		return
 	}
@@ -74,6 +73,20 @@ func AllNodes() (list []*node.Node, err error) {
 			continue
 		}
 		list = append(list, ele)
+	}
+	return
+}
+
+
+func AllWorkNodes() (list []*node.Node, err error) {
+	list, err = AllNodes()
+	if err != nil {
+		return
+	}
+	for k,v := range list {
+		if v.Status	== node.STATUS_OFF {
+			list = append(list[:k], list[k:]...)
+		}
 	}
 	return
 }

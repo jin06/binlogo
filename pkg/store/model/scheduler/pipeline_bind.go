@@ -6,6 +6,12 @@ type PipelineBind struct {
 	Bindings map[string]string `json:"bindings"`
 }
 
+func EmptyPipelineBind() *PipelineBind{
+	return &PipelineBind{
+		Bindings: map[string]string{},
+	}
+}
+
 func (s *PipelineBind) Key() (key string) {
 	return "scheduler/pipeline_bind"
 }

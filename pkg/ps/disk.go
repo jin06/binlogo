@@ -1,8 +1,8 @@
 package ps
 
- import "github.com/shirou/gopsutil/v3/disk"
-
+import "github.com/shirou/gopsutil/v3/disk"
 
 func Disk() (err error) {
- disk.Partitions()
+	disk.Partitions(true)
+	return
 }
