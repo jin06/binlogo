@@ -55,6 +55,7 @@ func (ns *NodeStatus) setStatus() (err error) {
 		err = errors.New("cpu check error")
 		return
 	}
+
 	c := ts[0]
 	capacity := &node.Capacity{
 		Memory: v.Total,

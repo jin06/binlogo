@@ -34,6 +34,12 @@ func NewCommand() (cmd *cobra.Command) {
 				fmt.Println(err.Error())
 				os.Exit(1)
 			}
+			if err := RunConsole(); err != nil {
+				fmt.Println(err.Error())
+				os.Exit(1)
+			}
+
+			select {}
 		},
 	}
 

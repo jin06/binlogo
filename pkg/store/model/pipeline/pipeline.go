@@ -2,16 +2,18 @@ package pipeline
 
 import (
 	"encoding/json"
+	"time"
 )
 
 type Pipeline struct {
-	Name      string        `json:"name"`
-	Status    Status        `json:"status"`
-	AliasName string        `json:"aliasName"`
-	Mysql     *Mysql        `json:"mysql"`
-	Filters   []*Filter     `json:"filters"`
-	Output    *Output       `json:"output"`
-	Replicas  int           `json:"replicas"`
+	Name       string    `json:"name"`
+	Status     Status    `json:"status"`
+	AliasName  string    `json:"aliasName"`
+	Mysql      *Mysql    `json:"mysql"`
+	Filters    []*Filter `json:"filters"`
+	Output     *Output   `json:"output"`
+	Replicas   int       `json:"replicas"`
+	CreateTime time.Time `json:"create_time"`
 }
 
 type Status string

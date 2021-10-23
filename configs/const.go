@@ -12,4 +12,8 @@ const (
 	ENV_TEST = "test"
 )
 
+const (
+	CONSOLE_LISTEN = "0.0.0.0"
+	CONSOLE_PORT = "9999"
+)
 

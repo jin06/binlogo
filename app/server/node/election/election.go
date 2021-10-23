@@ -23,6 +23,8 @@ type Election struct {
 	prefix      string
 	role        role.Role
 	lock        sync.Mutex
+	roleMutex   sync.Mutex
+	RoleCh      chan role.Role
 }
 
 func New(opts ...Option) (e *Election, err error) {
@@ -33,7 +35,8 @@ func New(opts ...Option) (e *Election, err error) {
 			configs.APP,
 			viper.GetString("cluster.name"),
 		),
-		role: role.FOLLOWER,
+		role:   role.FOLLOWER,
+		RoleCh: make(chan role.Role, 1000),
 	}
 	for _, v := range opts {
 		v(e)
@@ -59,27 +62,23 @@ func (e *Election) Init() (err error) {
 }
 
 func (e *Election) Run(ctx context.Context) {
-	roCh := e.campaign(ctx)
+	e.campaign(ctx)
 	go func() {
 		for {
 			select {
-			case myRole := <-roCh:
+			case <-ctx.Done():
 				{
-					//e.lock.Lock()
-					fmt.Println("myRole ", myRole)
-					e.role = myRole
-					//e.lock.Unlock()
+					return
 				}
 			}
 		}
 	}()
 }
 
-func (e *Election) campaign(ctx context.Context) (roleCh chan role.Role) {
-	roleCh = make(chan role.Role)
+func (e *Election) campaign(ctx context.Context) {
 	go func() {
 		for {
-			roleCh <- role.FOLLOWER
+			e.SetRole(role.FOLLOWER)
 			sen, err := concurrency.NewSession(e.client, concurrency.WithTTL(e.ttl))
 			if err != nil {
 				logrus.Error("Election error")
@@ -90,6 +89,7 @@ func (e *Election) campaign(ctx context.Context) (roleCh chan role.Role) {
 				sen,
 				e.prefix,
 			)
+			e.election = ele
 
 			logrus.Info("Run for election")
 			ctx1, _ := context.WithCancel(ctx)
@@ -101,7 +101,7 @@ func (e *Election) campaign(ctx context.Context) (roleCh chan role.Role) {
 			}
 
 			logrus.Info("Win election")
-			roleCh <- role.LEADER
+			e.SetRole(role.LEADER)
 
 			logrus.Info("Election Watch ")
 			ctx2, _ := context.WithCancel(ctx)
@@ -121,7 +121,7 @@ func (e *Election) campaign(ctx context.Context) (roleCh chan role.Role) {
 						break
 					} else {
 						logrus.Info("I'm not leader")
-						roleCh <- role.FOLLOWER
+						e.SetRole(role.FOLLOWER)
 					}
 				}
 
@@ -130,7 +130,18 @@ func (e *Election) campaign(ctx context.Context) (roleCh chan role.Role) {
 	}()
 	return
 }
+func (e *Election) SetRole(r role.Role) {
+	e.roleMutex.Lock()
+	defer e.roleMutex.Unlock()
+	e.role = r
+	e.RoleCh <- r
+}
 
 func (e *Election) Role() role.Role {
 	return e.role
+}
+
+func (e *Election) Resign(ctx context.Context) (err error) {
+	err = e.election.Resign(ctx)
+	return
 }

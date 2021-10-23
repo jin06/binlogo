@@ -30,12 +30,12 @@ func (s *Scheduler) Run(ctx context.Context) (err error) {
 		blog.Debug("Running, do nothing")
 		return
 	}
-	ctx2, cancel := context.WithCancel(ctx)
+	cctx, cancel := context.WithCancel(ctx)
 	s.cancel = cancel
-	s._schedule(ctx2)
+	s._schedule(cctx)
 	blog.Debug("scheduler.run")
 	//s._monitor(ctx2)
-	s.monitor.run(ctx2)
+	err = s.monitor.run(cctx)
 	s.status = SCHEDULER_RUN
 	return
 }

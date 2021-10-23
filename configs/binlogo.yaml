@@ -3,8 +3,9 @@ cluster:
   name: cluster1
 node:
   name: node1
-api:
-  port: 8080
+console:
+  port: 9999
+  listen: 0.0.0.0
 store:
   type: etcd
   etcd:

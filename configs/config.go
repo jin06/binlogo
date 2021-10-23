@@ -12,9 +12,10 @@ type Config struct {
 	Node struct {
 		Name string `config:"name"`
 	} `config:"node"`
-	Api struct {
+	Console struct {
 		Port uint `config:"port"`
-	} `config:"api"`
+		Listen string `config:"listen"`
+	} `config:"console"`
 	Store struct {
 		Type string `config:"type"`
 		Etcd struct {

@@ -2,25 +2,26 @@ package node
 
 import (
 	"context"
-	"fmt"
 	"github.com/jin06/binlogo/app/server/node/election"
 	register2 "github.com/jin06/binlogo/app/server/node/register"
 	"github.com/jin06/binlogo/app/server/node/scheduler"
 	"github.com/jin06/binlogo/app/server/node/status"
+	"github.com/jin06/binlogo/pkg/blog"
 	"github.com/jin06/binlogo/pkg/node/role"
 	store2 "github.com/jin06/binlogo/pkg/store"
-	"github.com/sirupsen/logrus"
+	"sync"
 	"time"
 )
 
 type Node struct {
-	Mode          *NodeMode
-	Options       *Options
-	Name          string
-	Register      *register2.Register
-	election      *election.Election
-	Scheduler     *scheduler.Scheduler
-	StatusManager *status.Manager
+	Mode           *NodeMode
+	Options        *Options
+	Name           string
+	Register       *register2.Register
+	election       *election.Election
+	Scheduler      *scheduler.Scheduler
+	StatusManager  *status.Manager
+	leaderRunMutex sync.Mutex
 }
 
 type NodeMode byte
@@ -70,46 +71,45 @@ func (n *Node) Init() (err error) {
 }
 
 func (n *Node) Run(ctx context.Context) (err error) {
-	ok, err := store2.Get(n.Options.Node)
+	go func() {
+		var ok bool
+		if ok, err = store2.Get(n.Options.Node); err != nil {
+			return
+		}
+		if ok {
+			//todo
+			//panic("exist node")
+		}
+		ctxReg, cancelReg := context.WithCancel(ctx)
+		defer cancelReg()
+		if err = n.Register.Run(ctxReg); err != nil {
+			return
+		}
 
-	if err != nil {
-		return
-	}
-	if ok {
-		//todo
-		//panic("exist node")
-	}
-	ctx1, cancel1 := context.WithCancel(ctx)
-	defer cancel1()
-	err = n.Register.Run(ctx1)
-	if err != nil {
-		return
-	}
+		ctxElection, cancelElection := context.WithCancel(ctx)
+		defer cancelElection()
+		if n.election, err = election.New(
+			election.OptionNode(n.Options.Node),
+			election.OptionTTL(5),
+		); err != nil {
+			return
+		}
+		n.election.Run(ctxElection)
 
-	ctx2, cancel2 := context.WithCancel(ctx)
-	defer cancel2()
-	n.election, err = election.New(
-		election.OptionNode(n.Options.Node),
-		election.OptionTTL(5),
-	)
-	if err != nil {
-		return
-	}
-	n.election.Run(ctx2)
-	defer cancel2()
+		ctxLeader, cancelLeader := context.WithCancel(ctx)
+		n._leaderRun(ctxLeader)
+		defer cancelLeader()
 
-	ctx3, cancel3 := context.WithCancel(ctx)
-	n.scheduler(ctx3)
-	defer cancel3()
-
-	ctx4, cancel4 := context.WithCancel(ctx)
-	defer cancel4()
-	err = n.StatusManager.Run(ctx4)
-	if err != nil {
-		return
-	}
-	select {
-	}
+		ctxStatus, cancelStatus := context.WithCancel(ctx)
+		defer cancelStatus()
+		err = n.StatusManager.Run(ctxStatus)
+		select {
+		case <-ctx.Done():
+			{
+				return
+			}
+		}
+	}()
 	return
 }
 
@@ -117,17 +117,37 @@ func (n *Node) Role() role.Role {
 	return n.election.Role()
 }
 
-func (n *Node) scheduler(ctx context.Context) {
+func (n *Node) _leaderRun(ctx context.Context) {
 	go func() {
-		for range time.Tick(time.Second * 5) {
-			logrus.Debug("scheduler ...")
-			fmt.Println(n.Role(), role.LEADER)
-			if n.Role() == role.LEADER {
-				n.Scheduler.Run(ctx)
-			} else {
-				n.Scheduler.Stop(ctx)
+		for {
+			select {
+			case <-ctx.Done():
+				{
+					return
+				}
+			case <-n.election.RoleCh:
+				{
+					n.leaderRun(ctx)
+				}
+			case <-time.Tick(time.Second * 2):
+				{
+					n.leaderRun(ctx)
+				}
 			}
 		}
-
 	}()
+}
+
+func (n *Node) leaderRun(ctx context.Context) {
+	if n.Role() == role.LEADER {
+		if err := n.Scheduler.Run(ctx); err != nil {
+			blog.Error("Scheduler run failed : ", err)
+			err = n.election.Resign(ctx)
+			if err != nil {
+				blog.Error("Election resign failed: ")
+			}
+		}
+	} else {
+		n.Scheduler.Stop(ctx)
+	}
 }

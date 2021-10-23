@@ -20,4 +20,6 @@ func InitViperFromFile(file string) {
 		logrus.Error(err.Error())
 		os.Exit(1)
 	}
+	viper.SetDefault("console.listen" , CONSOLE_LISTEN)
+	viper.SetDefault("console.port", CONSOLE_PORT)
 }
