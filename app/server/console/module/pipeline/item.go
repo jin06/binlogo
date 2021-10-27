@@ -7,7 +7,7 @@ import (
 
 type Item struct {
 	Pipeline *pipeline.Pipeline `json:"pipeline"`
-	Info *Info
+	Info *Info `json:"info"`
 }
 
 type Info struct {
