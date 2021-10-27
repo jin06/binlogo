@@ -42,7 +42,7 @@ func CreateNodeIfNotExist(n *node.Node) (err error) {
 func GetNode(name string) (n *node.Node, err error) {
 	ctx, cancel := context.WithTimeout(context.Background(), etcd.E.Timeout)
 	defer cancel()
-	key := etcd.Prefix() + "/nodes" + name
+	key := etcd.Prefix() + "/nodes/" + name
 	res, err := etcd.E.Client.Get(ctx, key)
 	if err != nil {
 		return

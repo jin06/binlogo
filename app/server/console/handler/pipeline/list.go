@@ -3,6 +3,7 @@ package pipeline
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/jin06/binlogo/app/server/console/handler"
+	"github.com/jin06/binlogo/app/server/console/module/pipeline"
 	"github.com/jin06/binlogo/pkg/store/dao"
 )
 
@@ -18,13 +19,23 @@ func List(c *gin.Context) {
 		return
 	}
 	all, err := dao.AllPipelines()
+
 	if err != nil {
 		c.JSON(200, handler.Fail(err))
 		return
 	}
-	var items []*item
+	var items []*pipeline.Item
 	for _, v := range all {
-		items = append(items, &item{Pipeline:v})
+		items = append(items, &pipeline.Item{Pipeline: v})
+	}
+	pb, err := dao.GetPipelineBind()
+	if err != nil {
+		c.JSON(200,handler.Fail(err))
+		return
+	}
+	if err = pipeline.CompleteInfoList(items, pb) ; err !=nil {
+		c.JSON(200, handler.Fail(err))
+		return
 	}
 
 	c.JSON(200, handler.Success(map[string]interface{}{
