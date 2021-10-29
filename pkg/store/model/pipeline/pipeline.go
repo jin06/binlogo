@@ -14,6 +14,7 @@ type Pipeline struct {
 	Output     *Output   `json:"output"`
 	Replicas   int       `json:"replicas"`
 	CreateTime time.Time `json:"create_time"`
+	Remark     string    `json:"remark"`
 }
 
 type Status string

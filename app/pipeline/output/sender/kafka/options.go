@@ -1,9 +1,9 @@
 package kafka
 
 import (
-	model2 "github.com/jin06/binlogo/pkg/store/model"
+	"github.com/jin06/binlogo/pkg/store/model/pipeline"
 )
 
 type Options struct {
-	Kafka *model2.Kafka
+	Kafka *pipeline.Kafka
 }

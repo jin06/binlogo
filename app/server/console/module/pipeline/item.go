@@ -7,10 +7,9 @@ import (
 
 type Item struct {
 	Pipeline *pipeline.Pipeline `json:"pipeline"`
-	Info *Info `json:"info"`
+	Info     *Info              `json:"info"`
 }
 
 type Info struct {
 	BindNode *node.Node `json:"bind_node"`
 }
-

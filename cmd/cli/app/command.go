@@ -7,7 +7,6 @@ import (
 	"github.com/jin06/binlogo/pkg/ps"
 	store2 "github.com/jin06/binlogo/pkg/store"
 	etcd2 "github.com/jin06/binlogo/pkg/store/etcd"
-	model2 "github.com/jin06/binlogo/pkg/store/model"
 	"github.com/jin06/binlogo/pkg/store/model/pipeline"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -66,9 +65,9 @@ func cmdCreatePipe() (cmd *cobra.Command) {
 					},
 				},
 				Output: &pipeline.Output{
-					Sender: &model2.Sender{
-						Type: model2.SNEDER_TYPE_STDOUT,
-						Kafka: &model2.Kafka{
+					Sender: &pipeline.Sender{
+						Type: pipeline.SNEDER_TYPE_STDOUT,
+						Kafka: &pipeline.Kafka{
 							Brokers: []string{
 								"kafka-banana.shan.svc.cluster.local:9092",
 							},

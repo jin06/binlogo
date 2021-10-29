@@ -6,7 +6,7 @@ import (
 	kafka2 "github.com/jin06/binlogo/app/pipeline/output/sender/kafka"
 	stdout2 "github.com/jin06/binlogo/app/pipeline/output/sender/stdout"
 	store2 "github.com/jin06/binlogo/pkg/store"
-	model2 "github.com/jin06/binlogo/pkg/store/model"
+	"github.com/jin06/binlogo/pkg/store/model/pipeline"
 	"github.com/sirupsen/logrus"
 )
 
@@ -30,9 +30,9 @@ func New(opts ...Option) (out *Output, err error) {
 
 func (o *Output) Init() (err error) {
 	switch o.Options.Output.Sender.Type {
-	case model2.SNEDER_TYPE_STDOUT:
+	case pipeline.SNEDER_TYPE_STDOUT:
 		o.Sender, err = stdout2.New()
-	case model2.SENDER_TYPE_KAFKA:
+	case pipeline.SENDER_TYPE_KAFKA:
 		fallthrough
 	default:
 		o.Sender, err = kafka2.New(
