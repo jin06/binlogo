@@ -3,6 +3,7 @@ package node
 import (
 	"encoding/json"
 	"net"
+	"time"
 )
 
 type NodeRole string
@@ -20,11 +21,12 @@ const (
 )
 
 type Node struct {
-	Name    string     `json:"name"`
-	Role    NodeRole   `json:"role"`
-	Ip      net.IP     `json:"ip"`
-	Status  NodeStatus `json:"status"`
-	Version string `json:"version"`
+	Name       string     `json:"name"`
+	Role       NodeRole   `json:"role"`
+	Ip         net.IP     `json:"ip"`
+	Status     NodeStatus `json:"status"`
+	Version    string     `json:"version"`
+	CreateTime time.Time  `json:"create_time"`
 }
 
 func (s *Node) Key() (key string) {

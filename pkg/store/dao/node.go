@@ -57,7 +57,7 @@ func GetNode(name string) (n *node.Node, err error) {
 
 func AllNodes() (list []*node.Node, err error) {
 	list = []*node.Node{}
-	key := etcd.E.Prefix + "/nodes"
+	key := etcd.E.Prefix + "/nodes/"
 	res, err := etcd.E.Client.Get(context.Background(), key, clientv3.WithPrefix())
 	if err != nil {
 		return
