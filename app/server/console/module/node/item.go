@@ -1,11 +1,18 @@
 package node
 
-import "github.com/jin06/binlogo/pkg/store/model/node"
+import (
+	"github.com/jin06/binlogo/pkg/node/role"
+	"github.com/jin06/binlogo/pkg/store/model/node"
+)
 
 type Item struct {
-	Node *node.Node `json:"node"`
-	Info *Info      `json:"info"`
+	Node        *node.Node        `json:"node"`
+	Capacity    *node.Capacity    `json:"capacity"`
+	Allocatable *node.Allocatable `json:"allocatable"`
+	Info        *Info             `json:"info"`
+	Status      *node.Status      `json:"status"`
 }
 
 type Info struct {
+	Role role.Role `json:"role"`
 }

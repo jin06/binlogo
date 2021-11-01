@@ -1,26 +1,8 @@
 package role
 
-type Role byte
+type Role string
 
 const (
-	LEADER   Role = 1
-	FOLLOWER Role = 2
+	LEADER   Role = "leader"
+	FOLLOWER Role = "follower"
 )
-
-func (r Role) String() (str string) {
-	switch r {
-	case LEADER:
-		{
-			str = "leader"
-		}
-	case FOLLOWER:
-		{
-			str = "follower"
-		}
-	default:
-		{
-			str = "follower"
-		}
-	}
-	return
-}

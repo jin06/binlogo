@@ -34,7 +34,7 @@ func (a *algorithm) cal() (err error) {
 	if err != nil {
 		return err
 	}
-	 err = a.calScores()
+	err = a.calScores()
 	if err != nil {
 		return
 	}
@@ -50,20 +50,23 @@ func (a *algorithm) calPotentialNodes() (err error) {
 	return
 }
 
-func (a *algorithm) calScores() ( err error) {
+func (a *algorithm) calScores() (err error) {
 	scores := map[string]int{}
 	pipeNums := map[string]int{}
 	total := 0
 	totalPipe := 0
-	for _,v:= range a.potentialNodes {
+	for _, v := range a.potentialNodes {
 		scores[v.Name] = 0
 		pipeNums[v.Name] = 0
 		total++
 	}
-	pb , err := dao.GetPipelineBind()
-	for _,v := range pb.Bindings {
+	pb, err := dao.GetPipelineBind()
+	if err != nil {
+		return
+	}
+	for _, v := range pb.Bindings {
 		totalPipe++
-		if _, ok := pipeNums[v];ok {
+		if _, ok := pipeNums[v]; ok {
 			pipeNums[v]++
 		}
 	}
@@ -85,8 +88,7 @@ func (a *algorithm) calScores() ( err error) {
 		scores[k] = score
 	}
 
-
-	a.nodesScores  = scores
+	a.nodesScores = scores
 
 	return
 }
@@ -99,7 +101,7 @@ func (a *algorithm) calBestNode() (err error) {
 	a.bestNode = a.potentialNodes[0]
 	score := a.nodesScores[a.bestNode.Name]
 
-	for k,v := range a.potentialNodes {
+	for k, v := range a.potentialNodes {
 		if a.nodesScores[v.Name] > score {
 			a.bestNode = a.potentialNodes[k]
 			score = a.nodesScores[v.Name]

@@ -130,6 +130,7 @@ func (e *Election) campaign(ctx context.Context) {
 	}()
 	return
 }
+
 func (e *Election) SetRole(r role.Role) {
 	e.roleMutex.Lock()
 	defer e.roleMutex.Unlock()

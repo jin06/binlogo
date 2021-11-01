@@ -3,6 +3,7 @@ package dao
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"github.com/jin06/binlogo/pkg/blog"
 	"github.com/jin06/binlogo/pkg/store/etcd"
 	"github.com/jin06/binlogo/pkg/store/model/node"
@@ -32,10 +33,49 @@ func CreateNodeIfNotExist(n *node.Node) (err error) {
 	txn := etcd.E.Client.Txn(ctx).If(clientv3.Compare(clientv3.CreateRevision(key), "=", 0))
 	txn = txn.Then(clientv3.OpPut(key, string(b)))
 	resp, err := txn.Commit()
+
 	if err != nil {
 		blog.Error(err)
 		blog.Error(resp.Succeeded)
 	}
+	return
+}
+
+func UpdateNode(nodeName string, opts ...Option) (ok bool, err error) {
+	if nodeName == "" {
+		err = errors.New("empty node name")
+		return
+	}
+	key := etcd.Prefix() + "/nodes/" + nodeName
+	res, err := etcd.E.Client.Get(context.TODO(), key)
+	if err != nil {
+		return
+	}
+	if len(res.Kvs) <= 0  {
+		err = errors.New("empty node")
+		return
+	}
+	revision := int64(0)
+	revision = res.Kvs[0].CreateRevision
+	n := &node.Node{}
+	err = json.Unmarshal(res.Kvs[0].Value, n)
+	if err != nil {
+		return
+	}
+	options := GetOptions(opts...)
+	if options.NodeIP != nil {
+		n.IP = options.NodeIP
+	}
+	if options.NodeVersion != "" {
+		n.Version = options.NodeVersion
+	}
+	txn := etcd.E.Client.Txn(context.TODO()).If(clientv3.Compare(clientv3.CreateRevision(key), "=", revision))
+	txn = txn.Then(clientv3.OpPut(key, n.Val()))
+	resp, err := txn.Commit()
+	if err != nil {
+		return
+	}
+	ok = resp.Succeeded
 	return
 }
 
@@ -77,14 +117,13 @@ func AllNodes() (list []*node.Node, err error) {
 	return
 }
 
-
 func AllWorkNodes() (list []*node.Node, err error) {
 	list, err = AllNodes()
 	if err != nil {
 		return
 	}
-	for k,v := range list {
-		if v.Status	== node.STATUS_OFF {
+	for k, v := range list {
+		if v.Status == node.STATUS_OFF {
 			list = append(list[:k], list[k:]...)
 		}
 	}

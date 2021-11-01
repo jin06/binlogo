@@ -12,6 +12,11 @@ func UpdateAllocatable(al *node.Allocatable, args ...Option) (err error) {
 	opts := GetOptions(args...)
 	key := opts.Key
 	if key == "" {
+		if opts.NodeName != "" {
+			key = etcd.Prefix() + "/allocatable/" + opts.NodeName
+		}
+	}
+	if key == "" {
 		err = errors.New("empty key")
 		return
 	}
