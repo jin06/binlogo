@@ -3,22 +3,21 @@ package dao_node
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"github.com/jin06/binlogo/pkg/blog"
 	"github.com/jin06/binlogo/pkg/store/etcd"
 	"github.com/jin06/binlogo/pkg/store/model/node"
 	"go.etcd.io/etcd/clientv3"
 )
 
-func nodePrefix() string {
-	return etcd.Prefix() + "/nodes"
-}
-func statsPrefix() string {
-	return etcd.Prefix() + "/status"
+
+func StatsPrefix() string {
+	return etcd.Prefix() + "/node/status"
 }
 
 func CreateOrUpdateStatus(nodeName string, opts ...Option) (ok bool, err error) {
 	options := GetOptions(opts...)
-	key := statsPrefix() + "/" + nodeName
+	key := StatsPrefix() + "/" + nodeName
 	res , err := etcd.E.Client.Get(context.TODO(), key)
 	if err != nil {
 		return
@@ -47,7 +46,7 @@ func CreateOrUpdateStatus(nodeName string, opts ...Option) (ok bool, err error) 
 }
 
 func GetStatus(nodeName string) (s *node.Status, err error) {
-	key := nodePrefix() + "/" + nodeName
+	key := NodePrefix() + "/" + nodeName
 	res, err := etcd.E.Client.Get(context.TODO(), key)
 	if err != nil {
 		return
@@ -61,7 +60,7 @@ func GetStatus(nodeName string) (s *node.Status, err error) {
 }
 
 func CreateStatusIfNotExist(nodeName string, n *node.Status) (err error) {
-	key := etcd.Prefix() + "/status/" + nodeName
+	key := StatsPrefix() + "/" + nodeName
 	b, err := json.Marshal(n)
 	if err != nil {
 		return
@@ -74,5 +73,36 @@ func CreateStatusIfNotExist(nodeName string, n *node.Status) (err error) {
 		blog.Error(err)
 		blog.Error(resp.Succeeded)
 	}
+	return
+}
+
+func StatusMap() (mapping map[string]*node.Status, err error) {
+	key := StatsPrefix()
+	res, err := etcd.E.Client.Get(context.TODO(), key, clientv3.WithPrefix())
+	if err != nil {
+		return
+	}
+	if len(res.Kvs) == 0 {
+		return
+	}
+	mapping = map[string]*node.Status{}
+	for _, v := range res.Kvs {
+		ele := &node.Status{}
+		er := json.Unmarshal(v.Value, ele)
+		if er != nil {
+			blog.Error(er)
+			continue
+		}
+		var nodeName string
+		_, er = fmt.Sscanf(string(v.Key), key+"/%s", &nodeName)
+		if er != nil {
+			blog.Error(er)
+			continue
+		}
+		if nodeName != "" {
+			mapping[nodeName] = ele
+		}
+	}
+
 	return
 }

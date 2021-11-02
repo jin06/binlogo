@@ -1,4 +1,4 @@
-package dao
+package dao_node
 
 import (
 	"context"
@@ -11,12 +11,16 @@ import (
 	"go.etcd.io/etcd/clientv3"
 )
 
+func CapacityPrefix() string {
+	return etcd.Prefix() + "/node/capacity"
+}
+
 func UpdateCapacity(cap *node.Capacity, args ...Option) (err error) {
 	opts := GetOptions(args...)
 	key := opts.Key
 	if key == "" {
 		if opts.NodeName != "" {
-			key = etcd.Prefix() + "/capacity/" + opts.NodeName
+			key = CapacityPrefix() + "/" + opts.NodeName
 		}
 	}
 	if key == "" {
@@ -34,7 +38,7 @@ func UpdateCapacity(cap *node.Capacity, args ...Option) (err error) {
 }
 
 func CapacityMap() (mapping map[string]*node.Capacity, err error) {
-	key := etcd.Prefix() + "/" + "capacity"
+	key := CapacityPrefix()
 	res, err := etcd.E.Client.Get(context.TODO(), key, clientv3.WithPrefix())
 	if err != nil {
 		return

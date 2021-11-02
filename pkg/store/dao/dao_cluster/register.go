@@ -1,4 +1,4 @@
-package dao
+package dao_cluster
 
 import (
 	"context"
@@ -8,13 +8,17 @@ import (
 	"go.etcd.io/etcd/clientv3"
 )
 
-func RegRNode(n *register.RegisterNode,leaseID clientv3.LeaseID)(err error) {
-	key := etcd.Prefix() + "/register/" + n.Name
+func RegisterPrefix() string {
+	return etcd.Prefix() + "/cluster/register"
+}
+
+func RegRNode(n *register.RegisterNode, leaseID clientv3.LeaseID) (err error) {
+	key := RegisterPrefix() + "/" + n.Name
 	b, err := json.Marshal(n)
 	if err != nil {
 		return
 	}
-	_, err =  etcd.E.Client.Put(context.Background(), key, string(b), clientv3.WithLease(leaseID))
+	_, err = etcd.E.Client.Put(context.Background(), key, string(b), clientv3.WithLease(leaseID))
 	if err != nil {
 		return
 	}
@@ -24,7 +28,7 @@ func RegRNode(n *register.RegisterNode,leaseID clientv3.LeaseID)(err error) {
 func GetRNode(name string) (n *register.RegisterNode, err error) {
 	ctx, cancel := context.WithTimeout(context.Background(), etcd.E.Timeout)
 	defer cancel()
-	key := etcd.Prefix() + "/register/" + name
+	key := RegisterPrefix() + "/" + name
 	res, err := etcd.E.Client.Get(ctx, key)
 	if err != nil {
 		return

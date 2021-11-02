@@ -2,10 +2,9 @@ package election
 
 import (
 	"context"
-	"fmt"
 	"github.com/coreos/etcd/clientv3"
-	"github.com/jin06/binlogo/configs"
 	"github.com/jin06/binlogo/pkg/node/role"
+	"github.com/jin06/binlogo/pkg/store/dao/dao_cluster"
 	node2 "github.com/jin06/binlogo/pkg/store/model/node"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
@@ -29,12 +28,8 @@ type Election struct {
 
 func New(opts ...Option) (e *Election, err error) {
 	e = &Election{
-		ttl: 1,
-		prefix: fmt.Sprintf(
-			"/%v/%v/election",
-			configs.APP,
-			viper.GetString("cluster.name"),
-		),
+		ttl:    1,
+		prefix: dao_cluster.ElectionPrefix(),
 		role:   role.FOLLOWER,
 		RoleCh: make(chan role.Role, 1000),
 	}

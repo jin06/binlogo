@@ -2,7 +2,8 @@ package scheduler
 
 import (
 	"errors"
-	"github.com/jin06/binlogo/pkg/store/dao"
+	"github.com/jin06/binlogo/pkg/store/dao/dao_node"
+	"github.com/jin06/binlogo/pkg/store/dao/dao_sche"
 	"github.com/jin06/binlogo/pkg/store/model/node"
 	"github.com/jin06/binlogo/pkg/store/model/pipeline"
 )
@@ -26,7 +27,7 @@ func newAlgorithm(p *pipeline.Pipeline) *algorithm {
 }
 
 func (a *algorithm) cal() (err error) {
-	a.allNodes, err = dao.AllWorkNodes()
+	a.allNodes, err = dao_node.AllWorkNodes()
 	if err != nil {
 		return
 	}
@@ -60,7 +61,7 @@ func (a *algorithm) calScores() (err error) {
 		pipeNums[v.Name] = 0
 		total++
 	}
-	pb, err := dao.GetPipelineBind()
+	pb, err := dao_sche.GetPipelineBind()
 	if err != nil {
 		return
 	}

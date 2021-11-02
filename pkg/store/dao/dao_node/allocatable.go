@@ -1,4 +1,4 @@
-package dao
+package dao_node
 
 import (
 	"context"
@@ -8,12 +8,15 @@ import (
 	"github.com/jin06/binlogo/pkg/store/model/node"
 )
 
+func AllocatablePrefix() string {
+	return etcd.Prefix() + "/node/allocatable"
+}
 func UpdateAllocatable(al *node.Allocatable, args ...Option) (err error) {
 	opts := GetOptions(args...)
 	key := opts.Key
 	if key == "" {
 		if opts.NodeName != "" {
-			key = etcd.Prefix() + "/allocatable/" + opts.NodeName
+			key = AllocatablePrefix() + "/" + opts.NodeName
 		}
 	}
 	if key == "" {

@@ -1,4 +1,4 @@
-package dao
+package dao_sche
 
 import (
 	"context"
@@ -57,13 +57,9 @@ func UpdatePipelineBind(pName string, nName string) (ok bool, err error) {
 	}
 	pb := scheduler.EmptyPipelineBind()
 	var revision int64
-	for _, v := range res.Kvs {
-		err = pb.Unmarshal(v.Value)
-		if err != nil {
-			return
-		}
-		revision = v.CreateRevision
-		break
+	if len(res.Kvs) > 0 {
+		revision = res.Kvs[0].CreateRevision
+		err = pb.Unmarshal(res.Kvs[0].Value)
 	}
 	pb.Bindings[pName] = nName
 	txn := etcd.E.Client.Txn(context.Background()).If(clientv3.Compare(clientv3.CreateRevision(pipeBindPrefix()), "=", revision))

@@ -4,7 +4,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/jin06/binlogo/app/server/console/handler"
 	"github.com/jin06/binlogo/app/server/console/module/pipeline"
-	"github.com/jin06/binlogo/pkg/store/dao"
+	"github.com/jin06/binlogo/pkg/store/dao/dao_pipe"
+	"github.com/jin06/binlogo/pkg/store/dao/dao_sche"
 )
 
 func List(c *gin.Context) {
@@ -18,7 +19,7 @@ func List(c *gin.Context) {
 		c.JSON(200, handler.Fail(err))
 		return
 	}
-	all, err := dao.AllPipelines()
+	all, err := dao_pipe.AllPipelines()
 
 	if err != nil {
 		c.JSON(200, handler.Fail(err))
@@ -28,7 +29,7 @@ func List(c *gin.Context) {
 	for _, v := range all {
 		items = append(items, &pipeline.Item{Pipeline: v})
 	}
-	pb, err := dao.GetPipelineBind()
+	pb, err := dao_sche.GetPipelineBind()
 	if err != nil {
 		c.JSON(200,handler.Fail(err))
 		return

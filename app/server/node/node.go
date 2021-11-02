@@ -3,9 +3,10 @@ package node
 import (
 	"context"
 	"github.com/jin06/binlogo/app/server/node/election"
+	"github.com/jin06/binlogo/app/server/node/manager/manager_status"
+	"github.com/jin06/binlogo/app/server/node/monitor"
 	register2 "github.com/jin06/binlogo/app/server/node/register"
 	"github.com/jin06/binlogo/app/server/node/scheduler"
-	"github.com/jin06/binlogo/app/server/node/status"
 	"github.com/jin06/binlogo/pkg/blog"
 	"github.com/jin06/binlogo/pkg/node/role"
 	store2 "github.com/jin06/binlogo/pkg/store"
@@ -20,7 +21,8 @@ type Node struct {
 	Register       *register2.Register
 	election       *election.Election
 	Scheduler      *scheduler.Scheduler
-	StatusManager  *status.Manager
+	StatusManager  *manager_status.Manager
+	monitor        *monitor.Monitor
 	leaderRunMutex sync.Mutex
 }
 
@@ -64,8 +66,10 @@ func (n *Node) Init() (err error) {
 		register2.OptionLeaseDuration(2*time.Second),
 	)
 	n.Scheduler = scheduler.New()
-	n.StatusManager = &status.Manager{
-		NodeName: n.Options.Node.Name,
+	n.StatusManager = manager_status.NewManager(n.Options.Node)
+	n.monitor, err = monitor.NewMonitor()
+	if err != nil {
+		return
 	}
 	return
 }
@@ -139,15 +143,33 @@ func (n *Node) _leaderRun(ctx context.Context) {
 }
 
 func (n *Node) leaderRun(ctx context.Context) {
-	if n.Role() == role.LEADER {
-		if err := n.Scheduler.Run(ctx); err != nil {
-			blog.Error("Scheduler run failed : ", err)
-			err = n.election.Resign(ctx)
+	switch n.Role() {
+	case role.LEADER:
+		{
+			var err error
+			defer func() {
+				if err != nil {
+					n.Scheduler.Stop(ctx)
+					n.monitor.Stop(ctx)
+					err = n.election.Resign(ctx)
+					if err != nil {
+						blog.Error("Election resign failed: ")
+					}
+				}
+			}()
+			err = n.Scheduler.Run(ctx)
 			if err != nil {
-				blog.Error("Election resign failed: ")
+				return
+			}
+			err = n.monitor.Run(ctx)
+			if err != nil {
+				return
 			}
 		}
-	} else {
-		n.Scheduler.Stop(ctx)
+	default:
+		{
+			n.Scheduler.Stop(ctx)
+			n.monitor.Stop(ctx)
+		}
 	}
 }

@@ -1,4 +1,4 @@
-package dao
+package dao_node
 
 import (
 	"context"
@@ -10,8 +10,12 @@ import (
 	"go.etcd.io/etcd/clientv3"
 )
 
+func NodePrefix() string {
+	return etcd.Prefix() + "/node/info"
+}
+
 func CreateNode(n *node.Node) (err error) {
-	key := etcd.Prefix() + "/nodes" + n.Name
+	key := NodePrefix() + "/" + n.Name
 	ctx, cancel := context.WithTimeout(context.Background(), etcd.E.Timeout)
 	defer cancel()
 	v, err := json.Marshal(n)
@@ -23,7 +27,7 @@ func CreateNode(n *node.Node) (err error) {
 }
 
 func CreateNodeIfNotExist(n *node.Node) (err error) {
-	key := etcd.Prefix() + "/nodes/" + n.Name
+	key := NodePrefix() + "/" + n.Name
 	ctx, cancel := context.WithTimeout(context.Background(), etcd.E.Timeout)
 	defer cancel()
 	b, err := json.Marshal(n)
@@ -46,7 +50,7 @@ func UpdateNode(nodeName string, opts ...Option) (ok bool, err error) {
 		err = errors.New("empty node name")
 		return
 	}
-	key := etcd.Prefix() + "/nodes/" + nodeName
+	key := NodePrefix() + "/" + nodeName
 	res, err := etcd.E.Client.Get(context.TODO(), key)
 	if err != nil {
 		return
@@ -82,7 +86,7 @@ func UpdateNode(nodeName string, opts ...Option) (ok bool, err error) {
 func GetNode(name string) (n *node.Node, err error) {
 	ctx, cancel := context.WithTimeout(context.Background(), etcd.E.Timeout)
 	defer cancel()
-	key := etcd.Prefix() + "/nodes/" + name
+	key := NodePrefix() + "/" + name
 	res, err := etcd.E.Client.Get(ctx, key)
 	if err != nil {
 		return
@@ -97,7 +101,7 @@ func GetNode(name string) (n *node.Node, err error) {
 
 func AllNodes() (list []*node.Node, err error) {
 	list = []*node.Node{}
-	key := etcd.E.Prefix + "/nodes/"
+	key := NodePrefix() + "/"
 	res, err := etcd.E.Client.Get(context.Background(), key, clientv3.WithPrefix())
 	if err != nil {
 		return
@@ -122,10 +126,10 @@ func AllWorkNodes() (list []*node.Node, err error) {
 	if err != nil {
 		return
 	}
-	for k, v := range list {
-		if v.Status == node.STATUS_OFF {
-			list = append(list[:k], list[k:]...)
-		}
-	}
+	//for k, v := range list {
+	//	if v.Status == node.STATUS_OFF {
+	//		list = append(list[:k], list[k:]...)
+	//	}
+	//}
 	return
 }

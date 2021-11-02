@@ -6,7 +6,8 @@ import (
 	"github.com/jin06/binlogo/app/server/console/module/node"
 	"github.com/jin06/binlogo/pkg/blog"
 	"github.com/jin06/binlogo/pkg/node/role"
-	"github.com/jin06/binlogo/pkg/store/dao"
+	"github.com/jin06/binlogo/pkg/store/dao/dao_cluster"
+	"github.com/jin06/binlogo/pkg/store/dao/dao_node"
 )
 
 func List(c *gin.Context) {
@@ -20,16 +21,20 @@ func List(c *gin.Context) {
 		c.JSON(200, handler.Fail(err))
 		return
 	}
-	all, err := dao.AllNodes()
+	all, err := dao_node.AllNodes()
 	if err != nil {
 		c.JSON(200, handler.Fail(err))
 		return
 	}
-	capacityMap, err := dao.CapacityMap()
+	capacityMap, err := dao_node.CapacityMap()
 	if err != nil {
 		blog.Error(err)
 	}
-	leaderNode, err := dao.LeaderNode()
+	statusMap, err := dao_node.StatusMap()
+	if err != nil {
+		blog.Error(err)
+	}
+	leaderNode, err := dao_cluster.LeaderNode()
 	if err != nil {
 		blog.Error(err)
 	}
@@ -43,6 +48,9 @@ func List(c *gin.Context) {
 		}
 		if _, ok := capacityMap[v.Name]; ok {
 			i.Capacity = capacityMap[v.Name]
+		}
+		if _, ok := statusMap[v.Name]; ok {
+			i.Status = statusMap[v.Name]
 		}
 		if i.Node.Name == leaderNode {
 			i.Info.Role = role.LEADER

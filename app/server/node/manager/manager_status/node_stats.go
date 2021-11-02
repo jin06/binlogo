@@ -1,9 +1,9 @@
-package status
+package manager_status
 
 import (
 	"errors"
 	"github.com/jin06/binlogo/pkg/blog"
-	"github.com/jin06/binlogo/pkg/store/dao"
+	"github.com/jin06/binlogo/pkg/store/dao/dao_node"
 	"github.com/jin06/binlogo/pkg/store/model/node"
 	"github.com/shirou/gopsutil/v3/cpu"
 	"github.com/shirou/gopsutil/v3/mem"
@@ -88,13 +88,11 @@ func (ns *NodeStatus) setStatus() (err error) {
 func (ns *NodeStatus) syncCap() (err error) {
 	//key := etcd.Prefix() + "/nodes/" + ns.NodeName + "/capacity"
 	//err = dao.UpdateCapacity(ns.Cap, dao.WithKey(key))
-	err = dao.UpdateCapacity(ns.Cap, dao.WithNodeName(ns.NodeName))
+	err = dao_node.UpdateCapacity(ns.Cap, dao_node.WithNodeName(ns.NodeName))
 	return
 }
 
 func (ns *NodeStatus) syncAllocatable() (err error) {
-	//key := etcd.Prefix() + "/nodes/" + ns.NodeName + "/allocatable"
-	//err = dao.UpdateAllocatable(ns.Allocatable, dao.WithKey(key))
-	err = dao.UpdateAllocatable(ns.Allocatable, dao.WithNodeName(ns.NodeName))
+	err = dao_node.UpdateAllocatable(ns.Allocatable, dao_node.WithNodeName(ns.NodeName))
 	return
 }

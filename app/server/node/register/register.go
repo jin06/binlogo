@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/coreos/etcd/etcdserver/api/v3rpc/rpctypes"
 	"github.com/jin06/binlogo/pkg/blog"
-	"github.com/jin06/binlogo/pkg/store/dao"
+	"github.com/jin06/binlogo/pkg/store/dao/dao_cluster"
 	etcd2 "github.com/jin06/binlogo/pkg/store/etcd"
 	node2 "github.com/jin06/binlogo/pkg/store/model/node"
 	"github.com/jin06/binlogo/pkg/store/model/register"
@@ -85,7 +85,7 @@ func (r *Register) reg() (err error) {
 	} else {
 		r.leaseID = rep.ID
 	}
-	err = dao.RegRNode(&register.RegisterNode{Name: r.node.Name}, r.leaseID)
+	err = dao_cluster.RegRNode(&register.RegisterNode{Name: r.node.Name}, r.leaseID)
 	return
 }
 

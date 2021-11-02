@@ -3,7 +3,7 @@ package scheduler
 import (
 	"context"
 	"github.com/jin06/binlogo/pkg/blog"
-	"github.com/jin06/binlogo/pkg/store/dao"
+	"github.com/jin06/binlogo/pkg/store/dao/dao_sche"
 	"github.com/jin06/binlogo/pkg/store/model/pipeline"
 	"sync"
 	"time"
@@ -12,14 +12,14 @@ import (
 type Scheduler struct {
 	options *Options
 	lock    sync.Mutex
-	monitor *Monitor
+	watcher *Watcher
 	status  string
 	runLock sync.Mutex
 	cancel  context.CancelFunc
 }
 
 const (
-	SCHEDULER_RUN  = "running"
+	SCHEDULER_RUN  = "run"
 	SCHEDULER_STOP = "stop"
 )
 
@@ -35,7 +35,7 @@ func (s *Scheduler) Run(ctx context.Context) (err error) {
 	s._schedule(cctx)
 	blog.Debug("scheduler.run")
 	//s._monitor(ctx2)
-	err = s.monitor.run(cctx)
+	err = s.watcher.run(cctx)
 	s.status = SCHEDULER_RUN
 	return
 }
@@ -51,8 +51,7 @@ func (s *Scheduler) _schedule(ctx context.Context) {
 				{
 					return
 				}
-			//case p := <-s.queue.readyQueue:
-			case p := <-s.monitor.notBindPipelineCh:
+			case p := <-s.watcher.notBindPipelineCh:
 				{
 					if err := s.scheduleOne(p); err != nil {
 						blog.Error(err)
@@ -85,7 +84,7 @@ func (s *Scheduler) scheduleOne(p *pipeline.Pipeline) (err error) {
 		return
 	}
 	blog.Debugf("best node for %s is %s \n", p.Name, a.bestNode.Name)
-	_, err = dao.UpdatePipelineBind(p.Name, a.bestNode.Name)
+	_, err = dao_sche.UpdatePipelineBind(p.Name, a.bestNode.Name)
 	if err != nil {
 		blog.Error(err)
 	}
@@ -104,7 +103,7 @@ func New(opts ...Option) (s *Scheduler) {
 		v(options)
 	}
 	s.runLock = sync.Mutex{}
-	s.monitor, err = newMonitor()
+	s.watcher, err = newWatcher()
 	s.status = SCHEDULER_STOP
 	if err != nil {
 		blog.Error(err)

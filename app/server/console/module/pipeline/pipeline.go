@@ -1,7 +1,7 @@
 package pipeline
 
 import (
-	"github.com/jin06/binlogo/pkg/store/dao"
+	"github.com/jin06/binlogo/pkg/store/dao/dao_node"
 	"github.com/jin06/binlogo/pkg/store/model/node"
 	"github.com/jin06/binlogo/pkg/store/model/scheduler"
 )
@@ -21,7 +21,7 @@ func CompleteInfo(i *Item, pb *scheduler.PipelineBind) (err error) {
 		i.Info.BindNode = &node.Node{}
 		return
 	}
-	n, err := dao.GetNode(nodeName)
+	n, err := dao_node.GetNode(nodeName)
 	if err != nil {
 		return
 	}

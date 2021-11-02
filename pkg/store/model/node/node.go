@@ -2,29 +2,20 @@ package node
 
 import (
 	"encoding/json"
-	"github.com/jin06/binlogo/pkg/node/role"
 	"net"
 	"time"
 )
 
-type NodeStatus string
-
-const (
-	STATUS_ON  = "on"
-	STATUS_OFF = "off"
-)
-
 type Node struct {
-	Name       string     `json:"name"`
-	Role       role.Role  `json:"role"`
-	IP         net.IP     `json:"ip"`
-	Status     NodeStatus `json:"status"`
-	Version    string     `json:"version"`
-	CreateTime time.Time  `json:"create_time"`
+	Name       string    `json:"name"`
+	Role       Role      `json:"role"`
+	IP         net.IP    `json:"ip"`
+	Version    string    `json:"version"`
+	CreateTime time.Time `json:"create_time"`
 }
 
 func (s *Node) Key() (key string) {
-	key = "nodes/" + s.Name
+	key = "node/" + s.Name
 	return
 }
 

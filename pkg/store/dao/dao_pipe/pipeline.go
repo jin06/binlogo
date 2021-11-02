@@ -1,4 +1,4 @@
-package dao
+package dao_pipe
 
 import (
 	"context"
@@ -9,8 +9,21 @@ import (
 	"sort"
 )
 
+func PipelinePrefix() string {
+	return etcd.Prefix() + "/pipeline/info"
+}
+
 func CreatePipeline(d *pipeline.Pipeline, opts ...clientv3.OpOption) (ok bool, err error) {
-	return etcd.Create(d, opts...)
+	key := PipelinePrefix() + "/" + d.Name
+	txn := etcd.E.Client.Txn(context.TODO())
+	txn = txn.If(clientv3.Compare(clientv3.CreateRevision(key), "=", int64(0)))
+	txn = txn.Then(clientv3.OpPut(key, d.Val(), opts...))
+	resp, err := txn.Commit()
+	if err != nil {
+		return
+	}
+	ok = resp.Succeeded
+	return
 }
 
 func UpdatePipeline(d *pipeline.Pipeline) (bool, error) {
@@ -19,7 +32,7 @@ func UpdatePipeline(d *pipeline.Pipeline) (bool, error) {
 
 func AllPipelines() (list []*pipeline.Pipeline, err error) {
 	list = []*pipeline.Pipeline{}
-	key := etcd.Prefix() + "/pipeline/"
+	key := PipelinePrefix()
 	res, err := etcd.E.Client.Get(context.Background(), key, clientv3.WithPrefix())
 	if err != nil {
 		return

@@ -24,10 +24,10 @@ func New(key string) (w *NodeWatcher, err error) {
 
 func (w *NodeWatcher) _watch(ctx context.Context, option byte) {
 	if option == 1 {
-		w.General.WatchEtcd2(ctx)
+		w.General.WatchEtcd(ctx)
 	}
 	if option == 2 {
-		w.General.WatchEtcdList2(ctx)
+		w.General.WatchEtcdList(ctx)
 	}
 	go func() {
 		for {
@@ -36,13 +36,13 @@ func (w *NodeWatcher) _watch(ctx context.Context, option byte) {
 				{
 					return
 				}
-			case e := <-w.General.Queue2:
+			case e := <-w.General.Queue:
 				{
 					val := &watcher.Event{
 					}
 					m := &node.Node{}
 					val.Event = e
-					val.Model = m
+					val.Data = m
 					if e.Type == mvccpb.DELETE {
 						_, err := fmt.Sscanf(string(e.Kv.Key), w.General.GetKey()+"/%s", &m.Name)
 						fmt.Printf("%v", m)
