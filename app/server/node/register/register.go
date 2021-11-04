@@ -2,6 +2,7 @@ package register
 
 import (
 	"context"
+	"github.com/coreos/etcd/clientv3"
 	"github.com/coreos/etcd/etcdserver/api/v3rpc/rpctypes"
 	"github.com/jin06/binlogo/pkg/blog"
 	"github.com/jin06/binlogo/pkg/store/dao/dao_cluster"
@@ -9,7 +10,6 @@ import (
 	node2 "github.com/jin06/binlogo/pkg/store/model/node"
 	"github.com/jin06/binlogo/pkg/store/model/register"
 	"github.com/sirupsen/logrus"
-	"go.etcd.io/etcd/clientv3"
 	"time"
 )
 

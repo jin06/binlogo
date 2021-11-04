@@ -1,6 +1,6 @@
 package repl
 
-import "github.com/siddontang/go-mysql/replication"
+import "github.com/go-mysql-org/go-mysql/replication"
 
 type Config struct {
 	ServerID uint32

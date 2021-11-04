@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	model2 "github.com/jin06/binlogo/pkg/store/model"
-	"go.etcd.io/etcd/clientv3"
+	"github.com/coreos/etcd/clientv3"
 	"time"
 )
 func main()  {

@@ -27,7 +27,7 @@ const STATUS_STOP = "stop"
 
 func NewMonitor() (m *Monitor, err error) {
 	m = &Monitor{
-		etcd: etcd.E,
+		etcd:   etcd.E,
 		status: STATUS_STOP,
 	}
 	m.pipeWatcher, err = pipeline.New(dao_pipe.PipelinePrefix())

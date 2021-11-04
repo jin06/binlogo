@@ -3,12 +3,12 @@ package etcd
 import (
 	"context"
 	"fmt"
+	"github.com/coreos/etcd/clientv3"
 	"github.com/jin06/binlogo/pkg/blog"
 	options2 "github.com/jin06/binlogo/pkg/store/etcd/options"
 	model2 "github.com/jin06/binlogo/pkg/store/model"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
-	"go.etcd.io/etcd/clientv3"
 	"os"
 	"time"
 )

@@ -1,11 +1,12 @@
 package output
 
 import (
+	"context"
 	message2 "github.com/jin06/binlogo/app/pipeline/message"
 	sender2 "github.com/jin06/binlogo/app/pipeline/output/sender"
 	kafka2 "github.com/jin06/binlogo/app/pipeline/output/sender/kafka"
 	stdout2 "github.com/jin06/binlogo/app/pipeline/output/sender/stdout"
-	store2 "github.com/jin06/binlogo/pkg/store"
+	"github.com/jin06/binlogo/pkg/store/dao/dao_pipe"
 	"github.com/jin06/binlogo/pkg/store/model/pipeline"
 	"github.com/sirupsen/logrus"
 )
@@ -45,48 +46,55 @@ func (o *Output) Init() (err error) {
 	return
 }
 
-func recordPosition(msg *message2.Message) (bool, error) {
+func recordPosition(msg *message2.Message) (err error) {
 	logrus.Debugf(
 		"Record new replication position, file %s, pos %v",
 		msg.BinlogPosition.BinlogFile,
 		msg.BinlogPosition.BinlogPosition,
 	)
-	return store2.Update(msg.BinlogPosition)
-}
-
-func (o *Output) doHandle() {
-	for {
-		logrus.Debug("Wait send message")
-		var msg *message2.Message
-		msg = <-o.InChan
-		logrus.Debugf("Output read message: %v \n", *msg)
-		if !msg.Filter {
-			ok, err := o.Sender.Send(msg)
-			if err != nil {
-				logrus.Error("Send message error: ", err)
-				continue
-			}
-			if !ok {
-				logrus.Error("Send message failed")
-				continue
-			}
-		}
-		ok, err := recordPosition(msg)
-		if err != nil {
-			logrus.Error(err)
-		}
-		if !ok {
-			logrus.Error("Record position error")
-		}
-	}
-}
-
-func (o *Output) handle() {
-	go o.doHandle()
+	err = dao_pipe.UpdatePosition(msg.BinlogPosition)
 	return
 }
 
-func (o *Output) Run() (err error) {
-	o.handle()
+func (o *Output) doHandle() {
+	logrus.Debug("Wait send message")
+	var msg *message2.Message
+	msg = <-o.InChan
+	logrus.Debugf("Output read message: %v \n", *msg)
+	if !msg.Filter {
+		ok, err := o.Sender.Send(msg)
+		if err != nil {
+			logrus.Error("Send message error: ", err)
+			return
+		}
+		if !ok {
+			logrus.Error("Send message failed")
+			return
+		}
+	}
+	err := recordPosition(msg)
+	if err != nil {
+		logrus.Error(err)
+	}
+}
+
+func (o *Output) handle(ctx context.Context) {
+	go func() {
+		for {
+			select {
+			case <-ctx.Done():
+				{
+					return
+				}
+			default:
+				o.doHandle()
+			}
+		}
+	}()
+	return
+}
+
+func (o *Output) Run(ctx context.Context) (err error) {
+	o.handle(ctx)
 	return
 }

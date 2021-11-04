@@ -4,10 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"github.com/coreos/etcd/clientv3"
 	"github.com/jin06/binlogo/pkg/blog"
 	"github.com/jin06/binlogo/pkg/store/etcd"
 	"github.com/jin06/binlogo/pkg/store/model/node"
-	"go.etcd.io/etcd/clientv3"
 )
 
 func NodePrefix() string {
@@ -55,7 +55,7 @@ func UpdateNode(nodeName string, opts ...Option) (ok bool, err error) {
 	if err != nil {
 		return
 	}
-	if len(res.Kvs) <= 0  {
+	if len(res.Kvs) <= 0 {
 		err = errors.New("empty node")
 		return
 	}

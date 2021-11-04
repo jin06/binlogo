@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	repl2 "github.com/jin06/binlogo/pkg/mysql/repl"
-	_ "github.com/siddontang/go-mysql/driver"
+	_ "github.com/go-mysql-org/go-mysql/driver"
 	"os"
 	"time"
 )

@@ -1,27 +1,35 @@
 package pipeline
 
 import (
+	"context"
 	"errors"
 	filter2 "github.com/jin06/binlogo/app/pipeline/filter"
 	input2 "github.com/jin06/binlogo/app/pipeline/input"
 	message2 "github.com/jin06/binlogo/app/pipeline/message"
 	output2 "github.com/jin06/binlogo/app/pipeline/output"
 	store2 "github.com/jin06/binlogo/pkg/store"
-	model2 "github.com/jin06/binlogo/pkg/store/model"
 	"github.com/jin06/binlogo/pkg/store/model/pipeline"
 	"github.com/siddontang/go-log/log"
 	"github.com/sirupsen/logrus"
+	"sync"
 )
 
 type Pipeline struct {
-	Input       *input2.Input
-	Output      *output2.Output
-	Filter      *filter2.Filter
-	OutChan     *OutChan
-	ControlLine *ControlLine
-	Options     Options
-	Role        Role
+	Input    *input2.Input
+	Output   *output2.Output
+	Filter   *filter2.Filter
+	OutChan  *OutChan
+	Options  Options
+	Role     Role
+	cancel   context.CancelFunc
+	runMutex sync.Mutex
+	status   string
 }
+
+const (
+	STATUS_RUN  = "running"
+	STATUS_STOP = "stopped"
+)
 
 func NewFromStore(name string) (p *Pipeline, err error) {
 	pipeModel := &pipeline.Pipeline{
@@ -35,7 +43,7 @@ func NewFromStore(name string) (p *Pipeline, err error) {
 		err = errors.New("No pipeline data ")
 		return
 	}
-	posModel := &model2.Position{
+	posModel := &pipeline.Position{
 		PipelineName: name,
 	}
 	ok, err = store2.Get(posModel)
@@ -61,9 +69,11 @@ func New(opt ...Option) (p *Pipeline, err error) {
 		v(&options)
 	}
 	p = &Pipeline{
-		Options: options,
+		Options:  options,
+		runMutex: sync.Mutex{},
+		status:   STATUS_STOP,
 	}
-	err = p.Init()
+	err = p.init()
 	return
 }
 
@@ -73,10 +83,7 @@ type OutChan struct {
 	Out    chan *message2.Message
 }
 
-type ControlLine struct {
-}
-
-func (p *Pipeline) Init() (err error) {
+func (p *Pipeline) init() (err error) {
 	if p.Options.Pipeline == nil {
 		return errors.New("lack pipeline info")
 	}
@@ -124,18 +131,36 @@ func (p *Pipeline) initOutput() (err error) {
 	return
 }
 
-func (p *Pipeline) Run() (err error) {
+func (p *Pipeline) Run(ctx context.Context) (err error) {
+	p.runMutex.Lock()
+	defer p.runMutex.Unlock()
+	if p.status == STATUS_RUN {
+		return
+	}
 	logrus.Debug("mysql position", p.Input.Options.Position)
-	if err = p.Input.Run(); err != nil {
+	sctx, cancel := context.WithCancel(ctx)
+	p.cancel = cancel
+	if err = p.Input.Run(sctx); err != nil {
 		return
 	}
-	if err = p.Filter.Run(); err != nil {
+	if err = p.Filter.Run(sctx); err != nil {
 		return
 	}
-	if err = p.Output.Run(); err != nil {
+	if err = p.Output.Run(sctx); err != nil {
 		return
 	}
+	p.status = STATUS_RUN
 	return
+}
+
+func (p *Pipeline) Stop() {
+	p.runMutex.Lock()
+	defer p.runMutex.Unlock()
+	if p.status == STATUS_STOP {
+		return
+	}
+	p.cancel()
+	p.status = STATUS_STOP
 }
 
 func (p *Pipeline) IsLeader() bool {
@@ -145,4 +170,3 @@ func (p *Pipeline) IsLeader() bool {
 func (p *Pipeline) IsFollower() bool {
 	return p.Role == RoleFollower
 }
-

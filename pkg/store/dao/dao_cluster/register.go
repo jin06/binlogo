@@ -3,9 +3,9 @@ package dao_cluster
 import (
 	"context"
 	"encoding/json"
+	"github.com/coreos/etcd/clientv3"
 	"github.com/jin06/binlogo/pkg/store/etcd"
 	"github.com/jin06/binlogo/pkg/store/model/register"
-	"go.etcd.io/etcd/clientv3"
 )
 
 func RegisterPrefix() string {

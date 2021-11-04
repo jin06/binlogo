@@ -2,8 +2,8 @@ package input
 
 import (
 	"errors"
+	"github.com/go-mysql-org/go-mysql/replication"
 	message2 "github.com/jin06/binlogo/app/pipeline/message"
-	"github.com/siddontang/go-mysql/replication"
 	"strconv"
 )
 

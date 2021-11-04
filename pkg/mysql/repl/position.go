@@ -1,6 +1,6 @@
 package repl
 
-import "github.com/siddontang/go-mysql/mysql"
+import "github.com/go-mysql-org/go-mysql/mysql"
 
 type Position struct {
 	File string

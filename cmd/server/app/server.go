@@ -1,6 +1,7 @@
 package app
 
 import (
+	"context"
 	pipeline2 "github.com/jin06/binlogo/app/pipeline/pipeline"
 )
 
@@ -16,7 +17,7 @@ func RunServer() {
 	if err != nil {
 		panic(err)
 	}
-	err = p2.Run()
+	err = p2.Run(context.Background())
 	if err != nil {
 		panic(err)
 	}

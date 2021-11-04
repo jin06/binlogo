@@ -16,11 +16,11 @@ func New(options *Options) (kaf *Kafka, err error) {
 	kaf = &Kafka{
 		Options: options,
 	}
-	err = kaf.Init()
+	err = kaf.init()
 	return
 }
 
-func (s *Kafka) Init() (err error) {
+func (s *Kafka) init() (err error) {
 	addr := s.Options.Kafka.Brokers
 	cfg := sarama.NewConfig()
 	cfg.Producer.Return.Successes = true

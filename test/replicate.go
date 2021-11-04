@@ -2,9 +2,9 @@ package main
 
 import (
 	"context"
-	_ "github.com/siddontang/go-mysql/driver"
-	"github.com/siddontang/go-mysql/mysql"
-	"github.com/siddontang/go-mysql/replication"
+	_ "github.com/go-mysql-org/go-mysql/driver"
+	"github.com/go-mysql-org/go-mysql/mysql"
+	"github.com/go-mysql-org/go-mysql/replication"
 	"os"
 	"time"
 )

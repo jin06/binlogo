@@ -3,6 +3,7 @@ package node
 import (
 	"context"
 	"github.com/jin06/binlogo/app/server/node/election"
+	"github.com/jin06/binlogo/app/server/node/manager/manager_pipe"
 	"github.com/jin06/binlogo/app/server/node/manager/manager_status"
 	"github.com/jin06/binlogo/app/server/node/monitor"
 	register2 "github.com/jin06/binlogo/app/server/node/register"
@@ -24,6 +25,7 @@ type Node struct {
 	StatusManager  *manager_status.Manager
 	monitor        *monitor.Monitor
 	leaderRunMutex sync.Mutex
+	pipeManager    *manager_pipe.Manager
 }
 
 type NodeMode byte
@@ -56,21 +58,24 @@ func New(opts ...Option) (node *Node, err error) {
 	for _, v := range opts {
 		v(options)
 	}
-	err = node.Init()
+	err = node.init()
 	return
 }
 
-func (n *Node) Init() (err error) {
+func (n *Node) init() (err error) {
 	n.Register = register2.New(
 		register2.OptionNode(n.Options.Node),
 		register2.OptionLeaseDuration(2*time.Second),
 	)
 	n.Scheduler = scheduler.New()
+
+	blog.Debug("---->", n.Options.Node)
 	n.StatusManager = manager_status.NewManager(n.Options.Node)
 	n.monitor, err = monitor.NewMonitor()
 	if err != nil {
 		return
 	}
+	n.pipeManager = manager_pipe.New(n.Options.Node)
 	return
 }
 
@@ -98,6 +103,10 @@ func (n *Node) Run(ctx context.Context) (err error) {
 		); err != nil {
 			return
 		}
+		ctxPM, cancelPM := context.WithCancel(ctx)
+		n.pipeManager.Run(ctxPM)
+		defer cancelPM()
+
 		n.election.Run(ctxElection)
 
 		ctxLeader, cancelLeader := context.WithCancel(ctx)

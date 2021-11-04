@@ -1,12 +1,11 @@
 package input
 
 import (
-	model2 "github.com/jin06/binlogo/pkg/store/model"
 	"github.com/jin06/binlogo/pkg/store/model/pipeline"
 )
 
 type Options struct {
-	Position *model2.Position
+	Position *pipeline.Position
 	Mysql    *pipeline.Mysql
 }
 
@@ -18,7 +17,7 @@ func OptionMysql(mysql *pipeline.Mysql) Option {
 	}
 }
 
-func OptionPosition(position *model2.Position) Option {
+func OptionPosition(position *pipeline.Position) Option {
 	return func(options *Options) {
 		options.Position = position
 	}

@@ -31,11 +31,14 @@ func (s *Scheduler) Run(ctx context.Context) (err error) {
 		return
 	}
 	cctx, cancel := context.WithCancel(ctx)
+	err = s.watcher.run(cctx)
+	if err != nil {
+		return
+	}
 	s.cancel = cancel
 	s._schedule(cctx)
 	blog.Debug("scheduler.run")
 	//s._monitor(ctx2)
-	err = s.watcher.run(cctx)
 	s.status = SCHEDULER_RUN
 	return
 }
@@ -53,6 +56,7 @@ func (s *Scheduler) _schedule(ctx context.Context) {
 				}
 			case p := <-s.watcher.notBindPipelineCh:
 				{
+					blog.Infof("%s not bind node, bind one ", p.Name)
 					if err := s.scheduleOne(p); err != nil {
 						blog.Error(err)
 					}

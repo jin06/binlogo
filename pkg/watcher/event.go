@@ -1,7 +1,7 @@
 package watcher
 
 import (
-	"go.etcd.io/etcd/clientv3"
+	"github.com/coreos/etcd/clientv3"
 )
 
 type Event struct {

@@ -3,7 +3,7 @@ package dao_cluster
 import (
 	"context"
 	"github.com/jin06/binlogo/pkg/store/etcd"
-	"go.etcd.io/etcd/clientv3"
+	"github.com/coreos/etcd/clientv3"
 )
 
 func ElectionPrefix() string {

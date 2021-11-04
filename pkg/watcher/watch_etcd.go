@@ -2,9 +2,9 @@ package watcher
 
 import (
 	"context"
+	"github.com/coreos/etcd/clientv3"
 	"github.com/jin06/binlogo/pkg/store/etcd"
 	"github.com/sirupsen/logrus"
-	"go.etcd.io/etcd/clientv3"
 )
 
 type General struct {

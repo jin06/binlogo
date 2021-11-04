@@ -2,15 +2,31 @@ package dao_pipe
 
 import (
 	"context"
+	"github.com/coreos/etcd/clientv3"
 	"github.com/jin06/binlogo/pkg/blog"
 	"github.com/jin06/binlogo/pkg/store/etcd"
 	"github.com/jin06/binlogo/pkg/store/model/pipeline"
-	"go.etcd.io/etcd/clientv3"
 	"sort"
 )
 
 func PipelinePrefix() string {
 	return etcd.Prefix() + "/pipeline/info"
+}
+
+func GetPipeline(name string) (p *pipeline.Pipeline , err error){
+	key := PipelinePrefix() + "/" + name
+	res, err := etcd.E.Client.Get(context.Background(), key)
+	if err != nil {
+		return
+	}
+	if len(res.Kvs) == 0 {
+		return
+	}
+	p = &pipeline.Pipeline{}
+	if err = p.Unmarshal(res.Kvs[0].Value); err != nil {
+		return
+	}
+	return
 }
 
 func CreatePipeline(d *pipeline.Pipeline, opts ...clientv3.OpOption) (ok bool, err error) {

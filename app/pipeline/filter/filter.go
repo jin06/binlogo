@@ -61,26 +61,35 @@ func (f *Filter) filer(msg *message2.Message) (err error) {
 	return
 }
 
-func (f *Filter) doHandle(ctx context.Context) {
-	for {
-		logrus.Debug("Filter wait message")
-		msg := <-f.InChan
-		err := f.filer(msg)
-		if err != nil {
-			logrus.Error(err)
-			continue
-		}
-		logrus.Debug("Filter message: ", msg)
-		f.OutChan <- msg
+func (f *Filter) doHandle() {
+	logrus.Debug("Filter wait message")
+	msg := <-f.InChan
+	err := f.filer(msg)
+	if err != nil {
+		logrus.Error(err)
+		return
 	}
+	logrus.Debug("Filter message: ", msg)
+	f.OutChan <- msg
 }
 
-func (f *Filter) Handle() {
-	go f.doHandle(f.Ctx)
+func (f *Filter) handle(ctx context.Context) {
+	go func() {
+		for {
+			select {
+			case <-ctx.Done():
+				{
+					return
+				}
+			default:
+				f.doHandle()
+			}
+		}
+	}()
 	return
 }
 
-func (f *Filter) Run() (err error) {
-	f.Handle()
+func (f *Filter) Run(ctx context.Context) (err error) {
+	f.handle(ctx)
 	return
 }
