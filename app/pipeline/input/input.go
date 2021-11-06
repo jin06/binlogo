@@ -2,92 +2,44 @@ package input
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"github.com/go-mysql-org/go-mysql/canal"
 	"github.com/go-mysql-org/go-mysql/mysql"
-	"github.com/go-mysql-org/go-mysql/replication"
 	message2 "github.com/jin06/binlogo/app/pipeline/message"
+	"github.com/jin06/binlogo/pkg/blog"
 	"github.com/jin06/binlogo/pkg/store/model/pipeline"
 	"github.com/sirupsen/logrus"
+	"strconv"
+	"time"
 )
 
 type Input struct {
-	syncer   *replication.BinlogSyncer
-	streamer *replication.BinlogStreamer
-	OutChan  chan *message2.Message
-	Options  *Options
+	OutChan      chan *message2.Message
+	Options      *Options
+	canal        *canal.Canal
+	eventHandler *canalHandler
 }
 
 func (r *Input) Run(ctx context.Context) (err error) {
-	if err = r.connect(ctx); err != nil {
-		return
-	}
+	err = r.runCanal()
 	go func() {
-		for  {
+		for {
 			select {
-				case <- ctx.Done():{
-					r.syncer.Close()
+			case <-ctx.Done():
+				{
+					r.canal.Close()
 					return
 				}
+			case <-time.Tick(5):
+				{
+					blog.Debugln("input tick")
+				}
 			default:
-				r.doHandle(ctx)
 			}
 		}
 	}()
 	return
-}
-
-func (r *Input) connect(ctx context.Context) (err error) {
-	binlogFile := r.Options.Position.BinlogFile
-	if binlogFile == "" {
-		logrus.Warn("Empty binlog file")
-		//return errors.New("empty binlog file")
-	}
-	binlogPos := r.Options.Position.BinlogPosition
-
-	pos := mysql.Position{
-		binlogFile,
-		binlogPos,
-	}
-	streamer, err := r.syncer.StartSync(pos)
-	//r.syncer.GetNextPosition()
-	if err != nil {
-		return
-	}
-	r.streamer = streamer
-	return
-}
-
-func (r *Input) doHandle(ctx context.Context) {
-	logrus.Debug("Sync binlog from mysql")
-	//ctx := context.Background()
-	e, er := r.streamer.GetEvent(ctx)
-	if er != nil {
-		logrus.Error(er)
-		return
-	}
-	logrus.Debug("Binlog event header : ", e.Header)
-	msg, err := inputMessage(e)
-	pos := r.syncer.GetNextPosition()
-	fmt.Println(pos)
-	msg.BinlogPosition = &pipeline.Position{
-		BinlogFile:     pos.Name,
-		BinlogPosition: pos.Pos,
-		GTIDSet:        r.Options.Position.GTIDSet,
-		PipelineName:   r.Options.Position.PipelineName,
-	}
-	if err != nil {
-		panic(err)
-	}
-	if msg != nil {
-		r.OutChan <- msg
-	} else {
-		logrus.Debug("The event is not a data change event")
-	}
-	return
-}
-
-func (r *Input) DataLine() chan *message2.Message {
-	return r.OutChan
 }
 
 func New(opts ...Option) (input *Input, err error) {
@@ -98,36 +50,60 @@ func New(opts ...Option) (input *Input, err error) {
 	input = &Input{
 		Options: options,
 	}
-	err = input.Init()
+	err = input.init()
 
 	return
 }
 
-func (r *Input) Init() (err error) {
-	cfg := replication.BinlogSyncerConfig{
-		ServerID: r.Options.Mysql.ServerId,
-		Flavor:   r.Options.Mysql.Flavor,
-		Host:     r.Options.Mysql.Address,
-		Port:     r.Options.Mysql.Port,
+func (r *Input) init() (err error) {
+	addr := fmt.Sprintf("%s:%s", r.Options.Mysql.Address, strconv.Itoa(int(r.Options.Mysql.Port)))
+	cfg := &canal.Config{
+		Addr:     addr,
 		User:     r.Options.Mysql.User,
 		Password: r.Options.Mysql.Password,
+		ServerID: r.Options.Mysql.ServerId,
+		Flavor:   r.Options.Mysql.Flavor,
 	}
-
-	r.syncer = replication.NewBinlogSyncer(cfg)
-	//r.Ch = make(chan *message.Message, 100000)
+	r.canal, err = canal.NewCanal(cfg)
+	if err != nil {
+		return
+	}
 	return
 }
 
-func (r *Input) preparePosition(pos *mysql.Position) (err error){
-	if pos != nil {
-		if pos.Name != "" {
+func (r *Input) runCanal() (err error) {
+	go func() {
+		if r.Options.Pipeline.Mode == pipeline.MODE_GTID {
 			return
 		}
-	}
+
+		if r.Options.Pipeline.Mode == pipeline.MODE_POSTION {
+			blog.Debugln("Run pipeline in mode position", r.Options.Pipeline.Name)
+			pos := mysql.Position{}
+			binlogFile := r.Options.Position.BinlogFile
+			if binlogFile == "" {
+				logrus.Warn("Empty binlog file")
+				pos, err = r.canal.GetMasterPos()
+				return
+			} else {
+				binlogPos := r.Options.Position.BinlogPosition
+				pos = mysql.Position{
+					binlogFile,
+					binlogPos,
+				}
+			}
+			r.canal.SetEventHandler(&canalHandler{
+				ch:           r.OutChan,
+				positionFile: pos.Name,
+				pipe:         r.Options.Pipeline,
+			})
+			err = r.canal.RunFrom(pos)
+			return
+		}
+
+		err = errors.New("invalid mode")
+		return
+	}()
+	time.Sleep(1)
 	return
 }
-
-func (r *Input) newestPosition() {
-}
-
-

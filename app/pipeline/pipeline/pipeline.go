@@ -7,9 +7,7 @@ import (
 	input2 "github.com/jin06/binlogo/app/pipeline/input"
 	message2 "github.com/jin06/binlogo/app/pipeline/message"
 	output2 "github.com/jin06/binlogo/app/pipeline/output"
-	store2 "github.com/jin06/binlogo/pkg/store"
-	"github.com/jin06/binlogo/pkg/store/model/pipeline"
-	"github.com/siddontang/go-log/log"
+	"github.com/jin06/binlogo/pkg/blog"
 	"github.com/sirupsen/logrus"
 	"sync"
 )
@@ -29,39 +27,8 @@ type Pipeline struct {
 const (
 	STATUS_RUN  = "running"
 	STATUS_STOP = "stopped"
+	STATUS_PENDING = "pending"
 )
-
-func NewFromStore(name string) (p *Pipeline, err error) {
-	pipeModel := &pipeline.Pipeline{
-		Name: name,
-	}
-	ok, err := store2.Get(pipeModel)
-	if err != nil {
-		return
-	}
-	if !ok {
-		err = errors.New("No pipeline data ")
-		return
-	}
-	posModel := &pipeline.Position{
-		PipelineName: name,
-	}
-	ok, err = store2.Get(posModel)
-	if err != nil {
-		return
-	}
-	if !ok {
-		//errors.New("No position data ")
-		log.Warn("No position data")
-		//return
-	}
-	logrus.Debug("Position data: ", posModel)
-
-	return New(
-		OptionPipeline(pipeModel),
-		OptionPosition(posModel),
-	)
-}
 
 func New(opt ...Option) (p *Pipeline, err error) {
 	options := Options{}
@@ -113,6 +80,7 @@ func (p *Pipeline) initInput() (err error) {
 	p.Input, err = input2.New(
 		input2.OptionMysql(p.Options.Pipeline.Mysql),
 		input2.OptionPosition(p.Options.Position),
+		input2.OptionsPipeline(p.Options.Pipeline),
 	)
 	p.Input.OutChan = p.OutChan.Input
 	return
@@ -140,6 +108,14 @@ func (p *Pipeline) Run(ctx context.Context) (err error) {
 	logrus.Debug("mysql position", p.Input.Options.Position)
 	sctx, cancel := context.WithCancel(ctx)
 	p.cancel = cancel
+	defer func() {
+		if err != nil {
+			blog.Info(err)
+			p.cancel()
+		} else {
+			p.status = STATUS_RUN
+		}
+	}()
 	if err = p.Input.Run(sctx); err != nil {
 		return
 	}
@@ -149,7 +125,6 @@ func (p *Pipeline) Run(ctx context.Context) (err error) {
 	if err = p.Output.Run(sctx); err != nil {
 		return
 	}
-	p.status = STATUS_RUN
 	return
 }
 
@@ -161,12 +136,4 @@ func (p *Pipeline) Stop() {
 	}
 	p.cancel()
 	p.status = STATUS_STOP
-}
-
-func (p *Pipeline) IsLeader() bool {
-	return p.Role == RoleLeader
-}
-
-func (p *Pipeline) IsFollower() bool {
-	return p.Role == RoleFollower
 }

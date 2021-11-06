@@ -2,13 +2,13 @@ package election
 
 import (
 	"context"
+	"github.com/coreos/etcd/clientv3/concurrency"
 	"github.com/jin06/binlogo/pkg/node/role"
 	"github.com/jin06/binlogo/pkg/store/dao/dao_cluster"
 	"github.com/jin06/binlogo/pkg/store/etcd"
 	node2 "github.com/jin06/binlogo/pkg/store/model/node"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
-	"github.com/coreos/etcd/clientv3/concurrency"
 	"sync"
 	"time"
 )
@@ -75,8 +75,8 @@ func (e *Election) campaign(ctx context.Context) {
 		for {
 			e.SetRole(role.FOLLOWER)
 			//sen, err := concurrency.NewSession(e.client, concurrency.WithTTL(e.ttl))
-			sen, err := concurrency.NewSession(etcd.E.Client, concurrency.WithTTL(e.ttl))
-			if err != nil {
+			sen, errSe := concurrency.NewSession(etcd.E.Client, concurrency.WithTTL(e.ttl))
+			if errSe != nil {
 				logrus.Error("Election error")
 				time.Sleep(time.Second * 5)
 				continue
@@ -89,8 +89,8 @@ func (e *Election) campaign(ctx context.Context) {
 
 			logrus.Info("Run for election")
 			ctx1, _ := context.WithCancel(ctx)
-			err = ele.Campaign(ctx1, e.campaignVal)
-			if err != nil {
+			errC := ele.Campaign(ctx1, e.campaignVal)
+			if errC != nil {
 				_ = sen.Close()
 				time.Sleep(time.Second * 5)
 				continue
@@ -104,8 +104,8 @@ func (e *Election) campaign(ctx context.Context) {
 			//obsCh := ele.Observe(ctx2)
 			for {
 				time.Sleep(time.Second)
-				res, err := ele.Leader(ctx2)
-				if err == concurrency.ErrElectionNoLeader {
+				res, errL := ele.Leader(ctx2)
+				if errL == concurrency.ErrElectionNoLeader {
 					logrus.Info("No leader ...")
 					break
 				}

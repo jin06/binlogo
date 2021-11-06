@@ -7,6 +7,7 @@ import (
 	"github.com/jin06/binlogo/pkg/store/model/node"
 	"github.com/jin06/binlogo/pkg/store/model/scheduler"
 	"github.com/jin06/binlogo/pkg/watcher/scheduler_binding"
+	"sync"
 	"time"
 )
 
@@ -14,11 +15,13 @@ type Manager struct {
 	mapping        map[string]*instance
 	bindingWatcher *scheduler_binding.BindingWatcher
 	node           *node.Node
+	mappingMutex   sync.Mutex
 }
 
 func New(n *node.Node) (m *Manager) {
 	m = &Manager{
-		mapping: map[string]*instance{},
+		mapping:      map[string]*instance{},
+		mappingMutex: sync.Mutex{},
 	}
 	m.node = n
 	blog.Debug("new pipeline manager ")
@@ -37,7 +40,7 @@ func (m *Manager) Run(ctx context.Context) {
 				{
 					return
 				}
-			case <-time.Tick(time.Second * 60):
+			case <-time.Tick(time.Second * 5):
 				{
 					if err := m.handlePipelineBind(nil); err != nil {
 						blog.Error(err)
@@ -66,6 +69,8 @@ func (m *Manager) handlePipelineBind(pb *scheduler.PipelineBind) (err error) {
 }
 
 func (m *Manager) handle(pipeName string, nodeName string) (err error) {
+	m.mappingMutex.Lock()
+	defer m.mappingMutex.Unlock()
 	blog.Debugln("manager_pipeline, ", pipeName, " nodeName", nodeName)
 	if _, ok := m.mapping[pipeName]; ok {
 		if nodeName != m.node.Name {
@@ -81,12 +86,6 @@ func (m *Manager) handle(pipeName string, nodeName string) (err error) {
 }
 
 func (m *Manager) addPipeline(name string) (err error) {
-	if _, ok := m.mapping[name]; ok {
-		err = m.removePipeline(name)
-		if err != nil {
-			return
-		}
-	}
 	var ins *instance
 	ins, err = newInstance(name)
 	if err != nil {
@@ -102,10 +101,7 @@ func (m *Manager) addPipeline(name string) (err error) {
 
 func (m *Manager) removePipeline(name string) (err error) {
 	if ins, ok := m.mapping[name]; ok {
-		ins.p.Stop()
-		err = ins.m.Unlock()
-	}
-	if err != nil {
+		err = ins.stop()
 		delete(m.mapping, name)
 	}
 	return

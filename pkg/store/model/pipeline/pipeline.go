@@ -15,6 +15,7 @@ type Pipeline struct {
 	Replicas   int       `json:"replicas"`
 	CreateTime time.Time `json:"create_time"`
 	Remark     string    `json:"remark"`
+	Mode       Mode      `json:"mode"`
 }
 
 type Status string
@@ -22,6 +23,13 @@ type Status string
 const (
 	STATUS_RUN  Status = "run"
 	STATUS_STOP Status = "stop"
+)
+
+type Mode string
+
+const (
+	MODE_GTID    Mode = "gtid"
+	MODE_POSTION Mode = "position"
 )
 
 func (s *Pipeline) Key() (key string) {

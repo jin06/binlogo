@@ -32,7 +32,7 @@ func newInstance(name string) (ins *instance, err error) {
 	}
 	if posModel == nil {
 		posModel = &pipeline2.Position{
-			PipelineName: name,
+			//PipelineName: name,
 		}
 	}
 	pipe, err := pipeline.New(pipeline.OptionPipeline(pipeModel), pipeline.OptionPosition(posModel))

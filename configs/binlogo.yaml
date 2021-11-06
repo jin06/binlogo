@@ -6,6 +6,9 @@ node:
 console:
   port: 9999
   listen: 0.0.0.0
+etcd:
+  endpoints:
+    - "localhost:12379"
 store:
   type: etcd
   etcd:

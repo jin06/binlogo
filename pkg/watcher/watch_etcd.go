@@ -3,12 +3,12 @@ package watcher
 import (
 	"context"
 	"github.com/coreos/etcd/clientv3"
-	"github.com/jin06/binlogo/pkg/store/etcd"
+	"github.com/jin06/binlogo/pkg/etcd_client"
 	"github.com/sirupsen/logrus"
 )
 
 type General struct {
-	Etcd  *etcd.ETCD
+	Client  *clientv3.Client
 	key   string
 	Queue chan *clientv3.Event
 }
@@ -16,9 +16,9 @@ type General struct {
 func NewGeneral(key string) (w *General, err error) {
 	w = &General{
 		key:  key,
-		Etcd: etcd.E,
 	}
 	w.Queue = make(chan *clientv3.Event, 10000)
+	w.Client, err = etcd_client.New()
 	return
 }
 
@@ -27,7 +27,7 @@ func (w *General) GetKey() string {
 }
 
 func (w *General) WatchEtcd(ctx context.Context, opts ...clientv3.OpOption) {
-	watchCh := w.Etcd.Client.Watch(ctx, w.key, opts...)
+	watchCh := w.Client.Watch(ctx, w.key, opts...)
 	go func() {
 		for {
 			select {
