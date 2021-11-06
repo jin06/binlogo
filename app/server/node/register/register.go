@@ -5,20 +5,19 @@ import (
 	"github.com/coreos/etcd/clientv3"
 	"github.com/coreos/etcd/etcdserver/api/v3rpc/rpctypes"
 	"github.com/jin06/binlogo/pkg/blog"
+	"github.com/jin06/binlogo/pkg/etcd_client"
 	"github.com/jin06/binlogo/pkg/store/dao/dao_cluster"
-	etcd2 "github.com/jin06/binlogo/pkg/store/etcd"
 	node2 "github.com/jin06/binlogo/pkg/store/model/node"
 	"github.com/jin06/binlogo/pkg/store/model/register"
 	"github.com/sirupsen/logrus"
 	"time"
 )
 
-const ttl = 5
+const ttl = 7
 
 func New(opts ...Option) (r *Register) {
 	r = &Register{
 		ttl:           ttl,
-		etcd:          etcd2.E,
 		leaseDuration: time.Second,
 	}
 	logrus.Debug("Node register lease duration ", r.leaseDuration)
@@ -35,7 +34,7 @@ type Register struct {
 	leaseDuration time.Duration
 	node          *node2.Node
 	ttl           int64
-	etcd          *etcd2.ETCD
+	client *clientv3.Client
 }
 
 func (r *Register) Run(ctx context.Context) (err error) {
@@ -44,10 +43,9 @@ func (r *Register) Run(ctx context.Context) (err error) {
 		return
 	}
 	go func() {
-		tc := time.NewTicker(r.leaseDuration)
 		for {
 			select {
-			case <-tc.C:
+			case <-time.Tick(2 * time.Second):
 				{
 					er := r.keep()
 					if er != nil {
@@ -79,7 +77,11 @@ func (r *Register) Run(ctx context.Context) (err error) {
 }
 
 func (r *Register) reg() (err error) {
-	r.lease = clientv3.NewLease(r.etcd.Client)
+	r.client, err = etcd_client.New()
+	if err != nil {
+		return
+	}
+	r.lease = clientv3.NewLease(r.client)
 	if rep, err2 := r.lease.Grant(context.TODO(), r.ttl); err2 != nil {
 		return err2
 	} else {
@@ -99,15 +101,18 @@ func (r *Register) keep() (err error) {
 	return
 }
 func (r *Register) revoke() (err error) {
-	_, err = r.etcd.Client.Revoke(context.TODO(), r.leaseID)
+	_, err = r.client.Revoke(context.TODO(), r.leaseID)
 	return
 }
 
 func (r *Register) watch() (ok bool, err error) {
-	regNode := &node2.Node{Name: r.node.Name}
-	ok, err = etcd2.Get(regNode)
+	var regNode *register.RegisterNode
+	regNode, err = dao_cluster.GetRNode(r.node.Name)
 	if err != nil {
 		return
+	}
+	if regNode != nil {
+		ok = true
 	}
 	return
 }

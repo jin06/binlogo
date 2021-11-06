@@ -160,7 +160,6 @@ func (n *Node) leaderRun(ctx context.Context) {
 				if err != nil {
 					n.Scheduler.Stop(ctx)
 					n.monitor.Stop(ctx)
-					err = n.election.Resign(ctx)
 					if err != nil {
 						blog.Error("Election resign failed: ")
 					}

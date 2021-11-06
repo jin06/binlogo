@@ -6,25 +6,35 @@ import (
 	"github.com/jin06/binlogo/pkg/blog"
 	"github.com/jin06/binlogo/pkg/store/dao/dao_node"
 	"github.com/jin06/binlogo/pkg/store/dao/dao_sche"
+	"github.com/jin06/binlogo/pkg/watcher/node"
 	"time"
 )
 
-func (m *Monitor) monitorNode(ctx context.Context) {
+func (m *Monitor) monitorNode(ctx context.Context) error {
+	watcher, err := node.New(dao_node.NodePrefix())
+	if err != nil {
+		return err
+	}
+	ch, err := watcher.WatchEtcdList(ctx)
+	if err != nil {
+		return err
+	}
 	go func() {
-		m.nodeWatcher.WatchList(ctx)
+
 		for {
 			select {
 			case <-ctx.Done():
 				{
 					return
 				}
-			case e := <-m.nodeWatcher.Queue:
+			case e := <-ch:
 				{
-					if 	e.Event.Type == mvccpb.DELETE {
+					if e.Event.Type == mvccpb.DELETE {
 
 					}
 				}
-				case <- time.Tick(time.Second * 60): {
+			case <-time.Tick(time.Second * 60):
+				{
 					if er := m.checkAllNodeBind(); er != nil {
 						blog.Error("Check all node bind error: ", er)
 					}
@@ -32,6 +42,7 @@ func (m *Monitor) monitorNode(ctx context.Context) {
 			}
 		}
 	}()
+	return nil
 }
 
 func (m *Monitor) checkAllNodeBind() (err error) {

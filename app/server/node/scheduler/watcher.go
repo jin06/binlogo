@@ -7,15 +7,14 @@ import (
 	"github.com/jin06/binlogo/pkg/store/etcd"
 	pipeline2 "github.com/jin06/binlogo/pkg/store/model/pipeline"
 	"github.com/jin06/binlogo/pkg/store/model/scheduler"
-	"github.com/jin06/binlogo/pkg/watcher/node"
-	"github.com/jin06/binlogo/pkg/watcher/pipeline"
+	"github.com/jin06/binlogo/pkg/watcher"
 	"time"
 )
 
 type Watcher struct {
 	etcd              *etcd.ETCD
-	pipelineWatcher   *pipeline.PipelineWatcher
-	nodeWatcher       *node.NodeWatcher
+	pipelineWatcher   *watcher.General
+	nodeWatcher       *watcher.General
 	notBindPipelineCh chan *pipeline2.Pipeline
 }
 

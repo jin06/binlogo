@@ -6,7 +6,6 @@ import (
 	"github.com/jin06/binlogo/pkg/store/dao/dao_sche"
 	"github.com/jin06/binlogo/pkg/store/model/pipeline"
 	"sync"
-	"time"
 )
 
 type Scheduler struct {
@@ -47,9 +46,6 @@ func (s *Scheduler) _schedule(ctx context.Context) {
 	go func() {
 		for {
 			select {
-			case <-time.Tick(time.Second):
-				{
-				}
 			case <-ctx.Done():
 				{
 					return

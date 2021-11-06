@@ -10,16 +10,19 @@ import (
 	"time"
 )
 
-func (m *Monitor) monitorPipe(ctx context.Context) {
+func (m *Monitor) monitorPipe(ctx context.Context) (err error){
+	ch, err := m.pipeWatcher.WatchEtcdList(ctx)
+	if err != nil {
+		return
+	}
 	go func() {
-		m.pipeWatcher.WatchList(ctx)
 		for {
 			select {
 			case <-ctx.Done():
 				{
 					return
 				}
-			case n := <-m.pipeWatcher.Queue:
+			case n := <- ch:
 				{
 					if n.Event.Type == mvccpb.DELETE {
 						if val, ok := n.Data.(*pipeline.Pipeline); ok {
@@ -48,6 +51,7 @@ func (m *Monitor) monitorPipe(ctx context.Context) {
 			}
 		}
 	}()
+	return nil
 }
 
 func (m *Monitor) checkAllPipelineBind() (err error) {

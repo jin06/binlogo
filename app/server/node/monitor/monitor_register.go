@@ -8,15 +8,18 @@ import (
 	"github.com/jin06/binlogo/pkg/store/model/node"
 )
 
-func (m *Monitor) monitorRegister(ctx context.Context) {
+func (m *Monitor) monitorRegister(ctx context.Context) (err error){
+	ch, err := m.registerWatcher.WatchEtcdList(ctx)
+	if err != nil {
+		return err
+	}
 	go func() {
-		m.registerWatcher.WatchList(ctx)
 		for {
 			select {
 				case <- ctx.Done():{
 					return
 				}
-				case n := <- m.registerWatcher.Queue:{
+				case n := <- ch:{
 					if n.Event.Type == mvccpb.DELETE {
 						if val, ok := n.Data.(*node.Node); ok {
 							pb, err := dao_sche.GetPipelineBind()
@@ -46,4 +49,5 @@ func (m *Monitor) monitorRegister(ctx context.Context) {
 			}
 		}
 	}()
+	return nil
 }

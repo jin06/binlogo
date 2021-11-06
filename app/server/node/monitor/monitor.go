@@ -7,6 +7,7 @@ import (
 	"github.com/jin06/binlogo/pkg/store/dao/dao_node"
 	"github.com/jin06/binlogo/pkg/store/dao/dao_pipe"
 	"github.com/jin06/binlogo/pkg/store/etcd"
+	"github.com/jin06/binlogo/pkg/watcher"
 	"github.com/jin06/binlogo/pkg/watcher/node"
 	"github.com/jin06/binlogo/pkg/watcher/pipeline"
 	"sync"
@@ -16,9 +17,9 @@ type Monitor struct {
 	status          string
 	lock            sync.Mutex
 	cancel          context.CancelFunc
-	nodeWatcher     *node.NodeWatcher
-	pipeWatcher     *pipeline.PipelineWatcher
-	registerWatcher *node.NodeWatcher
+	nodeWatcher     *watcher.General
+	pipeWatcher     *watcher.General
+	registerWatcher *watcher.General
 	etcd            *etcd.ETCD
 }
 

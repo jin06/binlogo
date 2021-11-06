@@ -26,10 +26,8 @@ func RegRNode(n *register.RegisterNode, leaseID clientv3.LeaseID) (err error) {
 }
 
 func GetRNode(name string) (n *register.RegisterNode, err error) {
-	ctx, cancel := context.WithTimeout(context.Background(), etcd.E.Timeout)
-	defer cancel()
 	key := RegisterPrefix() + "/" + name
-	res, err := etcd.E.Client.Get(ctx, key)
+	res, err := etcd.E.Client.Get(context.Background(), key)
 	if err != nil {
 		return
 	}
