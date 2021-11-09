@@ -24,7 +24,7 @@ func NewCommand() (cmd *cobra.Command) {
 	err := viper.BindPFlag("config", cmd.PersistentFlags().Lookup("config"))
 	configs.InitViperFromFile(viper.GetString("config"))
 	etcd2.DefaultETCD()
-	logrus.Env(configs.Env(viper.GetString("env")))
+	blog.Env(configs.Env(viper.GetString("env")))
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -57,7 +57,7 @@ func cmdCreatePipe() (cmd *cobra.Command) {
 					Port:     13306,
 					User:     "root",
 					Password: "123456",
-					Flavor:   "mysql",
+					Flavor:   pipeline.FLAVOR_MYSQL,
 					ServerId: 1001,
 				},
 				Filters: []*pipeline.Filter{

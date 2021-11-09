@@ -34,6 +34,7 @@ func newInstance(pipeName string, nodeName string) *instance {
 		pipeName: pipeName,
 		nodeName: nodeName,
 		mutex:    sync.Mutex{},
+		status:   STATUS_STOP,
 	}
 	return ins
 }

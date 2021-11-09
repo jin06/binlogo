@@ -1,6 +1,7 @@
 package input
 
 import (
+	"fmt"
 	"github.com/go-mysql-org/go-mysql/canal"
 	"github.com/go-mysql-org/go-mysql/mysql"
 	"github.com/go-mysql-org/go-mysql/replication"
@@ -50,7 +51,11 @@ func (h *canalHandler) String() string {
 }
 
 func (h *canalHandler) OnGTID(set mysql.GTIDSet) (err error) {
-	logrus.Errorf("on gtid %v", set )
+	//logrus.Errorf("on gtid %v", set )
+	//h._GTIDSet = set.String()
+	h._GTIDSet = fmt.Sprintf("%v", set)
+	fmt.Printf("%v \n", set)
+	logrus.Errorln(h._GTIDSet)
 	return
 }
 

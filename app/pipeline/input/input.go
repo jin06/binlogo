@@ -86,7 +86,7 @@ func (r *Input) prepareCanal() (err error) {
 		User:     pipe.Mysql.User,
 		Password: pipe.Mysql.Password,
 		ServerID: pipe.Mysql.ServerId,
-		Flavor:   pipe.Mysql.Flavor,
+		Flavor:   pipe.Mysql.Flavor.YaString(),
 	}
 	r.canal, err = canal.NewCanal(cfg)
 	return
@@ -97,10 +97,28 @@ func (r *Input) runCanal() (err error) {
 	if err != nil {
 		return
 	}
-	if pos == nil {
-		pos = &pipeline.Position{}
-	}
+
 	if r.pipe.Mysql.Mode == pipeline.MODE_GTID {
+		var canGTID mysql.GTIDSet
+		if pos == nil {
+			pos = &pipeline.Position{}
+			canGTID, err = r.canal.GetMasterGTIDSet()
+			if err != nil {
+				return
+			}
+		} else {
+			canGTID, err = mysql.ParseGTIDSet(r.pipe.Mysql.Flavor.YaString(), pos.GTIDSet)
+			if err != nil {
+				return
+			}
+		}
+		r.canal.SetEventHandler(&canalHandler{
+			ch:           r.OutChan,
+			positionFile: pos.BinlogFile,
+			pipe:         r.pipe,
+			_GTIDSet:     fmt.Sprintf("%v", canGTID),
+		})
+		err = r.canal.StartFromGTID(canGTID)
 		return
 	}
 

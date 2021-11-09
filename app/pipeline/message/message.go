@@ -69,6 +69,7 @@ func (msg *Message) ToString() string {
 	Filter: %v
 	BingloPosition.File: %v
 	BingloPosition.Pos: %v
+	BingloPosition.GTID: %v
 	Content.Head: %+v
 	Content.Data: %+v
 			`,
@@ -76,6 +77,7 @@ func (msg *Message) ToString() string {
 		msg.Filter,
 		msg.BinlogPosition.BinlogFile,
 		msg.BinlogPosition.BinlogPosition,
+		msg.BinlogPosition.GTIDSet,
 		*msg.Content.Head,
 		msg.Content.Data,
 	)
