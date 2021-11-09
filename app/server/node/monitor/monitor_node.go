@@ -3,10 +3,10 @@ package monitor
 import (
 	"context"
 	"github.com/coreos/etcd/mvcc/mvccpb"
-	"github.com/jin06/binlogo/pkg/blog"
 	"github.com/jin06/binlogo/pkg/store/dao/dao_node"
 	"github.com/jin06/binlogo/pkg/store/dao/dao_sche"
 	"github.com/jin06/binlogo/pkg/watcher/node"
+	"github.com/sirupsen/logrus"
 	"time"
 )
 
@@ -36,7 +36,7 @@ func (m *Monitor) monitorNode(ctx context.Context) error {
 			case <-time.Tick(time.Second * 60):
 				{
 					if er := m.checkAllNodeBind(); er != nil {
-						blog.Error("Check all node bind error: ", er)
+						logrus.Error("Check all node bind error: ", er)
 					}
 				}
 			}

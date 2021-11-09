@@ -80,10 +80,10 @@ import (
 
 func withHandler(key string) watcher.Handler {
 	return func(e *clientv3.Event) (ev *watcher.Event, err error) {
-		val := &watcher.Event{}
+		ev = &watcher.Event{}
 		m := &node.Node{}
-		val.Event = e
-		val.Data = m
+		ev.Event = e
+		ev.Data = m
 		if e.Type == mvccpb.DELETE {
 			_, err = fmt.Sscanf(string(e.Kv.Key), key+"/%s", &m.Name)
 			if err != nil {

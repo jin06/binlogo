@@ -2,9 +2,9 @@ package scheduler
 
 import (
 	"context"
-	"github.com/jin06/binlogo/pkg/blog"
 	"github.com/jin06/binlogo/pkg/store/dao/dao_sche"
 	"github.com/jin06/binlogo/pkg/store/model/pipeline"
+	"github.com/sirupsen/logrus"
 	"sync"
 )
 
@@ -26,7 +26,7 @@ func (s *Scheduler) Run(ctx context.Context) (err error) {
 	s.runLock.Lock()
 	defer s.runLock.Unlock()
 	if s.status == SCHEDULER_RUN {
-		blog.Debug("Running, do nothing")
+		//logrus.Debug("Running, do nothing")
 		return
 	}
 	cctx, cancel := context.WithCancel(ctx)
@@ -36,7 +36,7 @@ func (s *Scheduler) Run(ctx context.Context) (err error) {
 	}
 	s.cancel = cancel
 	s._schedule(cctx)
-	blog.Debug("scheduler.run")
+	logrus.Debug("scheduler.run")
 	//s._monitor(ctx2)
 	s.status = SCHEDULER_RUN
 	return
@@ -52,9 +52,9 @@ func (s *Scheduler) _schedule(ctx context.Context) {
 				}
 			case p := <-s.watcher.notBindPipelineCh:
 				{
-					blog.Infof("%s not bind node, bind one ", p.Name)
+					logrus.Infof("%s not bind node, bind one ", p.Name)
 					if err := s.scheduleOne(p); err != nil {
-						blog.Error(err)
+						logrus.Error(err)
 					}
 				}
 			}
@@ -68,7 +68,7 @@ func (s *Scheduler) Stop(ctx context.Context) {
 	s.runLock.Lock()
 	defer s.runLock.Unlock()
 	if s.status == SCHEDULER_STOP {
-		blog.Debug("Stopped, do nothing")
+		//logrus.Debug("Stopped, do nothing")
 		return
 	}
 	s.cancel()
@@ -76,17 +76,17 @@ func (s *Scheduler) Stop(ctx context.Context) {
 }
 
 func (s *Scheduler) scheduleOne(p *pipeline.Pipeline) (err error) {
-	blog.Debugf("schedule one: %v", p)
+	logrus.Debugf("schedule one: %v", p)
 	//p := s.queue.getOne()
 	a := newAlgorithm(p)
 	err = a.cal()
 	if err != nil {
 		return
 	}
-	blog.Debugf("best node for %s is %s \n", p.Name, a.bestNode.Name)
+	logrus.Debugf("best node for %s is %s \n", p.Name, a.bestNode.Name)
 	_, err = dao_sche.UpdatePipelineBind(p.Name, a.bestNode.Name)
 	if err != nil {
-		blog.Error(err)
+		logrus.Error(err)
 	}
 	return
 }
@@ -106,7 +106,7 @@ func New(opts ...Option) (s *Scheduler) {
 	s.watcher, err = newWatcher()
 	s.status = SCHEDULER_STOP
 	if err != nil {
-		blog.Error(err)
+		logrus.Error(err)
 	}
 	return
 }

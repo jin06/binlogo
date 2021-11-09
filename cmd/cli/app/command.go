@@ -24,7 +24,7 @@ func NewCommand() (cmd *cobra.Command) {
 	err := viper.BindPFlag("config", cmd.PersistentFlags().Lookup("config"))
 	configs.InitViperFromFile(viper.GetString("config"))
 	etcd2.DefaultETCD()
-	blog.Env(configs.Env(viper.GetString("env")))
+	logrus.Env(configs.Env(viper.GetString("env")))
 	if err != nil {
 		fmt.Println(err)
 	}

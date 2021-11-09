@@ -18,7 +18,7 @@ func RegRNode(n *register.RegisterNode, leaseID clientv3.LeaseID) (err error) {
 	if err != nil {
 		return
 	}
-	_, err = etcd.E.Client.Put(context.Background(), key, string(b), clientv3.WithLease(leaseID))
+	_, err = etcd.E.Client.Put(context.TODO(), key, string(b), clientv3.WithLease(leaseID))
 	if err != nil {
 		return
 	}
@@ -27,7 +27,7 @@ func RegRNode(n *register.RegisterNode, leaseID clientv3.LeaseID) (err error) {
 
 func GetRNode(name string) (n *register.RegisterNode, err error) {
 	key := RegisterPrefix() + "/" + name
-	res, err := etcd.E.Client.Get(context.Background(), key)
+	res, err := etcd.E.Client.Get(context.TODO(), key)
 	if err != nil {
 		return
 	}

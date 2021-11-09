@@ -2,11 +2,12 @@ package manager_status
 
 import (
 	"errors"
-	"github.com/jin06/binlogo/pkg/blog"
 	"github.com/jin06/binlogo/pkg/store/dao/dao_node"
 	"github.com/jin06/binlogo/pkg/store/model/node"
 	"github.com/shirou/gopsutil/v3/cpu"
 	"github.com/shirou/gopsutil/v3/mem"
+	"github.com/sirupsen/logrus"
+	"time"
 )
 
 type NodeStatus struct {
@@ -24,7 +25,7 @@ func NewNodeStatus(nodeName string) *NodeStatus {
 }
 
 func (ns *NodeStatus) syncNodeStatus() (err error) {
-	blog.Debug("Sync node status ")
+	logrus.Debug("Sync node status ")
 	err = ns.setStatus()
 	if err != nil {
 		return
@@ -59,6 +60,7 @@ func (ns *NodeStatus) setStatus() (err error) {
 	capacity := &node.Capacity{
 		Memory: v.Total,
 		Cpu:    c.User + c.System + c.Idle,
+		UpdateTime: time.Now(),
 	}
 	if cpuInfo, err1 := cpu.Info(); err1 == nil {
 		var cores int32
@@ -67,12 +69,13 @@ func (ns *NodeStatus) setStatus() (err error) {
 		}
 		capacity.CpuCors = cores
 	} else {
-		blog.Error(err1)
+		logrus.Error(err1)
 	}
 
 	al := &node.Allocatable{
 		Memory: v.Available,
 		Cpu:    c.Idle,
+		UpdateTime: time.Now(),
 	}
 
 	//capacity.CpuUsage, _ = decimal.NewFromFloat(al.Cpu/capacity.Cpu).Round(2).Float64()

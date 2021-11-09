@@ -2,11 +2,9 @@ package monitor
 
 import (
 	"context"
-	"github.com/jin06/binlogo/pkg/blog"
 	"github.com/jin06/binlogo/pkg/store/dao/dao_cluster"
 	"github.com/jin06/binlogo/pkg/store/dao/dao_node"
 	"github.com/jin06/binlogo/pkg/store/dao/dao_pipe"
-	"github.com/jin06/binlogo/pkg/store/etcd"
 	"github.com/jin06/binlogo/pkg/watcher"
 	"github.com/jin06/binlogo/pkg/watcher/node"
 	"github.com/jin06/binlogo/pkg/watcher/pipeline"
@@ -20,7 +18,6 @@ type Monitor struct {
 	nodeWatcher     *watcher.General
 	pipeWatcher     *watcher.General
 	registerWatcher *watcher.General
-	etcd            *etcd.ETCD
 }
 
 const STATUS_RUN = "run"
@@ -28,7 +25,6 @@ const STATUS_STOP = "stop"
 
 func NewMonitor() (m *Monitor, err error) {
 	m = &Monitor{
-		etcd:   etcd.E,
 		status: STATUS_STOP,
 	}
 	m.pipeWatcher, err = pipeline.New(dao_pipe.PipelinePrefix())
@@ -41,15 +37,30 @@ func (m *Monitor) Run(ctx context.Context) (err error) {
 	m.lock.Lock()
 	defer m.lock.Unlock()
 	if m.status == STATUS_RUN {
-		blog.Debug("Monitor is running, do nothing")
+		//logrus.Debug("Monitor is running, do nothing")
 		return
 	}
 	nctx, cancel := context.WithCancel(ctx)
+	defer func() {
+		if err != nil {
+			cancel()
+		} else {
+			m.status = STATUS_RUN
+		}
+	}()
 	m.cancel = cancel
-	m.monitorNode(nctx)
-	m.monitorRegister(nctx)
-	m.monitorPipe(nctx)
-	m.status = STATUS_RUN
+	err = m.monitorNode(nctx)
+	if err != nil {
+		return
+	}
+	err = m.monitorRegister(nctx)
+	if err != nil {
+		return
+	}
+	err = m.monitorPipe(nctx)
+	if err != nil {
+		return
+	}
 
 	return nil
 }
@@ -58,7 +69,7 @@ func (m *Monitor) Stop(ctx context.Context) {
 	m.lock.Lock()
 	defer m.lock.Unlock()
 	if m.status == STATUS_STOP {
-		blog.Debug("Monitor is stopped, do nothing")
+		//blog.Debug("Monitor is stopped, do nothing")
 		return
 	}
 	m.cancel()

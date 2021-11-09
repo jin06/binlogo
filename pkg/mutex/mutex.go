@@ -39,14 +39,13 @@ func (m *Mutex) initOptions(opts ...Option) {
 }
 
 func (m *Mutex) Lock() (err error) {
-	ctx, cancel := context.WithTimeout(context.Background(), m.timeout)
-	defer cancel()
+	ctx, _ := context.WithTimeout(context.TODO(), m.timeout)
 	err = m.mutex.Lock(ctx)
 	return
 }
 
 func (m *Mutex) Unlock() (err error) {
-	err = m.mutex.Unlock(context.Background())
+	err = m.mutex.Unlock(context.TODO())
 	if err != nil {
 		return
 	}

@@ -15,6 +15,7 @@ type Output struct {
 	InChan  chan *message2.Message
 	Sender  sender2.Sender
 	Options *Options
+	ctx     context.Context
 }
 
 func New(opts ...Option) (out *Output, err error) {
@@ -25,11 +26,10 @@ func New(opts ...Option) (out *Output, err error) {
 	out = &Output{
 		Options: options,
 	}
-	err = out.Init()
 	return
 }
 
-func (o *Output) Init() (err error) {
+func (o *Output) init() (err error) {
 	switch o.Options.Output.Sender.Type {
 	case pipeline.SNEDER_TYPE_STDOUT:
 		o.Sender, err = stdout2.New()
@@ -56,10 +56,8 @@ func recordPosition(msg *message2.Message) (err error) {
 	return
 }
 
-func (o *Output) doHandle() {
+func (o *Output) handle(msg *message2.Message) {
 	logrus.Debug("Wait send message")
-	var msg *message2.Message
-	msg = <-o.InChan
 	logrus.Debugf("Output read message: %v \n", *msg)
 	if !msg.Filter {
 		ok, err := o.Sender.Send(msg)
@@ -72,29 +70,38 @@ func (o *Output) doHandle() {
 			return
 		}
 	}
-	err := recordPosition(msg)
-	if err != nil {
+	if err := recordPosition(msg); err != nil {
 		logrus.Error(err)
 	}
 }
 
-func (o *Output) handle(ctx context.Context) {
+func (o *Output) Run(ctx context.Context) (err error) {
+	err = o.init()
+	if err != nil {
+		return
+	}
+	myCtx, cancel := context.WithCancel(ctx)
+	o.ctx = myCtx
 	go func() {
+		defer func() {
+			cancel()
+		}()
 		for {
 			select {
 			case <-ctx.Done():
 				{
 					return
 				}
-			default:
-				o.doHandle()
+			case msg := <-o.InChan:
+				{
+					o.handle(msg)
+				}
 			}
 		}
 	}()
 	return
 }
 
-func (o *Output) Run(ctx context.Context) (err error) {
-	o.handle(ctx)
-	return
+func (o *Output) Context() context.Context {
+	return o.ctx
 }

@@ -17,7 +17,7 @@ func TestWatch(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	w.Watch(context.Background())
+	w.Watch(context.TODO())
 	for p := range w.Queue {
 		t.Log(p)
 	}

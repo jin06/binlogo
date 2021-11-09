@@ -42,7 +42,7 @@ func main() {
 	// the mariadb GTID set likes this "0-1-100"
 
 	for {
-		ev, _ := streamer.GetEvent(context.Background())
+		ev, _ := streamer.GetEvent(context.TODO())
 		// Dump event
 		ev.Dump(os.Stdout)
 		//ev.Dump(os.Stdout)
@@ -50,7 +50,7 @@ func main() {
 
 	// or we can use a timeout context
 	for {
-		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+		ctx, cancel := context.WithTimeout(context.TODO(), 2*time.Second)
 		ev, err := streamer.GetEvent(ctx)
 		cancel()
 

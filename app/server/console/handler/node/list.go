@@ -4,10 +4,10 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/jin06/binlogo/app/server/console/handler"
 	"github.com/jin06/binlogo/app/server/console/module/node"
-	"github.com/jin06/binlogo/pkg/blog"
 	"github.com/jin06/binlogo/pkg/node/role"
 	"github.com/jin06/binlogo/pkg/store/dao/dao_cluster"
 	"github.com/jin06/binlogo/pkg/store/dao/dao_node"
+	"github.com/sirupsen/logrus"
 )
 
 func List(c *gin.Context) {
@@ -28,15 +28,15 @@ func List(c *gin.Context) {
 	}
 	capacityMap, err := dao_node.CapacityMap()
 	if err != nil {
-		blog.Error(err)
+		logrus.Error(err)
 	}
 	statusMap, err := dao_node.StatusMap()
 	if err != nil {
-		blog.Error(err)
+		logrus.Error(err)
 	}
 	leaderNode, err := dao_cluster.LeaderNode()
 	if err != nil {
-		blog.Error(err)
+		logrus.Error(err)
 	}
 	var items []*node.Item
 	for _, v := range all {

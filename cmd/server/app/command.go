@@ -5,6 +5,7 @@ import (
 	"github.com/jin06/binlogo/configs"
 	"github.com/jin06/binlogo/pkg/blog"
 	etcd2 "github.com/jin06/binlogo/pkg/store/etcd"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"os"
@@ -29,7 +30,7 @@ func NewCommand() (cmd *cobra.Command) {
 			etcd2.DefaultETCD()
 			blog.Env(configs.Env(viper.GetString("env")))
 			//RunServer()
-			blog.Infoln("init configs finish")
+			logrus.Infoln("init configs finish")
 			if err := RunNode(); err != nil {
 				fmt.Println(err.Error())
 				os.Exit(1)

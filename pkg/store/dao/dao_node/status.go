@@ -4,10 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/jin06/binlogo/pkg/blog"
+	"github.com/coreos/etcd/clientv3"
 	"github.com/jin06/binlogo/pkg/store/etcd"
 	"github.com/jin06/binlogo/pkg/store/model/node"
-	"github.com/coreos/etcd/clientv3"
+	"github.com/sirupsen/logrus"
 )
 
 
@@ -70,8 +70,8 @@ func CreateStatusIfNotExist(nodeName string, n *node.Status) (err error) {
 	resp, err := txn.Commit()
 
 	if err != nil {
-		blog.Error(err)
-		blog.Error(resp.Succeeded)
+		logrus.Error(err)
+		logrus.Error(resp.Succeeded)
 	}
 	return
 }
@@ -90,13 +90,13 @@ func StatusMap() (mapping map[string]*node.Status, err error) {
 		ele := &node.Status{}
 		er := json.Unmarshal(v.Value, ele)
 		if er != nil {
-			blog.Error(er)
+			logrus.Error(er)
 			continue
 		}
 		var nodeName string
 		_, er = fmt.Sscanf(string(v.Key), key+"/%s", &nodeName)
 		if er != nil {
-			blog.Error(er)
+			logrus.Error(er)
 			continue
 		}
 		if nodeName != "" {

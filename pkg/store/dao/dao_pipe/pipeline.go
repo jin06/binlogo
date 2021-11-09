@@ -3,9 +3,9 @@ package dao_pipe
 import (
 	"context"
 	"github.com/coreos/etcd/clientv3"
-	"github.com/jin06/binlogo/pkg/blog"
 	"github.com/jin06/binlogo/pkg/store/etcd"
 	"github.com/jin06/binlogo/pkg/store/model/pipeline"
+	"github.com/sirupsen/logrus"
 	"sort"
 )
 
@@ -15,7 +15,7 @@ func PipelinePrefix() string {
 
 func GetPipeline(name string) (p *pipeline.Pipeline , err error){
 	key := PipelinePrefix() + "/" + name
-	res, err := etcd.E.Client.Get(context.Background(), key)
+	res, err := etcd.E.Client.Get(context.TODO(), key)
 	if err != nil {
 		return
 	}
@@ -49,7 +49,7 @@ func UpdatePipeline(d *pipeline.Pipeline) (bool, error) {
 func AllPipelines() (list []*pipeline.Pipeline, err error) {
 	list = []*pipeline.Pipeline{}
 	key := PipelinePrefix()
-	res, err := etcd.E.Client.Get(context.Background(), key, clientv3.WithPrefix())
+	res, err := etcd.E.Client.Get(context.TODO(), key, clientv3.WithPrefix())
 	if err != nil {
 		return
 	}
@@ -61,7 +61,7 @@ func AllPipelines() (list []*pipeline.Pipeline, err error) {
 		}
 		er := ele.Unmarshal(v.Value)
 		if er != nil {
-			blog.Error(er)
+			logrus.Error(er)
 			continue
 		}
 		list = append(list, ele)

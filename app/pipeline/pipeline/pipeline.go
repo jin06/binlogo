@@ -7,7 +7,6 @@ import (
 	input2 "github.com/jin06/binlogo/app/pipeline/input"
 	message2 "github.com/jin06/binlogo/app/pipeline/message"
 	output2 "github.com/jin06/binlogo/app/pipeline/output"
-	"github.com/jin06/binlogo/pkg/blog"
 	"github.com/sirupsen/logrus"
 	"sync"
 )
@@ -21,13 +20,15 @@ type Pipeline struct {
 	Role     Role
 	cancel   context.CancelFunc
 	runMutex sync.Mutex
-	status   string
+	status   status
+	ctx      context.Context
 }
 
+type status byte
+
 const (
-	STATUS_RUN  = "running"
-	STATUS_STOP = "stopped"
-	STATUS_PENDING = "pending"
+	STATUS_RUN  status = 1
+	STATUS_STOP status = 2
 )
 
 func New(opt ...Option) (p *Pipeline, err error) {
@@ -99,41 +100,52 @@ func (p *Pipeline) initOutput() (err error) {
 	return
 }
 
-func (p *Pipeline) Run(ctx context.Context) (err error) {
+func (p *Pipeline) Run(ctx context.Context) {
 	p.runMutex.Lock()
 	defer p.runMutex.Unlock()
 	if p.status == STATUS_RUN {
 		return
 	}
 	logrus.Debug("mysql position", p.Input.Options.Position)
-	sctx, cancel := context.WithCancel(ctx)
-	p.cancel = cancel
-	defer func() {
-		if err != nil {
-			blog.Info(err)
-			p.cancel()
-		} else {
-			p.status = STATUS_RUN
+	myCtx, cancel := context.WithCancel(ctx)
+	p.ctx = myCtx
+	go func() {
+		var err error
+		defer func() {
+			cancel()
+		}()
+		if err = p.Input.Run(myCtx); err != nil {
+			return
+		}
+		if err = p.Filter.Run(myCtx); err != nil {
+			return
+		}
+		if err = p.Output.Run(myCtx); err != nil {
+			return
+		}
+		for {
+			select {
+			case <-ctx.Done():
+				{
+					return
+				}
+			case <-p.Input.Context().Done():
+				{
+					return
+				}
+			case <-p.Filter.Context().Done():
+				{
+					return
+				}
+			case <-p.Output.Context().Done():
+				{
+					return
+				}
+			}
 		}
 	}()
-	if err = p.Input.Run(sctx); err != nil {
-		return
-	}
-	if err = p.Filter.Run(sctx); err != nil {
-		return
-	}
-	if err = p.Output.Run(sctx); err != nil {
-		return
-	}
-	return
 }
 
-func (p *Pipeline) Stop() {
-	p.runMutex.Lock()
-	defer p.runMutex.Unlock()
-	if p.status == STATUS_STOP {
-		return
-	}
-	p.cancel()
-	p.status = STATUS_STOP
+func (p *Pipeline) Context() context.Context {
+	return p.ctx
 }

@@ -6,11 +6,12 @@ import (
 	"github.com/jin06/binlogo/app/server/node/manager/manager_pipe"
 	"github.com/jin06/binlogo/app/server/node/manager/manager_status"
 	"github.com/jin06/binlogo/app/server/node/monitor"
-	register2 "github.com/jin06/binlogo/app/server/node/register"
 	"github.com/jin06/binlogo/app/server/node/scheduler"
-	"github.com/jin06/binlogo/pkg/blog"
 	"github.com/jin06/binlogo/pkg/node/role"
+	"github.com/jin06/binlogo/pkg/register"
 	store2 "github.com/jin06/binlogo/pkg/store"
+	"github.com/jin06/binlogo/pkg/store/dao/dao_cluster"
+	"github.com/sirupsen/logrus"
 	"sync"
 	"time"
 )
@@ -19,7 +20,7 @@ type Node struct {
 	Mode           *NodeMode
 	Options        *Options
 	Name           string
-	Register       *register2.Register
+	Register       *register.Register
 	election       *election.Election
 	Scheduler      *scheduler.Scheduler
 	StatusManager  *manager_status.Manager
@@ -52,8 +53,7 @@ func (n NodeMode) String() string {
 func New(opts ...Option) (node *Node, err error) {
 	options := &Options{}
 	node = &Node{
-		Options:  options,
-		Register: &register2.Register{},
+		Options: options,
 	}
 	for _, v := range opts {
 		v(options)
@@ -63,13 +63,17 @@ func New(opts ...Option) (node *Node, err error) {
 }
 
 func (n *Node) init() (err error) {
-	n.Register = register2.New(
-		register2.OptionNode(n.Options.Node),
-		register2.OptionLeaseDuration(2*time.Second),
+	n.Register, err = register.New(
+		register.WithTTL(5),
+		register.WithKey(dao_cluster.RegisterPrefix() + "/" + n.Options.Node.Name),
+		register.WithData(n.Options.Node),
 	)
+	if err != nil {
+		return
+	}
 	n.Scheduler = scheduler.New()
 
-	blog.Debug("---->", n.Options.Node)
+	logrus.Debug("---->", n.Options.Node)
 	n.StatusManager = manager_status.NewManager(n.Options.Node)
 	n.monitor, err = monitor.NewMonitor()
 	if err != nil {
@@ -91,34 +95,33 @@ func (n *Node) Run(ctx context.Context) (err error) {
 		}
 		ctxReg, cancelReg := context.WithCancel(ctx)
 		defer cancelReg()
-		if err = n.Register.Run(ctxReg); err != nil {
-			return
-		}
+		n.Register.Run(ctxReg)
+
+		ctxStatus, cancelStatus := context.WithCancel(ctx)
+		defer cancelStatus()
+		err = n.StatusManager.Run(ctxStatus)
 
 		ctxElection, cancelElection := context.WithCancel(ctx)
 		defer cancelElection()
-		if n.election, err = election.New(
+		n.election, err = election.New(
 			election.OptionNode(n.Options.Node),
 			election.OptionTTL(5),
-		); err != nil {
+		)
+		if err != nil {
 			return
 		}
-		ctxPM, cancelPM := context.WithCancel(ctx)
-		n.pipeManager.Run(ctxPM)
-		defer cancelPM()
-
 		n.election.Run(ctxElection)
+
+		n.pipeManager.Run(ctx)
 
 		ctxLeader, cancelLeader := context.WithCancel(ctx)
 		n._leaderRun(ctxLeader)
 		defer cancelLeader()
 
-		ctxStatus, cancelStatus := context.WithCancel(ctx)
-		defer cancelStatus()
-		err = n.StatusManager.Run(ctxStatus)
 		select {
 		case <-ctx.Done():
 			{
+			panic(ctx.Err())
 				return
 			}
 		}
@@ -156,15 +159,6 @@ func (n *Node) leaderRun(ctx context.Context) {
 	case role.LEADER:
 		{
 			var err error
-			defer func() {
-				if err != nil {
-					n.Scheduler.Stop(ctx)
-					n.monitor.Stop(ctx)
-					if err != nil {
-						blog.Error("Election resign failed: ")
-					}
-				}
-			}()
 			err = n.Scheduler.Run(ctx)
 			if err != nil {
 				return

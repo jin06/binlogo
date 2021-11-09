@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/coreos/etcd/clientv3"
-	"github.com/jin06/binlogo/pkg/blog"
 	options2 "github.com/jin06/binlogo/pkg/store/etcd/options"
 	model2 "github.com/jin06/binlogo/pkg/store/model"
 	"github.com/sirupsen/logrus"
@@ -59,7 +58,7 @@ func NewETCD(opt ...options2.Option) (etcd *ETCD, err error) {
 
 func (e *ETCD) Read(key string) (resp string, err error) {
 	timeout := time.Second * 10
-	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	ctx, cancel := context.WithTimeout(context.TODO(), timeout)
 	res, err := e.Client.Get(ctx, key)
 	defer cancel()
 	if err != nil {
@@ -75,7 +74,7 @@ func Read(key string) (resp string, err error) {
 }
 func (e *ETCD) Write(key string, val string) (err error) {
 	logrus.Debug("etcd start")
-	ctx, cancel := context.WithTimeout(context.Background(), e.Timeout)
+	ctx, cancel := context.WithTimeout(context.TODO(), e.Timeout)
 	logrus.Debug("etcd put")
 	_, err = e.Client.Put(ctx, key, val)
 	defer cancel()
@@ -136,7 +135,7 @@ func Delete(m model2.Model) (bool, error) {
 }
 
 func (e *ETCD) Get(m model2.Model) (ok bool, err error) {
-	ctx, cancel := context.WithTimeout(context.Background(), e.Timeout)
+	ctx, cancel := context.WithTimeout(context.TODO(), e.Timeout)
 	defer cancel()
 	key := e.Prefix + "/" + m.Key()
 	res, err := e.Client.Get(ctx, key)
@@ -154,7 +153,7 @@ func (e *ETCD) Get(m model2.Model) (ok bool, err error) {
 }
 
 func (e *ETCD) GetH(m model2.ModelH) (ok bool, err error) {
-	ctx, cancel := context.WithTimeout(context.Background(), e.Timeout)
+	ctx, cancel := context.WithTimeout(context.TODO(), e.Timeout)
 	defer cancel()
 	key := e.Prefix + "/" + m.Key()
 	res, err := e.Client.Get(ctx, key)
@@ -180,10 +179,10 @@ func (e *ETCD) GetH(m model2.ModelH) (ok bool, err error) {
 
 // todo change list
 func (e *ETCD) List(key string) (list []model2.Model, err error) {
-	ctx, cancel := context.WithTimeout(context.Background(), e.Timeout)
+	ctx, cancel := context.WithTimeout(context.TODO(), e.Timeout)
 	defer cancel()
 	key = e.Prefix + "/" + key
-	blog.Debug("list key: ", key)
+	logrus.Debug("list key: ", key)
 	res, err := e.Client.Get(ctx, key, clientv3.WithPrefix(), clientv3.WithFromKey())
 	if err != nil {
 		return

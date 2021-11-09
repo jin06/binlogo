@@ -28,7 +28,7 @@ func main() {
 	syncer.Start()
 
 	for {
-		ev, _ := syncer.BinlogStreamer.GetEvent(context.Background())
+		ev, _ := syncer.BinlogStreamer.GetEvent(context.TODO())
 		// Dump event
 		ev.Dump(os.Stdout)
 		fmt.Println(syncer.BinlogSyncer.GetNextPosition())
@@ -36,7 +36,7 @@ func main() {
 	}
 
 	for {
-		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+		ctx, cancel := context.WithTimeout(context.TODO(), 2*time.Second)
 		ev, err := syncer.BinlogStreamer.GetEvent(ctx)
 		cancel()
 

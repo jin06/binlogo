@@ -4,10 +4,10 @@ import (
 	"context"
 	node2 "github.com/jin06/binlogo/app/server/node"
 	"github.com/jin06/binlogo/configs"
-	"github.com/jin06/binlogo/pkg/blog"
 	"github.com/jin06/binlogo/pkg/store/dao/dao_node"
 	"github.com/jin06/binlogo/pkg/store/model/node"
 	"github.com/jin06/binlogo/pkg/util/ip"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"time"
 )
@@ -39,14 +39,14 @@ func RunNode() (err error) {
 	}
 	err = dao_node.CreateStatusIfNotExist(nModel.Name, &node.Status{Ready: true})
 	if err != nil {
-		blog.Error(err)
+		logrus.Error(err)
 		return
 	}
 	var _node *node2.Node
 	if _node, err = node2.New(node2.OptionNode(nModel)); err != nil {
 		return
 	}
-	ctx := context.Background()
+	ctx := context.TODO()
 	err = _node.Run(ctx)
 
 	return

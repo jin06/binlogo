@@ -2,37 +2,39 @@ package manager_pipe
 
 import (
 	"context"
-	"github.com/jin06/binlogo/pkg/blog"
 	"github.com/jin06/binlogo/pkg/store/dao/dao_sche"
 	"github.com/jin06/binlogo/pkg/store/model/node"
 	"github.com/jin06/binlogo/pkg/store/model/scheduler"
 	"github.com/jin06/binlogo/pkg/watcher/scheduler_binding"
+	"github.com/sirupsen/logrus"
 	"sync"
 	"time"
 )
 
 type Manager struct {
-	mapping        map[string]*instance
+	mapping        map[string]bool
+	mappingIns     map[string]*instance
 	bindingWatcher *scheduler_binding.BindingWatcher
 	node           *node.Node
-	mappingMutex   sync.Mutex
+	mutex          sync.Mutex
 }
 
 func New(n *node.Node) (m *Manager) {
 	m = &Manager{
-		mapping:      map[string]*instance{},
-		mappingMutex: sync.Mutex{},
+		mapping:    map[string]bool{},
+		mappingIns: map[string]*instance{},
+		mutex:      sync.Mutex{},
 	}
 	m.node = n
-	blog.Debug("new pipeline manager ")
-	blog.Debug("nodeName:", n.Name)
+	logrus.Debug("new pipeline manager ")
+	logrus.Debug("nodeName:", n.Name)
 	return
 }
 
 func (m *Manager) Run(ctx context.Context) {
 	go func() {
-		if err := m.handlePipelineBind(nil); err != nil {
-			blog.Error(err)
+		if err := m.scanPipelines(nil); err != nil {
+			logrus.Error(err)
 		}
 		for {
 			select {
@@ -42,9 +44,13 @@ func (m *Manager) Run(ctx context.Context) {
 				}
 			case <-time.Tick(time.Second * 5):
 				{
-					if err := m.handlePipelineBind(nil); err != nil {
-						blog.Error(err)
+					if err := m.scanPipelines(nil); err != nil {
+						logrus.Error(err)
 					}
+				}
+			case <-time.Tick(time.Second * 1):
+				{
+					m.dispatch()
 				}
 			}
 		}
@@ -52,57 +58,51 @@ func (m *Manager) Run(ctx context.Context) {
 	return
 }
 
-func (m *Manager) handlePipelineBind(pb *scheduler.PipelineBind) (err error) {
+func (m *Manager) scanPipelines(pb *scheduler.PipelineBind) (err error) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
 	if pb == nil {
 		pb, err = dao_sche.GetPipelineBind()
 		if err != nil {
 			return
 		}
 	}
-	for k, v := range pb.Bindings {
-		er := m.handle(k, v)
-		if er != nil {
-			blog.Error(er)
-		}
-	}
-	return
-}
-
-func (m *Manager) handle(pipeName string, nodeName string) (err error) {
-	m.mappingMutex.Lock()
-	defer m.mappingMutex.Unlock()
-	blog.Debugln("manager_pipeline, ", pipeName, " nodeName", nodeName)
-	if _, ok := m.mapping[pipeName]; ok {
-		if nodeName != m.node.Name {
-			err = m.removePipeline(pipeName)
-		}
-	} else {
+	for pipeName, nodeName := range pb.Bindings {
 		if nodeName == m.node.Name {
-			blog.Debugln("manager_pipeline, addPipeline")
-			err = m.addPipeline(pipeName)
+			m.mapping[pipeName] = true
+			continue
+		}
+		if nodeName != m.node.Name {
+			m.mapping[pipeName] = false
+		}
+	}
+
+	for pName, _ := range m.mapping {
+		if _, ok := pb.Bindings[pName]; !ok {
+			m.mapping[pName] = false
 		}
 	}
 	return
 }
 
-func (m *Manager) addPipeline(name string) (err error) {
-	var ins *instance
-	ins, err = newInstance(name)
-	if err != nil {
-		return
+func (m *Manager) dispatch() {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+	for pName, shouldRun := range m.mapping {
+		_, isExist := m.mappingIns[pName]
+		if shouldRun {
+			if !isExist {
+				newIns := newInstance(pName, m.node.Name)
+				m.mappingIns[pName] = newIns
+			}
+			go m.mappingIns[pName].start()
+		}
+		if !shouldRun {
+			if isExist {
+				m.mappingIns[pName].stop()
+				delete(m.mappingIns, pName)
+			}
+		}
 	}
-	err = ins.start()
-	if err != nil {
-		return
-	}
-	m.mapping[name] = ins
-	return
-}
 
-func (m *Manager) removePipeline(name string) (err error) {
-	if ins, ok := m.mapping[name]; ok {
-		err = ins.stop()
-		delete(m.mapping, name)
-	}
-	return
 }

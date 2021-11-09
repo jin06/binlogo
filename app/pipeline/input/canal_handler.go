@@ -5,9 +5,9 @@ import (
 	"github.com/go-mysql-org/go-mysql/mysql"
 	"github.com/go-mysql-org/go-mysql/replication"
 	"github.com/jin06/binlogo/app/pipeline/message"
-	"github.com/jin06/binlogo/pkg/blog"
 	"github.com/jin06/binlogo/pkg/store/model/pipeline"
 	"github.com/siddontang/go-log/log"
+	"github.com/sirupsen/logrus"
 )
 
 type canalHandler struct {
@@ -19,6 +19,7 @@ type canalHandler struct {
 }
 
 func (h *canalHandler) OnRow(e *canal.RowsEvent) error {
+	//logrus.Warnln(e)
 	msg := rowsMessage(e)
 	msg.BinlogPosition = &pipeline.Position{
 		BinlogFile:     h.positionFile,
@@ -26,7 +27,7 @@ func (h *canalHandler) OnRow(e *canal.RowsEvent) error {
 		PipelineName:   h.pipe.Name,
 		GTIDSet:        h._GTIDSet,
 	}
-	blog.Debugln(msg)
+	logrus.Errorf("%v", e.Header)
 	h.ch <- msg
 	return nil
 }
@@ -46,5 +47,10 @@ func (h *canalHandler) OnXID(p mysql.Position) error {
 
 func (h *canalHandler) String() string {
 	return "MyEventHandler"
+}
+
+func (h *canalHandler) OnGTID(set mysql.GTIDSet) (err error) {
+	set.String()
+	return
 }
 

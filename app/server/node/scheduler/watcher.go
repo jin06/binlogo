@@ -2,17 +2,15 @@ package scheduler
 
 import (
 	"context"
-	"github.com/jin06/binlogo/pkg/blog"
 	"github.com/jin06/binlogo/pkg/store/dao/dao_sche"
-	"github.com/jin06/binlogo/pkg/store/etcd"
 	pipeline2 "github.com/jin06/binlogo/pkg/store/model/pipeline"
 	"github.com/jin06/binlogo/pkg/store/model/scheduler"
 	"github.com/jin06/binlogo/pkg/watcher"
+	"github.com/sirupsen/logrus"
 	"time"
 )
 
 type Watcher struct {
-	etcd              *etcd.ETCD
 	pipelineWatcher   *watcher.General
 	nodeWatcher       *watcher.General
 	notBindPipelineCh chan *pipeline2.Pipeline
@@ -20,7 +18,6 @@ type Watcher struct {
 
 func newWatcher() (m *Watcher, err error) {
 	m = &Watcher{
-		etcd: etcd.E,
 	}
 	m.notBindPipelineCh = make(chan *pipeline2.Pipeline, 10000)
 	return
@@ -39,7 +36,7 @@ func (m *Watcher) run(ctx context.Context) error {
 				{
 					err := m.putNotBindPipeToQueue(nil)
 					if err != nil {
-						blog.Error("Put not bind pipeline to queue error: ", err)
+						logrus.Error("Put not bind pipeline to queue error: ", err)
 					}
 				}
 			}

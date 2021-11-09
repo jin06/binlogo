@@ -10,7 +10,7 @@ type Filter struct {
 	InChan  chan *message2.Message
 	OutChan chan *message2.Message
 	Options *Options
-	Ctx     context.Context
+	ctx     context.Context
 }
 
 func New(opts ...Option) (filter *Filter, err error) {
@@ -21,11 +21,10 @@ func New(opts ...Option) (filter *Filter, err error) {
 	filter = &Filter{
 		Options: options,
 	}
-	err = filter.Init()
 	return
 }
 
-func (f *Filter) Init() (err error) {
+func (f *Filter) init() (err error) {
 	return
 }
 
@@ -61,35 +60,44 @@ func (f *Filter) filer(msg *message2.Message) (err error) {
 	return
 }
 
-func (f *Filter) doHandle() {
+func (f *Filter) handle(msg *message2.Message) {
 	logrus.Debug("Filter wait message")
-	msg := <-f.InChan
 	err := f.filer(msg)
 	if err != nil {
 		logrus.Error(err)
 		return
 	}
 	logrus.Debug("Filter message: ", msg)
-	f.OutChan <- msg
+	//f.OutChan <- msg
 }
 
-func (f *Filter) handle(ctx context.Context) {
+func (f *Filter) Run(ctx context.Context) (err error) {
+	err = f.init()
+	if err != nil {
+		return
+	}
+	myCtx, c := context.WithCancel(ctx)
+	f.ctx = myCtx
 	go func() {
+		defer func() {
+			c()
+		}()
 		for {
 			select {
 			case <-ctx.Done():
 				{
 					return
 				}
-			default:
-				f.doHandle()
+				case msg := <-f.InChan:{
+					f.handle(msg)
+					f.OutChan <- msg
+				}
 			}
 		}
 	}()
 	return
 }
 
-func (f *Filter) Run(ctx context.Context) (err error) {
-	f.handle(ctx)
-	return
+func (f *Filter) Context() context.Context {
+	return f.ctx
 }

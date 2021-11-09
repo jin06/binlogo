@@ -2,10 +2,10 @@ package manager_status
 
 import (
 	"context"
-	"github.com/jin06/binlogo/pkg/blog"
 	"github.com/jin06/binlogo/pkg/store/dao/dao_node"
 	"github.com/jin06/binlogo/pkg/store/model/node"
 	"github.com/jin06/binlogo/pkg/util/ip"
+	"github.com/sirupsen/logrus"
 	"net"
 	"sync"
 	"time"
@@ -28,7 +28,7 @@ func NewManager(n *node.Node) *Manager {
 
 func (m *Manager) Run(ctx context.Context) (err error) {
 	if err = m.syncStatus(); err != nil {
-		blog.Error("Sync status failed: ", err)
+		logrus.Error("Sync status failed: ", err)
 		return
 	}
 	go func() {
@@ -38,16 +38,17 @@ func (m *Manager) Run(ctx context.Context) (err error) {
 				{
 					return
 				}
-			case <-time.Tick(time.Second * 30):
+			case <-time.Tick(time.Second * 10):
+				//case <-time.Tick(time.Second * 1):
 				{
 					if err = m.syncStatus(); err != nil {
-						blog.Error("Sync status failed: ", err)
+						logrus.Error("Sync status failed: ", err)
 					}
 				}
 			case <-time.Tick(time.Minute):
 				{
 					if err = m.syncIP(); err != nil {
-						blog.Error("Sync node ip failed: ", err)
+						logrus.Error("Sync node ip failed: ", err)
 					}
 				}
 			}

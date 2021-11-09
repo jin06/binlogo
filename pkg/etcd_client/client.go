@@ -20,3 +20,16 @@ func New() (cli *clientv3.Client, err error) {
 	cli, err = clientv3.New(cfg)
 	return
 }
+
+var client *clientv3.Client
+
+func Default() *clientv3.Client {
+	if client == nil {
+		var err error
+		client, err = New()
+		if err != nil {
+			panic(err)
+		}
+	}
+	return client
+}

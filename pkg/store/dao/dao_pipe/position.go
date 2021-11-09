@@ -3,6 +3,7 @@ package dao_pipe
 import (
 	"context"
 	"encoding/json"
+	"github.com/jin06/binlogo/pkg/etcd_client"
 	"github.com/jin06/binlogo/pkg/store/etcd"
 	"github.com/jin06/binlogo/pkg/store/model/pipeline"
 )
@@ -17,13 +18,13 @@ func UpdatePosition(p *pipeline.Position) (err error) {
 	if err != nil {
 		return
 	}
-	_, err = etcd.E.Client.Put(context.Background(), key, string(b))
+	_, err = etcd_client.Default().Put(context.TODO(), key, string(b))
 	return
 }
 
 func GetPosition(pipeName string) (p *pipeline.Position, err error) {
 	key := PositionPrefix() + "/" + pipeName
-	res, err := etcd.E.Client.Get(context.Background(), key)
+	res, err := etcd_client.Default().Get(context.TODO(), key)
 	if err != nil {
 		return
 	}

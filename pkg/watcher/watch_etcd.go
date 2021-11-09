@@ -3,7 +3,6 @@ package watcher
 import (
 	"context"
 	"github.com/coreos/etcd/clientv3"
-	"github.com/jin06/binlogo/pkg/blog"
 	"github.com/jin06/binlogo/pkg/etcd_client"
 	"github.com/sirupsen/logrus"
 )
@@ -57,7 +56,7 @@ func (w *General) WatchEtcd(ctx context.Context, opts ...clientv3.OpOption) (ch 
 					for _, val := range resp.Events {
 						ev, err2 :=w.EventHandler(val)
 						if err2 != nil {
-							blog.Error("Event handle error: ", err2)
+							logrus.Error("Event handle error: ", err2)
 							continue
 						}
 						ch <- ev

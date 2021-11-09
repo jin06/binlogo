@@ -3,10 +3,10 @@ package monitor
 import (
 	"context"
 	"github.com/coreos/etcd/mvcc/mvccpb"
-	"github.com/jin06/binlogo/pkg/blog"
 	"github.com/jin06/binlogo/pkg/store/dao/dao_pipe"
 	"github.com/jin06/binlogo/pkg/store/dao/dao_sche"
 	"github.com/jin06/binlogo/pkg/store/model/pipeline"
+	"github.com/sirupsen/logrus"
 	"time"
 )
 
@@ -28,7 +28,7 @@ func (m *Monitor) monitorPipe(ctx context.Context) (err error){
 						if val, ok := n.Data.(*pipeline.Pipeline); ok {
 							_, err := dao_sche.DeletePipelineBind(val.Name)
 							if err != nil {
-								blog.Error("Delete pipeline bind failed: ", err)
+								logrus.Error("Delete pipeline bind failed: ", err)
 							}
 						}
 					}
@@ -36,7 +36,7 @@ func (m *Monitor) monitorPipe(ctx context.Context) (err error){
 						if val, ok := n.Data.(*pipeline.Pipeline); ok {
 							err := dao_sche.UpdatePipelineBindIfNotExist(val.Name, "")
 							if err != nil {
-								blog.Error("Update pipeline bind failed ", err)
+								logrus.Error("Update pipeline bind failed ", err)
 							}
 						}
 					}
@@ -45,7 +45,7 @@ func (m *Monitor) monitorPipe(ctx context.Context) (err error){
 			case <-time.Tick(time.Second * 60):
 				{
 					if er := m.checkAllPipelineBind(); er != nil {
-						blog.Error("Check all pipeline bind error: ", er)
+						logrus.Error("Check all pipeline bind error: ", er)
 					}
 				}
 			}
@@ -71,7 +71,7 @@ func (m *Monitor) checkAllPipelineBind() (err error) {
 		if _, ok := pb.Bindings[v.Name]; !ok {
 			_, err2 := dao_sche.UpdatePipelineBind(v.Name, "")
 			if err2 != nil {
-				blog.Error(err2)
+				logrus.Error(err2)
 			}
 		}
 	}
@@ -79,7 +79,7 @@ func (m *Monitor) checkAllPipelineBind() (err error) {
 		if _, ok := mapPipes[k]; !ok {
 			_, er := dao_sche.DeletePipelineBind(k)
 			if er != nil {
-				blog.Error(er)
+				logrus.Error(er)
 			}
 		}
 	}

@@ -3,7 +3,6 @@ package register
 import (
 	"context"
 	"github.com/coreos/etcd/clientv3"
-	"github.com/coreos/etcd/etcdserver/api/v3rpc/rpctypes"
 	"github.com/jin06/binlogo/pkg/blog"
 	"github.com/jin06/binlogo/pkg/etcd_client"
 	"github.com/jin06/binlogo/pkg/store/dao/dao_cluster"
@@ -13,63 +12,53 @@ import (
 	"time"
 )
 
-const ttl = 7
-
-func New(opts ...Option) (r *Register) {
+func New(opts ...Option) (r *Register, err error) {
 	r = &Register{
-		ttl:           ttl,
-		leaseDuration: time.Second,
+		ttl: 5,
 	}
-	logrus.Debug("Node register lease duration ", r.leaseDuration)
+	r.client, err = etcd_client.New()
+	logrus.Debug("Node register lease duration ", r.ttl)
 	for _, v := range opts {
 		v(r)
 	}
-	logrus.Debug("Node register lease duration ", r.leaseDuration)
+	logrus.Debug("Node register lease duration ", r.ttl)
 	return
 }
 
 type Register struct {
-	lease         clientv3.Lease
-	leaseID       clientv3.LeaseID
-	leaseDuration time.Duration
-	node          *node2.Node
-	ttl           int64
-	client *clientv3.Client
+	lease   clientv3.Lease
+	leaseID clientv3.LeaseID
+	node    *node2.Node
+	ttl     int64
+	client  *clientv3.Client
 }
 
 func (r *Register) Run(ctx context.Context) (err error) {
-	err = r.reg()
-	if err != nil {
-		return
-	}
 	go func() {
 		for {
-			select {
-			case <-time.Tick(2 * time.Second):
-				{
-					er := r.keep()
-					if er != nil {
-						blog.Error(er)
+			err = r.reg()
+			if err != nil {
+				logrus.Errorln(err)
+			}
+			for {
+				select {
+				case <-time.Tick(time.Second):
+					{
+						err = r.keepOnce()
+						if err != nil {
+							break
+						}
 					}
-					if er == rpctypes.ErrLeaseNotFound {
-						err = r.reg()
-						blog.Error(err)
+					case <-ctx.Done():{
+						er := r.revoke()
+						if er != nil {
+							logrus.Errorln(er)
+						}
+						return
 					}
-
-					ok, err2 := r.watch()
-					if err2 != nil {
-						blog.Error(err2)
-					}
-					if !ok {
-						err = r.reg()
-					}
-				}
-			case <-ctx.Done():
-				{
-					logrus.Warn("register exit")
-					return
 				}
 			}
+
 		}
 	}()
 
@@ -77,10 +66,6 @@ func (r *Register) Run(ctx context.Context) (err error) {
 }
 
 func (r *Register) reg() (err error) {
-	r.client, err = etcd_client.New()
-	if err != nil {
-		return
-	}
 	r.lease = clientv3.NewLease(r.client)
 	if rep, err2 := r.lease.Grant(context.TODO(), r.ttl); err2 != nil {
 		return err2
@@ -91,7 +76,7 @@ func (r *Register) reg() (err error) {
 	return
 }
 
-func (r *Register) keep() (err error) {
+func (r *Register) keepOnce() (err error) {
 	resp, err := r.lease.KeepAliveOnce(context.TODO(), r.leaseID)
 	if err != nil {
 		//logrus.Error(err)
@@ -109,6 +94,7 @@ func (r *Register) watch() (ok bool, err error) {
 	var regNode *register.RegisterNode
 	regNode, err = dao_cluster.GetRNode(r.node.Name)
 	if err != nil {
+		blog.Error("get rnode error")
 		return
 	}
 	if regNode != nil {

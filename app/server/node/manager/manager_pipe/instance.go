@@ -4,67 +4,113 @@ import (
 	"context"
 	"errors"
 	"github.com/jin06/binlogo/app/pipeline/pipeline"
-	"github.com/jin06/binlogo/pkg/blog"
-	"github.com/jin06/binlogo/pkg/mutex"
+	"github.com/jin06/binlogo/pkg/register"
 	"github.com/jin06/binlogo/pkg/store/dao/dao_pipe"
-	"github.com/jin06/binlogo/pkg/store/dao/dao_sche"
+	"github.com/jin06/binlogo/pkg/store/dao/dao_register"
 	pipeline2 "github.com/jin06/binlogo/pkg/store/model/pipeline"
+	"sync"
 )
 
 type instance struct {
-	pName string
-	p     *pipeline.Pipeline
-	m     *mutex.Mutex
+	pipeName string
+	nodeName string
+	pipeIns  *pipeline.Pipeline
+	pipeInfo *pipeline2.Pipeline
+	pipeReg  *register.Register
+	cancel   context.CancelFunc
+	status   status
+	mutex    sync.Mutex
 }
 
-func newInstance(name string) (ins *instance, err error) {
-	pipeModel, err := dao_pipe.GetPipeline(name)
+type status byte
+
+const (
+	STATUS_RUN  status = 2
+	STATUS_STOP status = 4
+)
+
+func newInstance(pipeName string, nodeName string) *instance {
+	ins := &instance{
+		pipeName: pipeName,
+		nodeName: nodeName,
+		mutex:    sync.Mutex{},
+	}
+	return ins
+}
+
+func (i *instance) init() (err error) {
+	pipeInfo, err := dao_pipe.GetPipeline(i.pipeName)
 	if err != nil {
 		return
 	}
-	if pipeModel == nil {
-		err = errors.New("no pipeline: " + name)
+	if pipeInfo == nil {
+		err = errors.New("no pipeline: " + i.pipeName)
 		return
 	}
-	posModel, err := dao_pipe.GetPosition(name)
+	posPos, err := dao_pipe.GetPosition(i.pipeName)
 	if err != nil {
 		return
 	}
-	if posModel == nil {
-		posModel = &pipeline2.Position{
-			//PipelineName: name,
+	if posPos == nil {
+		posPos = &pipeline2.Position{
 		}
 	}
-	pipe, err := pipeline.New(pipeline.OptionPipeline(pipeModel), pipeline.OptionPosition(posModel))
+	pipe, err := pipeline.New(
+		pipeline.OptionPipeline(pipeInfo),
+		pipeline.OptionPosition(posPos),
+	)
 	if err != nil {
 		return
 	}
-	ins = &instance{p: pipe, pName: name}
-	ins.m, err = mutex.New(dao_sche.PipelineLockPrefix() + "/" + name)
-	if err != nil {
-		return
-	}
+	reg, err := register.New(
+		register.WithKey(dao_register.PipeInstancePrefix()+"/"+i.pipeName),
+		register.WithData(i.nodeName),
+	)
+	i.pipeInfo = pipeInfo
+	i.pipeIns = pipe
+	i.pipeReg = reg
 	return
 }
 
 func (i *instance) start() (err error) {
-	err = i.m.Lock()
+	if i.status == STATUS_RUN {
+		return
+	}
+	i.status = STATUS_RUN
+	defer func() {
+		i.status = STATUS_STOP
+	}()
+	err = i.init()
 	if err != nil {
 		return
 	}
-
+	ctx, cancel := context.WithCancel(context.TODO())
 	defer func() {
-		if err != nil {
-			i.m.Unlock()
-		}
+		cancel()
 	}()
-	blog.Info("Start pipeline, ", i.pName)
-	err = i.p.Run(context.Background())
-	return
+	i.cancel = cancel
+	i.pipeReg.Run(ctx)
+	i.pipeIns.Run(ctx)
+
+	select {
+	case <-i.pipeIns.Context().Done():
+		{
+			return
+		}
+	case <-i.pipeReg.Context().Done():
+		{
+			return
+		}
+	}
 }
 
-func (i *instance) stop() (err error) {
-	i.p.Stop()
-	err = i.m.Unlock()
+func (i *instance) stop() {
+	if i.status == STATUS_STOP {
+		return
+	}
+	defer func() {
+		i.status = STATUS_STOP
+	}()
+	i.cancel()
 	return
 }

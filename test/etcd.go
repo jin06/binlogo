@@ -4,8 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	model2 "github.com/jin06/binlogo/pkg/store/model"
 	"github.com/coreos/etcd/clientv3"
+	model2 "github.com/jin06/binlogo/pkg/store/model"
 	"time"
 )
 func main()  {
@@ -20,7 +20,7 @@ func main()  {
 	}
 	defer cli.Close()
 	timeout := time.Second * 10
-	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	ctx, cancel := context.WithTimeout(context.TODO(), timeout)
 	database := new(model2.Database)
 	database.Name = "testdata"
 	js, err := json.Marshal(database)

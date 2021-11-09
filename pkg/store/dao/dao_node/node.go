@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/coreos/etcd/clientv3"
-	"github.com/jin06/binlogo/pkg/blog"
 	"github.com/jin06/binlogo/pkg/store/etcd"
 	"github.com/jin06/binlogo/pkg/store/model/node"
+	"github.com/sirupsen/logrus"
 )
 
 func NodePrefix() string {
@@ -16,7 +16,7 @@ func NodePrefix() string {
 
 func CreateNode(n *node.Node) (err error) {
 	key := NodePrefix() + "/" + n.Name
-	ctx, cancel := context.WithTimeout(context.Background(), etcd.E.Timeout)
+	ctx, cancel := context.WithTimeout(context.TODO(), etcd.E.Timeout)
 	defer cancel()
 	v, err := json.Marshal(n)
 	if err != nil {
@@ -28,7 +28,7 @@ func CreateNode(n *node.Node) (err error) {
 
 func CreateNodeIfNotExist(n *node.Node) (err error) {
 	key := NodePrefix() + "/" + n.Name
-	ctx, cancel := context.WithTimeout(context.Background(), etcd.E.Timeout)
+	ctx, cancel := context.WithTimeout(context.TODO(), etcd.E.Timeout)
 	defer cancel()
 	b, err := json.Marshal(n)
 	if err != nil {
@@ -39,8 +39,8 @@ func CreateNodeIfNotExist(n *node.Node) (err error) {
 	resp, err := txn.Commit()
 
 	if err != nil {
-		blog.Error(err)
-		blog.Error(resp.Succeeded)
+		logrus.Error(err)
+		logrus.Error(resp.Succeeded)
 	}
 	return
 }
@@ -84,7 +84,7 @@ func UpdateNode(nodeName string, opts ...Option) (ok bool, err error) {
 }
 
 func GetNode(name string) (n *node.Node, err error) {
-	ctx, cancel := context.WithTimeout(context.Background(), etcd.E.Timeout)
+	ctx, cancel := context.WithTimeout(context.TODO(), etcd.E.Timeout)
 	defer cancel()
 	key := NodePrefix() + "/" + name
 	res, err := etcd.E.Client.Get(ctx, key)
@@ -102,7 +102,7 @@ func GetNode(name string) (n *node.Node, err error) {
 func AllNodes() (list []*node.Node, err error) {
 	list = []*node.Node{}
 	key := NodePrefix() + "/"
-	res, err := etcd.E.Client.Get(context.Background(), key, clientv3.WithPrefix())
+	res, err := etcd.E.Client.Get(context.TODO(), key, clientv3.WithPrefix())
 	if err != nil {
 		return
 	}
@@ -113,7 +113,7 @@ func AllNodes() (list []*node.Node, err error) {
 		ele := &node.Node{}
 		er := ele.Unmarshal(v.Value)
 		if er != nil {
-			blog.Error(er)
+			logrus.Error(er)
 			continue
 		}
 		list = append(list, ele)
