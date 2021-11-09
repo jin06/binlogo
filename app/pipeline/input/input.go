@@ -8,6 +8,7 @@ import (
 	"github.com/go-mysql-org/go-mysql/mysql"
 	message2 "github.com/jin06/binlogo/app/pipeline/message"
 	"github.com/jin06/binlogo/pkg/store/dao/dao_pipe"
+	"github.com/jin06/binlogo/pkg/store/model/node"
 	"github.com/jin06/binlogo/pkg/store/model/pipeline"
 	"github.com/sirupsen/logrus"
 	"strconv"
@@ -20,6 +21,8 @@ type Input struct {
 	canal        *canal.Canal
 	eventHandler *canalHandler
 	ctx          context.Context
+	pipe         *pipeline.Pipeline
+	node         *node.Node
 }
 
 func (r *Input) Run(ctx context.Context) (err error) {
@@ -63,16 +66,20 @@ func New(opts ...Option) (input *Input, err error) {
 	input = &Input{
 		Options: options,
 	}
-	//err = input.init()
-
 	return
 }
 
 func (r *Input) prepareCanal() (err error) {
-	pipe, err := dao_pipe.GetPipeline(r.Options.Pipeline.Name)
+	pipe, err := dao_pipe.GetPipeline(r.Options.PipeName)
 	if err != nil {
 		return
 	}
+	if pipe == nil {
+		err = errors.New("pipeline not found")
+		return
+	}
+	r.pipe = pipe
+
 	addr := fmt.Sprintf("%s:%s", pipe.Mysql.Address, strconv.Itoa(int(pipe.Mysql.Port)))
 	cfg := &canal.Config{
 		Addr:     addr,
@@ -86,35 +93,40 @@ func (r *Input) prepareCanal() (err error) {
 }
 
 func (r *Input) runCanal() (err error) {
-	if r.Options.Pipeline.Mysql.Mode == pipeline.MODE_GTID {
+	pos, err := dao_pipe.GetPosition(r.Options.PipeName)
+	if err != nil {
+		return
+	}
+	if pos == nil {
+		pos = &pipeline.Position{}
+	}
+	if r.pipe.Mysql.Mode == pipeline.MODE_GTID {
 		return
 	}
 
-	if r.Options.Pipeline.Mysql.Mode == pipeline.MODE_POSTION {
-		logrus.Debugln("Run pipeline in mode position", r.Options.Pipeline.Name)
-		pos := mysql.Position{}
-		binlogFile := r.Options.Position.BinlogFile
-		if binlogFile == "" {
+	if r.pipe.Mysql.Mode == pipeline.MODE_POSTION {
+		logrus.Debugln("Run pipeline in mode position", r.Options.PipeName)
+		var canPos mysql.Position
+		if pos.BinlogFile == "" {
 			logrus.Warn("Empty binlog file")
-			pos, err = r.canal.GetMasterPos()
+			canPos, err = r.canal.GetMasterPos()
 			if err != nil {
 				logrus.Errorln(err)
 				return
 			}
 		} else {
-			binlogPos := r.Options.Position.BinlogPosition
-			pos = mysql.Position{
-				binlogFile,
-				binlogPos,
+			canPos = mysql.Position{
+				pos.BinlogFile,
+				pos.BinlogPosition,
 			}
 		}
 		//logrus.Debugln(pos)
 		r.canal.SetEventHandler(&canalHandler{
 			ch:           r.OutChan,
-			positionFile: pos.Name,
-			pipe:         r.Options.Pipeline,
+			positionFile: canPos.Name,
+			pipe:         r.pipe,
 		})
-		err = r.canal.RunFrom(pos)
+		err = r.canal.RunFrom(canPos)
 		return
 	}
 

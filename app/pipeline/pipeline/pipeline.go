@@ -7,7 +7,6 @@ import (
 	input2 "github.com/jin06/binlogo/app/pipeline/input"
 	message2 "github.com/jin06/binlogo/app/pipeline/message"
 	output2 "github.com/jin06/binlogo/app/pipeline/output"
-	"github.com/sirupsen/logrus"
 	"sync"
 )
 
@@ -79,9 +78,8 @@ func (p *Pipeline) initDataLine() {
 
 func (p *Pipeline) initInput() (err error) {
 	p.Input, err = input2.New(
-		input2.OptionMysql(p.Options.Pipeline.Mysql),
-		input2.OptionPosition(p.Options.Position),
-		input2.OptionsPipeline(p.Options.Pipeline),
+		input2.OptionsPipeName(p.Options.Pipeline.Name),
+		input2.OptionsNodeName(p.Options.Pipeline.Name),
 	)
 	p.Input.OutChan = p.OutChan.Input
 	return
@@ -106,7 +104,7 @@ func (p *Pipeline) Run(ctx context.Context) {
 	if p.status == STATUS_RUN {
 		return
 	}
-	logrus.Debug("mysql position", p.Input.Options.Position)
+	//logrus.Debug("mysql position", p.Input.Options.Position)
 	myCtx, cancel := context.WithCancel(ctx)
 	p.ctx = myCtx
 	go func() {

@@ -1,31 +1,20 @@
 package input
 
-import (
-	"github.com/jin06/binlogo/pkg/store/model/pipeline"
-)
-
 type Options struct {
-	Position *pipeline.Position
-	Mysql    *pipeline.Mysql
-	Pipeline *pipeline.Pipeline
+	PipeName string
+	NodeName string
 }
 
 type Option func(options *Options)
 
-func OptionMysql(mysql *pipeline.Mysql) Option {
+func OptionsPipeName(name string) Option {
 	return func(options *Options) {
-		options.Mysql = mysql
+		options.PipeName = name
 	}
 }
 
-func OptionPosition(position *pipeline.Position) Option {
+func OptionsNodeName(name string) Option {
 	return func(options *Options) {
-		options.Position = position
-	}
-}
-
-func OptionsPipeline(p *pipeline.Pipeline) Option {
-	return func(options *Options) {
-		options.Pipeline = p
+		options.NodeName = name
 	}
 }

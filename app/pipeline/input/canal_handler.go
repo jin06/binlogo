@@ -27,7 +27,7 @@ func (h *canalHandler) OnRow(e *canal.RowsEvent) error {
 		PipelineName:   h.pipe.Name,
 		GTIDSet:        h._GTIDSet,
 	}
-	logrus.Errorf("%v", e.Header)
+	logrus.Errorf("onROW header %v", e.Header)
 	h.ch <- msg
 	return nil
 }
@@ -50,7 +50,7 @@ func (h *canalHandler) String() string {
 }
 
 func (h *canalHandler) OnGTID(set mysql.GTIDSet) (err error) {
-	set.String()
+	logrus.Errorf("on gtid %v", set )
 	return
 }
 
