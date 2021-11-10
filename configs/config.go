@@ -25,3 +25,5 @@ type Config struct {
 	} `config:"store"`
 }
 
+var ENV Env
+

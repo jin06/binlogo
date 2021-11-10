@@ -3,6 +3,7 @@ package register
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"github.com/coreos/etcd/clientv3"
 	"github.com/coreos/etcd/etcdserver/api/v3rpc/rpctypes"
 	"github.com/jin06/binlogo/pkg/etcd_client"
@@ -37,17 +38,18 @@ type Register struct {
 }
 
 func (r *Register) Run(ctx context.Context) {
-	myCtx, c := context.WithCancel(ctx)
+	myCtx, cancel := context.WithCancel(ctx)
 	r.ctx = myCtx
 	go func() {
 		defer func() {
-			c()
+			cancel()
 		}()
 		var err error
 		for {
 			err = r.reg()
 			if err != nil {
 				logrus.Errorln(err)
+				continue
 			}
 		LOOP:
 			for {
@@ -76,7 +78,12 @@ func (r *Register) Run(ctx context.Context) {
 					}
 				}
 			}
-			r.revoke()
+			errR := r.revoke()
+			if errR != nil {
+				logrus.Errorln(errR)
+			}
+			logrus.Errorln("Register failed, start a new Register")
+			time.Sleep(time.Second)
 		}
 	}()
 }
@@ -99,6 +106,34 @@ func (r *Register) reg() (err error) {
 		r.registerCreateRevision = res.Header.Revision
 	}
 	return
+}
+
+func (r *Register) check() (ch chan error) {
+	ch = make(chan error)
+	go func() {
+		defer close(ch)
+		for {
+			select {
+			case <-time.Tick(time.Second):
+				{
+					err := r.keepOnce()
+					if err == rpctypes.ErrLeaseNotFound {
+						ch <- err
+						return
+					}
+					wOK, wErr := r.watch()
+					if wErr != nil {
+
+					}
+					if !wOK {
+						ch <- errors.New("error")
+					}
+				}
+			}
+
+		}
+	}()
+	return ch
 }
 
 func (r *Register) keepOnce() (err error) {

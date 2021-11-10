@@ -112,11 +112,10 @@ func (r *Input) runCanal() (err error) {
 				return
 			}
 		}
+		logrus.Errorln(canGTID.String())
 		r.canal.SetEventHandler(&canalHandler{
 			ch:           r.OutChan,
-			positionFile: pos.BinlogFile,
 			pipe:         r.pipe,
-			_GTIDSet:     fmt.Sprintf("%v", canGTID),
 		})
 		err = r.canal.StartFromGTID(canGTID)
 		return
@@ -125,7 +124,8 @@ func (r *Input) runCanal() (err error) {
 	if r.pipe.Mysql.Mode == pipeline.MODE_POSTION {
 		logrus.Debugln("Run pipeline in mode position", r.Options.PipeName)
 		var canPos mysql.Position
-		if pos.BinlogFile == "" {
+		if pos == nil {
+			pos = &pipeline.Position{}
 			logrus.Warn("Empty binlog file")
 			canPos, err = r.canal.GetMasterPos()
 			if err != nil {
@@ -141,7 +141,6 @@ func (r *Input) runCanal() (err error) {
 		//logrus.Debugln(pos)
 		r.canal.SetEventHandler(&canalHandler{
 			ch:           r.OutChan,
-			positionFile: canPos.Name,
 			pipe:         r.pipe,
 		})
 		err = r.canal.RunFrom(canPos)

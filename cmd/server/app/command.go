@@ -8,6 +8,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"net/http"
 	"os"
 )
 
@@ -28,9 +29,16 @@ func NewCommand() (cmd *cobra.Command) {
 		Run: func(cmd *cobra.Command, args []string) {
 			configs.InitViperFromFile(viper.GetString("config"))
 			etcd2.DefaultETCD()
-			blog.Env(configs.Env(viper.GetString("env")))
+			configs.ENV = configs.Env(viper.GetString("env"))
+			//blog.Env(configs.Env(viper.GetString("env")))
+			blog.Env(configs.ENV)
 			//RunServer()
 			logrus.Infoln("init configs finish")
+			if configs.ENV == configs.ENV_DEV {
+				go func() {
+					logrus.Println(http.ListenAndServe("localhost:6060",nil))
+				}()
+			}
 			if err := RunNode(); err != nil {
 				fmt.Println(err.Error())
 				os.Exit(1)

@@ -2,7 +2,6 @@ package election
 
 import (
 	"context"
-	"fmt"
 	"github.com/coreos/etcd/clientv3"
 	"github.com/coreos/etcd/clientv3/concurrency"
 	"github.com/jin06/binlogo/pkg/etcd_client"
@@ -102,19 +101,24 @@ func (e *Election) campaign(ctx context.Context) {
 
 			logrus.Info("Election Watch ")
 
-			for a := range e.election.Observe(context.TODO()) {
-				fmt.Println(a)
+			obsCh := e.election.Observe(ctx)
+			for {
+				gr,ok := <- obsCh
+				if !ok {
+					break
+				}
+				if len(gr.Kvs) == 0 {
+					break
+				}
+				if string(gr.Kvs[0].Value) != e.campaignVal {
+					break
+				}
 			}
-			//for range time.Tick(time.Second) {
-			//	leaderName, er := e.Leader()
-			//	if er != nil {
-			//		logrus.Error(er)
-			//		break
-			//	}
-			//	if leaderName != e.campaignVal {
-			//		break
-			//	}
-			//}
+			if errResign := e.election.Resign(ctx); errResign != nil {
+				logrus.Errorln("Election failed, start new election.", errResign)
+			}
+			e.SetRole(role.FOLLOWER)
+			time.Sleep(time.Second)
 		}
 	}()
 	return
