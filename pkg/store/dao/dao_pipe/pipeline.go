@@ -2,7 +2,10 @@ package dao_pipe
 
 import (
 	"context"
+	"encoding/json"
+	"errors"
 	"github.com/coreos/etcd/clientv3"
+	"github.com/jin06/binlogo/pkg/etcd_client"
 	"github.com/jin06/binlogo/pkg/store/etcd"
 	"github.com/jin06/binlogo/pkg/store/model/pipeline"
 	"github.com/sirupsen/logrus"
@@ -13,7 +16,7 @@ func PipelinePrefix() string {
 	return etcd.Prefix() + "/pipeline/info"
 }
 
-func GetPipeline(name string) (p *pipeline.Pipeline , err error){
+func GetPipeline(name string) (p *pipeline.Pipeline, err error) {
 	key := PipelinePrefix() + "/" + name
 	res, err := etcd.E.Client.Get(context.TODO(), key)
 	if err != nil {
@@ -42,8 +45,36 @@ func CreatePipeline(d *pipeline.Pipeline, opts ...clientv3.OpOption) (ok bool, e
 	return
 }
 
-func UpdatePipeline(d *pipeline.Pipeline) (bool, error) {
-	return etcd.Update(d)
+func UpdatePipeline(pipeName string, opts ...pipeline.OptionPipeline) (ok bool, err error) {
+	if pipeName == "" {
+		return false, errors.New("empty pipeline name")
+	}
+	key := PipelinePrefix() + "/" + pipeName
+	res, err := etcd_client.Default().Get(context.Background(), key)
+	if err != nil {
+		return
+	}
+	if len(res.Kvs) == 0 {
+		return false, errors.New("empty pipeline")
+	}
+	revision := res.Kvs[0].CreateRevision
+	pipe := &pipeline.Pipeline{}
+	err = json.Unmarshal(res.Kvs[0].Value, pipe)
+	if err != nil {
+		return
+	}
+	for _, v := range opts {
+		v(pipe)
+	}
+	txn := etcd_client.Default().Txn(context.Background()).
+		If(clientv3.Compare(clientv3.CreateRevision(key), "=", revision)).
+		Then(clientv3.OpPut(key, pipe.Val()))
+	resp, err := txn.Commit()
+	if err != nil {
+		return
+	}
+	ok = resp.Succeeded
+	return
 }
 
 func AllPipelines() (list []*pipeline.Pipeline, err error) {
@@ -80,9 +111,9 @@ func (ps pipelineSlice) Less(i, j int) bool {
 }
 
 type PagePipeline struct {
-	Page int
+	Page  int
 	Total int
-	Data []*pipeline.Pipeline
+	Data  []*pipeline.Pipeline
 }
 
 func PagePipelines(page int, size int) (res *PagePipeline, err error) {
@@ -103,7 +134,7 @@ func PagePipelines(page int, size int) (res *PagePipeline, err error) {
 	if page > totalPage {
 		page = totalPage
 	}
-	start := ( page -1 ) * size
+	start := (page - 1) * size
 	end := start + size
 	if end > total {
 		end = total
@@ -111,9 +142,9 @@ func PagePipelines(page int, size int) (res *PagePipeline, err error) {
 	resList := all[start:end]
 
 	res = &PagePipeline{
-		Page : page,
+		Page:  page,
 		Total: len(all),
-		Data: resList,
+		Data:  resList,
 	}
 	return
 }

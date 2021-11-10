@@ -14,6 +14,7 @@ func router(g *gin.Engine) {
 	g.GET("/api/pipeline/get", pipeline.Get)
 	g.POST("/api/pipeline/create", pipeline.Create)
 	g.POST("/api/pipeline/update", pipeline.Update)
+	g.POST("/api/pipeline/update/status", pipeline.UpdateStatus)
 	g.POST("/api/pipeline/delete", pipeline.Delete)
 
 	g.GET("/api/node/list", node.List)

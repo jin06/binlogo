@@ -38,3 +38,11 @@ func (s *Pipeline) Unmarshal(val []byte) (err error) {
 	err = json.Unmarshal(val, s)
 	return
 }
+
+type OptionPipeline func(p *Pipeline)
+
+func WithPipeStatus(status Status) OptionPipeline{
+	return func(p *Pipeline) {
+		p.Status = status
+	}
+}

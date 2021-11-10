@@ -8,11 +8,3 @@ import (
 func Get(c *gin.Context) {
 	c.JSON(200, handler.Success(nil))
 }
-
-func Update(c *gin.Context) {
-	c.JSON(200, handler.Success(nil))
-}
-
-func Delete(c *gin.Context) {
-	c.JSON(200, handler.Success(nil))
-}

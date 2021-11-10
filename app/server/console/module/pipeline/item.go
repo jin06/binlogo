@@ -12,4 +12,5 @@ type Item struct {
 
 type Info struct {
 	BindNode *node.Node `json:"bind_node"`
+	RunNodeName  string `json:"run_node_name"`
 }
