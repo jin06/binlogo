@@ -9,6 +9,26 @@ import (
 )
 
 func Update(c *gin.Context) {
+	q := &pipeline.Pipeline{}
+	if err := c.BindJSON(q); err != nil {
+		c.JSON(200, handler.Fail(err.Error()))
+		return
+	}
+	pipe, err := dao_pipe.GetPipeline(q.Name)
+	if err != nil {
+		c.JSON(200, handler.Fail(err.Error()))
+		return
+	}
+	if pipe.Status == pipeline.STATUS_RUN {
+		c.JSON(200, handler.Fail("Only stopped pipeline can be updated"))
+		return
+	}
+	ok, err := dao_pipe.UpdatePipeline(q.Name, pipeline.WithPipeSafe(q))
+	if err != nil || !ok{
+		c.JSON(200, "update failed")
+		return
+	}
+
 	c.JSON(200, handler.Success("ok"))
 }
 

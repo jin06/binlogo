@@ -6,6 +6,7 @@ import (
 	"github.com/jin06/binlogo/pkg/store/dao/dao_pipe"
 	"github.com/jin06/binlogo/pkg/store/model/pipeline"
 	"github.com/sirupsen/logrus"
+	"math/rand"
 	"time"
 )
 
@@ -19,7 +20,11 @@ func Create(c *gin.Context) {
 	q.CreateTime = time.Now()
 
 	logrus.Debugf("%v \n", *q)
-	if _, err := dao_pipe.CreatePipeline(q) ; err != nil {
+	if q.Mysql.ServerId == 0 {
+		q.Mysql.ServerId = uint32(rand.New(rand.NewSource(time.Now().UnixNano())).Int31n(100000000))
+	}
+
+	if _, err := dao_pipe.CreatePipeline(q); err != nil {
 		c.JSON(200, handler.Fail(err))
 		return
 	}

@@ -53,6 +53,7 @@ func main() {
 	cfg.User = "root"
 	cfg.Password = "123456"
 	cfg.ServerID = 1111
+	canal.NewDefaultConfig()
 
 	// We only care table canal_test in test db
 	//cfg.Dump.ExecutionPath = "./abc.dump"

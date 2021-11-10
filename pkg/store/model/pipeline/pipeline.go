@@ -46,3 +46,13 @@ func WithPipeStatus(status Status) OptionPipeline{
 		p.Status = status
 	}
 }
+
+func WithPipeSafe(uPipe *Pipeline) OptionPipeline {
+	return func(p *Pipeline) {
+		p.Mysql = uPipe.Mysql
+		p.AliasName = uPipe.AliasName
+		p.Filters = uPipe.Filters
+		p.Output = uPipe.Output
+		p.Remark = uPipe.Remark
+	}
+}
