@@ -172,3 +172,18 @@ func DeletePipeline(name string) (err error){
 	}
 	return
 }
+
+func DeleteCompletePipeline(name string) (err error) {
+	if name == "" {
+		return errors.New("empty name")
+	}
+	err =DeletePipeline(name)
+	if err != nil {
+		return
+	}
+	err = DeletePosition(name)
+	if err != nil {
+		return
+	}
+	return
+}

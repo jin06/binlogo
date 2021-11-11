@@ -156,7 +156,7 @@ func (m *Monitor) deletePipeline(p *pipeline.Pipeline) (err error) {
 	if err != nil {
 		return
 	}
-	err = dao_pipe.DeletePipeline(p.Name)
+	err = dao_pipe.DeleteCompletePipeline(p.Name)
 	if err != nil {
 		return
 	}
