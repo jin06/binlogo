@@ -27,7 +27,7 @@ func (s *Kafka) init() (err error) {
 	producer, err := sarama.NewSyncProducer(addr, cfg)
 	if err != nil {
 		logrus.Error(err)
-		panic(err)
+		return err
 	}
 	s.SyncProducer = producer
 	return

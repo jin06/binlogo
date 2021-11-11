@@ -12,7 +12,6 @@ import (
 	"github.com/jin06/binlogo/pkg/store/model/pipeline"
 	"github.com/sirupsen/logrus"
 	"strconv"
-	"time"
 )
 
 type Input struct {
@@ -35,24 +34,25 @@ func (r *Input) Run(ctx context.Context) (err error) {
 			}
 			cancel()
 		}()
-		for {
+		if r.canal == nil {
 			err = r.prepareCanal()
 			if err != nil {
-				logrus.Errorln(err)
-				continue
+				return
 			}
-			go r.runCanal()
-			select {
-			case <-ctx.Done():
-				{
-					return
-				}
-			case <-r.canal.Ctx().Done():
-				{
-					break
-				}
+			err = r.runCanal()
+			if err != nil {
+				return
 			}
-			time.Sleep(time.Second)
+		}
+		select {
+		case <-ctx.Done():
+			{
+				return
+			}
+		case <-r.canal.Ctx().Done():
+			{
+				break
+			}
 		}
 	}()
 	return
@@ -114,10 +114,10 @@ func (r *Input) runCanal() (err error) {
 		}
 		logrus.Errorln(canGTID.String())
 		r.canal.SetEventHandler(&canalHandler{
-			ch:           r.OutChan,
-			pipe:         r.pipe,
+			ch:   r.OutChan,
+			pipe: r.pipe,
 		})
-		err = r.canal.StartFromGTID(canGTID)
+		go r.canal.StartFromGTID(canGTID)
 		return
 	}
 
@@ -140,10 +140,10 @@ func (r *Input) runCanal() (err error) {
 		}
 		//logrus.Debugln(pos)
 		r.canal.SetEventHandler(&canalHandler{
-			ch:           r.OutChan,
-			pipe:         r.pipe,
+			ch:   r.OutChan,
+			pipe: r.pipe,
 		})
-		err = r.canal.RunFrom(canPos)
+		go r.canal.RunFrom(canPos)
 		return
 	}
 

@@ -23,6 +23,7 @@ func Create(c *gin.Context) {
 	if q.Mysql.ServerId == 0 {
 		q.Mysql.ServerId = uint32(rand.New(rand.NewSource(time.Now().UnixNano())).Int31n(100000000))
 	}
+	q.Status = pipeline.STATUS_STOP
 
 	if _, err := dao_pipe.CreatePipeline(q); err != nil {
 		c.JSON(200, handler.Fail(err))

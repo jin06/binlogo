@@ -55,6 +55,11 @@ func (p *Pipeline) init() (err error) {
 		return errors.New("lack pipeline info")
 	}
 
+	if !p.Options.Pipeline.ExpectRun() {
+		err = errors.New("pipeline not expect run")
+		return
+	}
+
 	p.initDataLine()
 	if err = p.initInput(); err != nil {
 		return
