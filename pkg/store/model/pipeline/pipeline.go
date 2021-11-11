@@ -40,6 +40,16 @@ func (s *Pipeline) Unmarshal(val []byte) (err error) {
 	return
 }
 
+func (s *Pipeline) ExpectRun() bool {
+	if s.IsDelete {
+		return false
+	}
+	if s.Status == STATUS_STOP {
+		return false
+	}
+	return true
+}
+
 type OptionPipeline func(p *Pipeline)
 
 func WithPipeStatus(status Status) OptionPipeline {

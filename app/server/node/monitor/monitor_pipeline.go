@@ -7,6 +7,7 @@ import (
 	"github.com/jin06/binlogo/pkg/store/dao/dao_sche"
 	"github.com/jin06/binlogo/pkg/store/model/pipeline"
 	"github.com/sirupsen/logrus"
+	"time"
 )
 
 func (m *Monitor) monitorPipe(ctx context.Context) (err error) {
@@ -14,12 +15,16 @@ func (m *Monitor) monitorPipe(ctx context.Context) (err error) {
 	if err != nil {
 		return
 	}
-	if er := m.checkAllPipelineBind(); er != nil {
-		logrus.Error("Check all pipeline bind error: ", er)
-	}
+	m.checkAllPipelineBind()
+	m.checkAllPipelineDelete()
 	go func() {
 		for {
 			select {
+			case <-time.Tick(time.Second * 120):
+				{
+					m.checkAllPipelineBind()
+					m.checkAllPipelineDelete()
+				}
 			case <-ctx.Done():
 				{
 					return
@@ -36,19 +41,18 @@ func (m *Monitor) monitorPipe(ctx context.Context) (err error) {
 					}
 					if n.Event.Type == mvccpb.PUT {
 						if val, ok := n.Data.(*pipeline.Pipeline); ok {
-							switch val.Status {
-							case pipeline.STATUS_RUN:
-								{
-									err := dao_sche.UpdatePipelineBindIfNotExist(val.Name, "")
-									if err != nil {
-										logrus.Error("Update pipeline bind failed ", err)
-									}
+							if val.IsDelete {
+								 m.deletePipeline(val)
+								 continue
+							}
+							if val.ExpectRun() {
+								err := dao_sche.UpdatePipelineBindIfNotExist(val.Name, "")
+								if err != nil {
+									logrus.Error("Update pipeline bind failed ", err)
 								}
-							case pipeline.STATUS_STOP:
-								{
-									if _, err := dao_sche.DeletePipelineBind(val.Name); err != nil {
-										logrus.Errorln(err)
-									}
+							} else {
+								if _, err := dao_sche.DeletePipelineBind(val.Name); err != nil {
+									logrus.Errorln(err)
 								}
 							}
 						}
@@ -60,7 +64,13 @@ func (m *Monitor) monitorPipe(ctx context.Context) (err error) {
 	return nil
 }
 
-func (m *Monitor) checkAllPipelineBind() (err error) {
+func (m *Monitor) checkAllPipelineBind()  {
+	var err error
+	defer func() {
+		if err != nil {
+			logrus.Error("Check all pipeline bind error: ", err)
+		}
+	}()
 	pipes, err := dao_pipe.AllPipelinesMap()
 	if err != nil {
 		return
@@ -71,23 +81,18 @@ func (m *Monitor) checkAllPipelineBind() (err error) {
 	}
 
 	for _, v := range pipes {
-		switch v.Status {
-		case pipeline.STATUS_STOP:
-			{
-				if _, ok := pb.Bindings[v.Name]; ok {
-					_, errDel := dao_sche.DeletePipelineBind(v.Name)
-					if errDel != nil {
-						logrus.Errorln(errDel)
-					}
+		if v.ExpectRun() {
+			if _, ok := pb.Bindings[v.Name]; !ok {
+				errUpdate := dao_sche.UpdatePipelineBindIfNotExist(v.Name, "")
+				if errUpdate != nil {
+					logrus.Error(errUpdate)
 				}
 			}
-		case pipeline.STATUS_RUN:
-			{
-				if _, ok := pb.Bindings[v.Name]; !ok {
-					_, errUpdate := dao_sche.UpdatePipelineBind(v.Name, "")
-					if errUpdate != nil {
-						logrus.Error(errUpdate)
-					}
+		} else {
+			if _, ok := pb.Bindings[v.Name]; ok {
+				_, errDel := dao_sche.DeletePipelineBind(v.Name)
+				if errDel != nil {
+					logrus.Errorln(errDel)
 				}
 			}
 		}
@@ -105,6 +110,55 @@ func (m *Monitor) checkAllPipelineBind() (err error) {
 				logrus.Errorln(errDel)
 			}
 		}
+	}
+	return
+}
+
+func (m *Monitor) checkAllPipelineDelete()  {
+	var err error
+	defer func() {
+		if err != nil {
+			logrus.Error("Check all deleted pipelines error: ", err)
+		}
+	}()
+	pipes, err := dao_pipe.AllPipelines()
+	if err != nil {
+		return
+	}
+	for _, v := range pipes {
+		if !v.IsDelete {
+			continue
+		}
+		errDelete := m.deletePipeline(v)
+		if errDelete != nil {
+			logrus.Errorln("Delete pipeline error, ", errDelete)
+		}
+	}
+	return
+}
+
+func (m *Monitor) deletePipeline(p *pipeline.Pipeline) (err error) {
+	if p.Status != pipeline.STATUS_STOP {
+		var ok bool
+		ok, err = dao_pipe.UpdatePipeline(p.Name, pipeline.WithPipeStatus(pipeline.STATUS_STOP))
+		if err != nil || !ok {
+			return
+		}
+	}
+	nodeName, err := dao_pipe.GetInstance(p.Name)
+	if err != nil {
+		return
+	}
+	if nodeName != "" {
+		return
+	}
+	err = dao_pipe.DeletePosition(p.Name)
+	if err != nil {
+		return
+	}
+	err = dao_pipe.DeletePipeline(p.Name)
+	if err != nil {
+		return
 	}
 	return
 }

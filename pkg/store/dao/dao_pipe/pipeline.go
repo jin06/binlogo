@@ -160,3 +160,15 @@ func AllPipelinesMap() (mapping map[string]*pipeline.Pipeline, err error) {
 	}
 	return
 }
+
+func DeletePipeline(name string) (err error){
+	if name == "" {
+		return errors.New("empty name")
+	}
+	key := PipelinePrefix() + "/" + name
+	_ , err = etcd_client.Default().Delete(context.Background(), key)
+	if err != nil {
+		return err
+	}
+	return
+}
