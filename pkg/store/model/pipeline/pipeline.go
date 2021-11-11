@@ -15,6 +15,7 @@ type Pipeline struct {
 	Replicas   int       `json:"replicas"`
 	CreateTime time.Time `json:"create_time"`
 	Remark     string    `json:"remark"`
+	IsDelete   bool      `json:"is_delete"`
 }
 
 type Status string
@@ -41,7 +42,7 @@ func (s *Pipeline) Unmarshal(val []byte) (err error) {
 
 type OptionPipeline func(p *Pipeline)
 
-func WithPipeStatus(status Status) OptionPipeline{
+func WithPipeStatus(status Status) OptionPipeline {
 	return func(p *Pipeline) {
 		p.Status = status
 	}
@@ -54,5 +55,11 @@ func WithPipeSafe(uPipe *Pipeline) OptionPipeline {
 		p.Filters = uPipe.Filters
 		p.Output = uPipe.Output
 		p.Remark = uPipe.Remark
+	}
+}
+
+func WithPipeDelete(d bool) OptionPipeline {
+	return func(p *Pipeline) {
+		p.IsDelete = d
 	}
 }

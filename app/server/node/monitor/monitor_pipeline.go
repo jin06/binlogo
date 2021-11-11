@@ -54,13 +54,6 @@ func (m *Monitor) monitorPipe(ctx context.Context) (err error) {
 						}
 					}
 				}
-
-				//case <-time.Tick(time.Second * 60):
-				//	{
-				//		if er := m.checkAllPipelineBind(); er != nil {
-				//			logrus.Error("Check all pipeline bind error: ", er)
-				//		}
-				//	}
 			}
 		}
 	}()

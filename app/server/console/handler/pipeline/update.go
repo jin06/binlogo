@@ -1,9 +1,9 @@
 package pipeline
 
 import (
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/jin06/binlogo/app/server/console/handler"
+	pipeline2 "github.com/jin06/binlogo/app/server/console/module/pipeline"
 	"github.com/jin06/binlogo/pkg/store/dao/dao_pipe"
 	"github.com/jin06/binlogo/pkg/store/model/pipeline"
 )
@@ -24,12 +24,13 @@ func Update(c *gin.Context) {
 		return
 	}
 	ok, err := dao_pipe.UpdatePipeline(q.Name, pipeline.WithPipeSafe(q))
-	if err != nil || !ok{
+	if err != nil || !ok {
 		c.JSON(200, "update failed")
 		return
 	}
+	item, _ := pipeline2.GetItemByName(q.Name)
 
-	c.JSON(200, handler.Success("ok"))
+	c.JSON(200, handler.Success(item))
 }
 
 func UpdateStatus(c *gin.Context) {
@@ -41,14 +42,15 @@ func UpdateStatus(c *gin.Context) {
 		c.JSON(200, handler.Fail(err.Error()))
 		return
 	}
-	fmt.Println(q)
+	//fmt.Println(q)
 	if q.Status != pipeline.STATUS_RUN && q.Status != pipeline.STATUS_STOP {
-		c.JSON(200, handler.Fail("wrong param status: "+q.Status))
+		c.JSON(200, handler.Fail("Wrong param status: "+q.Status))
 		return
 	}
+
 	ok, err := dao_pipe.UpdatePipeline(q.PipeName, pipeline.WithPipeStatus(q.Status))
 	if err != nil || !ok {
-		c.JSON(200, handler.Fail("udpate status failed "))
+		c.JSON(200, handler.Fail("Update status failed "))
 		return
 	}
 	c.JSON(200, handler.Success("ok"))

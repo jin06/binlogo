@@ -26,6 +26,9 @@ func List(c *gin.Context) {
 	}
 	var items []*pipeline.Item
 	for _, v := range all {
+		if v.IsDelete {
+			continue
+		}
 		items = append(items, &pipeline.Item{Pipeline: v})
 	}
 
