@@ -148,3 +148,15 @@ func PagePipelines(page int, size int) (res *PagePipeline, err error) {
 	}
 	return
 }
+
+func AllPipelinesMap() (mapping map[string]*pipeline.Pipeline, err error) {
+	list, err := AllPipelines()
+	if err != nil {
+		return
+	}
+	mapping = map[string]*pipeline.Pipeline{}
+	for i := 0; i < len(list); i++ {
+		mapping[list[i].Name] = list[i]
+	}
+	return
+}

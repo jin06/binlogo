@@ -29,42 +29,43 @@ func (s *Scheduler) Run(ctx context.Context) (err error) {
 		//logrus.Debug("Running, do nothing")
 		return
 	}
-	cctx, cancel := context.WithCancel(ctx)
-	err = s.watcher.run(cctx)
+	myCtx, cancel := context.WithCancel(ctx)
+	defer func() {
+		if err != nil {
+			cancel()
+		} else {
+			s.status = SCHEDULER_RUN
+		}
+	}()
+	err = s.watcher.run(myCtx)
 	if err != nil {
 		return
 	}
 	s.cancel = cancel
-	s._schedule(cctx)
+	go s._schedule(myCtx)
 	logrus.Debug("scheduler.run")
-	//s._monitor(ctx2)
-	s.status = SCHEDULER_RUN
 	return
 }
 
 func (s *Scheduler) _schedule(ctx context.Context) {
-	go func() {
-		for {
-			select {
-			case <-ctx.Done():
-				{
-					return
-				}
-			case p := <-s.watcher.notBindPipelineCh:
-				{
-					logrus.Infof("%s not bind node, bind one ", p.Name)
-					if err := s.scheduleOne(p); err != nil {
-						logrus.Error(err)
-					}
+	for {
+		select {
+		case <-ctx.Done():
+			{
+				return
+			}
+		case p := <-s.watcher.notBindPipelineCh:
+			{
+				logrus.Infof("%s not bind node, bind one ", p.Name)
+				if err := s.scheduleOne(p); err != nil {
+					logrus.Error(err)
 				}
 			}
-
 		}
-	}()
-	return
+	}
 }
 
-func (s *Scheduler) Stop(ctx context.Context) {
+func (s *Scheduler) Stop() {
 	s.runLock.Lock()
 	defer s.runLock.Unlock()
 	if s.status == SCHEDULER_STOP {

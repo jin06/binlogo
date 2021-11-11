@@ -5,7 +5,6 @@ import (
 	"github.com/jin06/binlogo/pkg/store/dao/dao_sche"
 	"github.com/jin06/binlogo/pkg/store/model/node"
 	"github.com/jin06/binlogo/pkg/store/model/scheduler"
-	"github.com/jin06/binlogo/pkg/watcher/scheduler_binding"
 	"github.com/sirupsen/logrus"
 	"sync"
 	"time"
@@ -14,7 +13,6 @@ import (
 type Manager struct {
 	mapping        map[string]bool
 	mappingIns     map[string]*instance
-	bindingWatcher *scheduler_binding.BindingWatcher
 	node           *node.Node
 	mutex          sync.Mutex
 }
@@ -42,16 +40,17 @@ func (m *Manager) Run(ctx context.Context) {
 				{
 					return
 				}
-			case <-time.Tick(time.Second * 5):
+			case <-time.Tick(time.Second * 1):
 				{
 					if err := m.scanPipelines(nil); err != nil {
 						logrus.Error(err)
 					}
-				}
-			case <-time.Tick(time.Second * 1):
-				{
 					m.dispatch()
 				}
+			//case <-time.Tick(time.Second * 1):
+			//	{
+			//		m.dispatch()
+			//	}
 			}
 		}
 	}()

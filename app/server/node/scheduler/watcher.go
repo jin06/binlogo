@@ -2,12 +2,13 @@ package scheduler
 
 import (
 	"context"
+	"github.com/coreos/etcd/mvcc/mvccpb"
 	"github.com/jin06/binlogo/pkg/store/dao/dao_sche"
 	pipeline2 "github.com/jin06/binlogo/pkg/store/model/pipeline"
 	"github.com/jin06/binlogo/pkg/store/model/scheduler"
 	"github.com/jin06/binlogo/pkg/watcher"
+	"github.com/jin06/binlogo/pkg/watcher/scheduler_binding"
 	"github.com/sirupsen/logrus"
-	"time"
 )
 
 type Watcher struct {
@@ -23,7 +24,15 @@ func newWatcher() (m *Watcher, err error) {
 	return
 }
 
-func (m *Watcher) run(ctx context.Context) error {
+func (m *Watcher) run(ctx context.Context) (err error) {
+	wa, err := scheduler_binding.New()
+	if err != nil {
+		return
+	}
+	waCh, err := wa.WatchEtcd(ctx)
+	if err != nil {
+		return
+	}
 	go func() {
 		_ = m.putNotBindPipeToQueue(nil)
 		for {
@@ -32,11 +41,15 @@ func (m *Watcher) run(ctx context.Context) error {
 				{
 					return
 				}
-			case <-time.Tick(60 * time.Second):
+			case ev := <-waCh:
 				{
-					err := m.putNotBindPipeToQueue(nil)
-					if err != nil {
-						logrus.Error("Put not bind pipeline to queue error: ", err)
+					if ev.Event.Type == mvccpb.PUT {
+						if val, ok := ev.Data.(*scheduler.PipelineBind); ok {
+							errPut := m.putNotBindPipeToQueue(val)
+							if errPut != nil {
+								logrus.Error("Put not bind pipeline to queue error: ", errPut)
+							}
+						}
 					}
 				}
 			}

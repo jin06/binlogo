@@ -8,6 +8,7 @@ import (
 	"github.com/jin06/binlogo/pkg/store/dao/dao_pipe"
 	"github.com/jin06/binlogo/pkg/store/dao/dao_register"
 	pipeline2 "github.com/jin06/binlogo/pkg/store/model/pipeline"
+	"github.com/sirupsen/logrus"
 	"sync"
 )
 
@@ -85,15 +86,20 @@ func (i *instance) start() (err error) {
 	if err != nil {
 		return
 	}
-	ctx, cancel := context.WithCancel(context.TODO())
+	ctx, cancel := context.WithCancel(context.Background())
 	defer func() {
 		cancel()
 	}()
 	i.cancel = cancel
 	i.pipeReg.Run(ctx)
 	i.pipeIns.Run(ctx)
+	logrus.Info("pipeline instance start: ", i.pipeName)
 
 	select {
+	case <- ctx.Done():
+		{
+			return
+		}
 	case <-i.pipeIns.Context().Done():
 		{
 			return
@@ -113,5 +119,6 @@ func (i *instance) stop() {
 		i.status = STATUS_STOP
 	}()
 	i.cancel()
+	logrus.Info("pipeline instance stop: ", i.pipeName)
 	return
 }

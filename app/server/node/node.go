@@ -170,7 +170,7 @@ func (n *Node) leaderRun(ctx context.Context) {
 		}
 	default:
 		{
-			n.Scheduler.Stop(ctx)
+			n.Scheduler.Stop()
 			n.monitor.Stop(ctx)
 		}
 	}

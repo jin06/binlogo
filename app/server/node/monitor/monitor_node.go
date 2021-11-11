@@ -20,7 +20,6 @@ func (m *Monitor) monitorNode(ctx context.Context) error {
 		return err
 	}
 	go func() {
-
 		for {
 			select {
 			case <-ctx.Done():
@@ -30,7 +29,6 @@ func (m *Monitor) monitorNode(ctx context.Context) error {
 			case e := <-ch:
 				{
 					if e.Event.Type == mvccpb.DELETE {
-
 					}
 				}
 			case <-time.Tick(time.Second * 60):
