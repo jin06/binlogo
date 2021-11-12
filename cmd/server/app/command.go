@@ -27,7 +27,8 @@ func NewCommand() (cmd *cobra.Command) {
 		Short: "Generate mysql data increment",
 		Long:  "Generate mysql data increment",
 		Run: func(cmd *cobra.Command, args []string) {
-			configs.InitViperFromFile(viper.GetString("config"))
+			cfg, _ := cmd.Flags().GetString("config")
+			configs.InitViperFromFile(cfg)
 			etcd2.DefaultETCD()
 			configs.ENV = configs.Env(viper.GetString("env"))
 			//blog.Env(configs.Env(viper.GetString("env")))
@@ -53,12 +54,14 @@ func NewCommand() (cmd *cobra.Command) {
 	}
 
 	cmd = &cobra.Command{Use: "binlogo"}
-	var cfgFile string
-	cmd.PersistentFlags().StringVar(&cfgFile, "config", "./configs/binlogo.yaml", "config file default is ./config/binlogo.yaml")
-	err := viper.BindPFlag("config", cmd.PersistentFlags().Lookup("config"))
-	if err != nil {
-		panic(err)
-	}
+	//var cfgFile string
+	//cmd.PersistentFlags().StringVar(&cfgFile, "config", "./configs/binlogo.yaml", "config file default is ./configs/binlogo.yaml")
+	cmd.PersistentFlags().String("config","./configs/binlogo.yaml","")
+	//panic(123)
+
+	//if err != nil {
+	//	panic(err)
+	//}
 	cmd.AddCommand(cmdRun, cmdVersion)
 	return
 }

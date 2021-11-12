@@ -6,6 +6,7 @@ import (
 	"github.com/jin06/binlogo/pkg/store/dao/dao_sche"
 	"github.com/jin06/binlogo/pkg/store/model/node"
 	"github.com/jin06/binlogo/pkg/store/model/pipeline"
+	"github.com/jin06/binlogo/pkg/store/model/scheduler"
 )
 
 type algorithm struct {
@@ -14,6 +15,7 @@ type algorithm struct {
 	potentialNodes []*node.Node
 	nodesScores    map[string]int
 	bestNode       *node.Node
+	pb             *scheduler.PipelineBind
 }
 
 func newAlgorithm(p *pipeline.Pipeline) *algorithm {
@@ -35,7 +37,7 @@ func (a *algorithm) cal() (err error) {
 	if err != nil {
 		return err
 	}
-	err = a.calScores()
+	err = a.calScore()
 	if err != nil {
 		return
 	}
@@ -48,49 +50,6 @@ func (a *algorithm) cal() (err error) {
 
 func (a *algorithm) calPotentialNodes() (err error) {
 	a.potentialNodes = a.allNodes
-	return
-}
-
-func (a *algorithm) calScores() (err error) {
-	scores := map[string]int{}
-	pipeNums := map[string]int{}
-	total := 0
-	totalPipe := 0
-	for _, v := range a.potentialNodes {
-		scores[v.Name] = 0
-		pipeNums[v.Name] = 0
-		total++
-	}
-	pb, err := dao_sche.GetPipelineBind()
-	if err != nil {
-		return
-	}
-	for _, v := range pb.Bindings {
-		totalPipe++
-		if _, ok := pipeNums[v]; ok {
-			pipeNums[v]++
-		}
-	}
-	for k, v := range pipeNums {
-		score := 0
-		var per float64
-		if totalPipe > 0 {
-			per = float64(v) / float64(totalPipe) / float64(total)
-			if per > 1 {
-				score = 0
-			}
-			if per < 1 {
-				score = 2
-			}
-			if per == 0 {
-				score = 5
-			}
-		}
-		scores[k] = score
-	}
-
-	a.nodesScores = scores
-
 	return
 }
 
@@ -108,5 +67,81 @@ func (a *algorithm) calBestNode() (err error) {
 			score = a.nodesScores[v.Name]
 		}
 	}
+	return
+}
+
+func (a *algorithm) calScore() (err error) {
+	a.pb, err = dao_sche.GetPipelineBind()
+	if err != nil {
+		return
+	}
+	a.nodesScores = map[string]int{}
+	for _, v := range a.potentialNodes {
+		a.nodesScores[v.Name] = 0
+	}
+	scores, err := a._scoreNumOfPipelines()
+	if err != nil {
+		return
+	}
+	a.mergeScores(scores)
+	return
+}
+
+func (a *algorithm) mergeScores(scores map[string]int) {
+	if scores == nil {
+		return
+	}
+	for pName, score := range scores {
+		if _, ok := a.nodesScores[pName]; ok {
+			a.nodesScores[pName] += score
+		}
+	}
+	return
+}
+
+func (a *algorithm) _scoreNumOfPipelines() (scores map[string]int, err error) {
+	weight := 5
+	scores = map[string]int{}
+	pipeNums := map[string]int{}
+	totalNode := 0
+	totalPipe := 0
+	for _, v := range a.potentialNodes {
+		pipeNums[v.Name] = 0
+		totalNode++
+	}
+	for _, v := range a.pb.Bindings {
+		totalPipe++
+		if _, ok := pipeNums[v]; ok {
+			pipeNums[v]++
+		}
+	}
+	var numberPerNode float64
+	numberPerNode = float64(totalPipe) / float64(totalNode)
+	for k, v := range pipeNums {
+		score := 0
+		var per float64
+		if totalPipe > 0 {
+			per = float64(v) / numberPerNode
+			if per <= 0 {
+				score = 5 * weight
+			}
+			if per < 1 {
+				score = 2 * weight
+			}
+			if per >= 1 {
+				score = 0 * weight
+			}
+
+		}
+		scores[k] = score
+	}
+	return
+}
+
+func (a *algorithm) _scoreCpu() (scores map[string]int, err error){
+	return
+}
+
+func (a *algorithm) _scoreMemory() (scores map[string]int, err error) {
 	return
 }

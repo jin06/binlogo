@@ -12,6 +12,7 @@ func Run(ctx context.Context) (err error) {
 
 	router(g)
 
+	viper.Get("console")
 	listen := viper.GetString("console.listen") + ":" + viper.GetString("console.port")
 	logrus.Info("Console api --> ", listen)
 	err = g.Run(listen)
