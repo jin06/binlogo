@@ -65,7 +65,7 @@ func New(opts ...Option) (node *Node, err error) {
 func (n *Node) init() (err error) {
 	n.Register, err = register.New(
 		register.WithTTL(5),
-		register.WithKey(dao_cluster.RegisterPrefix() + "/" + n.Options.Node.Name),
+		register.WithKey(dao_cluster.RegisterPrefix()+"/"+n.Options.Node.Name),
 		register.WithData(n.Options.Node),
 	)
 	if err != nil {
@@ -121,7 +121,7 @@ func (n *Node) Run(ctx context.Context) (err error) {
 		select {
 		case <-ctx.Done():
 			{
-			panic(ctx.Err())
+				panic(ctx.Err())
 				return
 			}
 		}
@@ -141,21 +141,24 @@ func (n *Node) _leaderRun(ctx context.Context) {
 				{
 					return
 				}
-			case <-n.election.RoleCh:
+			case r := <-n.election.RoleCh:
 				{
-					n.leaderRun(ctx)
+					n.leaderRun(ctx, r)
 				}
-			case <-time.Tick(time.Second * 2):
+			case <-time.Tick(time.Second * 5):
 				{
-					n.leaderRun(ctx)
+					n.leaderRun(ctx, "")
 				}
 			}
 		}
 	}()
 }
 
-func (n *Node) leaderRun(ctx context.Context) {
-	switch n.Role() {
+func (n *Node) leaderRun(ctx context.Context, r role.Role) {
+	if r == "" {
+		r = n.Role()
+	}
+	switch r {
 	case role.LEADER:
 		{
 			var err error

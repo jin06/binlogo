@@ -5,20 +5,35 @@ import (
 	"github.com/coreos/etcd/mvcc/mvccpb"
 	"github.com/jin06/binlogo/pkg/store/dao/dao_node"
 	"github.com/jin06/binlogo/pkg/store/dao/dao_sche"
+	nodeModel "github.com/jin06/binlogo/pkg/store/model/node"
 	"github.com/jin06/binlogo/pkg/watcher/node"
 	"github.com/sirupsen/logrus"
 	"time"
 )
 
-func (m *Monitor) monitorNode(ctx context.Context) error {
+func (m *Monitor) monitorNode(ctx context.Context) (err error) {
 	watcher, err := node.New(dao_node.NodePrefix())
 	if err != nil {
-		return err
+		return
 	}
 	ch, err := watcher.WatchEtcdList(ctx)
 	if err != nil {
-		return err
+		return
 	}
+	nodeRegWatcher, err := node.New(dao_node.NodeRegisterPrefix())
+	if err != nil {
+		return
+	}
+	regCh, err := nodeRegWatcher.WatchEtcdList(ctx)
+	if err != nil {
+		return
+	}
+
+	err = m.checkAllNode()
+	if err != nil {
+		return
+	}
+
 	go func() {
 		for {
 			select {
@@ -31,38 +46,66 @@ func (m *Monitor) monitorNode(ctx context.Context) error {
 					if e.Event.Type == mvccpb.DELETE {
 					}
 				}
-			case <-time.Tick(time.Second * 60):
+			case e := <-regCh:
 				{
-					if er := m.checkAllNodeBind(); er != nil {
+					if val, ok := e.Data.(*nodeModel.Node); ok {
+						if e.Event.Type ==mvccpb.DELETE {
+							_, err1 := dao_node.CreateOrUpdateStatus(val.Name, nodeModel.WithReady(false), nodeModel.WithNetworkUnavailable(true))
+							if err1 != nil {
+								logrus.Errorln(err1)
+							}
+						}
+						if e.Event.Type == mvccpb.PUT {
+							_, err1 := dao_node.CreateOrUpdateStatus(val.Name, nodeModel.WithReady(true), nodeModel.WithNetworkUnavailable(false))
+							if err1 != nil {
+								logrus.Errorln(err1)
+							}
+						}
+					}
+				}
+			case <-time.Tick(time.Second * 120):
+				{
+					if er := m.checkAllNode(); er != nil {
 						logrus.Error("Check all node bind error: ", er)
 					}
 				}
 			}
 		}
 	}()
-	return nil
+	return
 }
 
-func (m *Monitor) checkAllWorkNode() (err error) {
+func (m *Monitor) checkAllNode() (err error) {
 	regNodesMap, err := dao_node.AllRegisterNodesMap()
 	if err != nil {
 		return
+	}
+	nodesMap, err := dao_node.AllNodesMap()
+	if err != nil {
+		return
+	}
+	for k, _ := range nodesMap {
+		_, ok := regNodesMap[k]
+		readyStat := false
+		networkStat := true
+		if ok {
+			readyStat = true
+			networkStat = false
+		}
+		_, err1 := dao_node.CreateOrUpdateStatus(k, nodeModel.WithReady(readyStat), nodeModel.WithNetworkUnavailable(networkStat))
+		if err1 != nil {
+			logrus.Error(err1)
+		}
 	}
 	statusMap, err := dao_node.StatusMap()
 	if err != nil {
 		return
 	}
-	for k, val := range statusMap {
-		if _, ok := regNodesMap[k]; !ok {
-			if val.Ready == true {
-				_, err1 := dao_node.CreateOrUpdateStatus(k, dao_node.WithStatusReady(false))
-				if err1 != nil {
-					logrus.Error(err1)
-				}
-			}
-		} else {
-			if val.Ready == false {
-
+	for k, _ := range statusMap {
+		if _, ok := nodesMap[k]; !ok {
+			err1 := dao_node.DeleteStatus(k)
+			if err1 != nil {
+				logrus.Errorln(err1)
 			}
 		}
 	}

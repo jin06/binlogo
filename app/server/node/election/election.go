@@ -56,9 +56,13 @@ func (e *Election) Run(ctx context.Context) {
 
 func (e *Election) campaign(ctx context.Context) {
 	go func() {
-		defer e.Resign(ctx)
+		defer func() {
+			e.SetRole(role.FOLLOWER)
+			e.Resign(ctx)
+		}()
 		for {
 			e.SetRole(role.FOLLOWER)
+			time.Sleep(time.Second)
 			//sen, err := concurrency.NewSession(e.client, concurrency.WithTTL(e.ttl))
 			//cli, err := etcd_client.New()
 			//if err != nil {
@@ -123,7 +127,6 @@ func (e *Election) campaign(ctx context.Context) {
 				logrus.Errorln("Election failed, start new election.", errResign)
 			}
 			logrus.Errorln("Lost leader... ")
-			e.SetRole(role.FOLLOWER)
 			time.Sleep(time.Second)
 		}
 	}()

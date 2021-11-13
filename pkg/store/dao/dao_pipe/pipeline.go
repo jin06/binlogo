@@ -168,7 +168,7 @@ func DeletePipeline(name string) (err error){
 	key := PipelinePrefix() + "/" + name
 	_ , err = etcd_client.Default().Delete(context.Background(), key)
 	if err != nil {
-		return err
+		return
 	}
 	return
 }

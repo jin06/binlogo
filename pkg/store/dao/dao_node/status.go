@@ -3,27 +3,27 @@ package dao_node
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/coreos/etcd/clientv3"
+	"github.com/jin06/binlogo/pkg/etcd_client"
 	"github.com/jin06/binlogo/pkg/store/etcd"
 	"github.com/jin06/binlogo/pkg/store/model/node"
 	"github.com/sirupsen/logrus"
 )
 
-
 func StatsPrefix() string {
 	return etcd.Prefix() + "/node/status"
 }
 
-func CreateOrUpdateStatus(nodeName string, opts ...Option) (ok bool, err error) {
-	options := GetOptions(opts...)
+func CreateOrUpdateStatus(nodeName string, opts ...node.StatusOption) (ok bool, err error) {
 	key := StatsPrefix() + "/" + nodeName
 	res , err := etcd.E.Client.Get(context.TODO(), key)
 	if err != nil {
 		return
 	}
 	revision := int64(0)
-	s := node.Status{}
+	s := &node.Status{}
 	if len(res.Kvs) > 0 {
 		revision = res.Kvs[0].CreateRevision
 		err = json.Unmarshal(res.Kvs[0].Value, &s )
@@ -31,11 +31,12 @@ func CreateOrUpdateStatus(nodeName string, opts ...Option) (ok bool, err error) 
 			return
 		}
 	}
-	if options.StatusReady != nil {
-		s.Ready = options.StatusReady.val
+	for _, v:= range opts {
+		v(s)
 	}
+
 	txn := etcd.E.Client.Txn(context.TODO()).If(clientv3.Compare(clientv3.CreateRevision(key), "=", revision))
-	b, _  := json.Marshal(&s)
+	b, _  := json.Marshal(s)
 	txn = txn.Then(clientv3.OpPut(key, string(b)))
 	resp , err := txn.Commit()
 	if err != nil {
@@ -104,5 +105,17 @@ func StatusMap() (mapping map[string]*node.Status, err error) {
 		}
 	}
 
+	return
+}
+
+func DeleteStatus(name string) (err error) {
+	if name == "" {
+		return errors.New("empty name")
+	}
+	key := StatsPrefix() + "/" + name
+	_, err = etcd_client.Default().Delete(context.Background(), key)
+	if err != nil {
+		return
+	}
 	return
 }
