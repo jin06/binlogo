@@ -7,13 +7,12 @@ import (
 )
 
 func Get(c *gin.Context) {
-	q := struct {
-		Name string `json:"name"`
-	}{}
-	if err := c.Bind(&q); err != nil {
-		c.JSON(200, handler.Fail(err))
+	name := c.Query("name")
+	if name == "" {
+		c.JSON(200,handler.Fail("Name is null"))
 	}
-	item , err := pipeline.GetItemByName(q.Name)
+
+	item , err := pipeline.GetItemByName(name)
 	if err != nil {
 		c.JSON(200, handler.Fail(err))
 	}
