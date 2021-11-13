@@ -10,12 +10,15 @@ import (
 	"github.com/sirupsen/logrus"
 	"sort"
 	"strconv"
+	"strings"
 )
 
 func List(c *gin.Context) {
 	page, _ := strconv.Atoi(c.Query("page"))
 	limit, _ := strconv.Atoi(c.Query("limit"))
 	qSort := c.Query("sort")
+	name := c.Query("name")
+	ready := c.Query("ready")
 
 	all, err := dao_node.AllNodes()
 	if err != nil {
@@ -53,12 +56,29 @@ func List(c *gin.Context) {
 		}
 		items = append(items, i)
 	}
+	resItems := []*node.Item{}
+	for _, v := range items {
+		if ready != "" {
+			if ready == "yes" && v.Status.Ready == false {
+				continue
+			}
+			if ready == "no" && v.Status.Ready == true {
+				continue
+			}
+		}
+		if name != "" {
+			if !strings.Contains(v.Node.Name, name) {
+				continue
+			}
+		}
+		resItems = append(resItems, v)
+	}
 
-	sort.Slice(items, func(i, j int) bool {
+	sort.Slice(resItems, func(i, j int) bool {
 		if qSort == "+id" {
-			return items[i].Node.CreateTime.Before(items[j].Node.CreateTime)
+			return resItems[i].Node.CreateTime.Before(resItems[j].Node.CreateTime)
 		} else {
-			return items[j].Node.CreateTime.Before(items[i].Node.CreateTime)
+			return resItems[j].Node.CreateTime.Before(resItems[i].Node.CreateTime)
 		}
 	})
 
@@ -67,12 +87,12 @@ func List(c *gin.Context) {
 		start = 0
 	}
 	end := start + limit
-	if end > len(items) {
-		end = len(items)
+	if end > len(resItems) {
+		end = len(resItems)
 	}
 
 	c.JSON(200, handler.Success(map[string]interface{}{
-		"items": items[start:end],
-		"total": len(items),
+		"items": resItems[start:end],
+		"total": len(resItems),
 	}))
 }
