@@ -29,3 +29,17 @@ func (s *Node) Unmarshal(val []byte) (err error) {
 	err = json.Unmarshal(val, s)
 	return
 }
+
+type NodeOption func(s *Node)
+
+func WithNodeIP(i net.IP) NodeOption {
+	return func(s *Node) {
+		s.IP = i
+	}
+}
+
+func WithNodeVersion(v string) NodeOption {
+	return func(s *Node) {
+		s.Version = v
+	}
+}

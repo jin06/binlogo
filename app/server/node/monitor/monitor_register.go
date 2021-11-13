@@ -16,7 +16,7 @@ func (m *Monitor) monitorRegister(ctx context.Context) (err error){
 	go func() {
 		for {
 			select {
-				case <- ctx.Done():{
+				case <- ctx.Done(): {
 					return
 				}
 				case n := <- ch:{

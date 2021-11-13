@@ -50,13 +50,13 @@ func CreateNodeIfNotExist(n *node.Node) (err error) {
 	return
 }
 
-func UpdateNode(nodeName string, opts ...Option) (ok bool, err error) {
+func UpdateNode(nodeName string, opts ...node.NodeOption) (ok bool, err error) {
 	if nodeName == "" {
 		err = errors.New("empty node name")
 		return
 	}
 	key := NodePrefix() + "/" + nodeName
-	res, err := etcd.E.Client.Get(context.TODO(), key)
+	res, err := etcd_client.Default().Get(context.TODO(), key)
 	if err != nil {
 		return
 	}
@@ -71,14 +71,11 @@ func UpdateNode(nodeName string, opts ...Option) (ok bool, err error) {
 	if err != nil {
 		return
 	}
-	options := GetOptions(opts...)
-	if options.NodeIP != nil {
-		n.IP = options.NodeIP
+	for _, v := range opts {
+		v(n)
 	}
-	if options.NodeVersion != "" {
-		n.Version = options.NodeVersion
-	}
-	txn := etcd.E.Client.Txn(context.TODO()).If(clientv3.Compare(clientv3.CreateRevision(key), "=", revision))
+
+	txn := etcd_client.Default().Txn(context.TODO()).If(clientv3.Compare(clientv3.CreateRevision(key), "=", revision))
 	txn = txn.Then(clientv3.OpPut(key, n.Val()))
 	resp, err := txn.Commit()
 	if err != nil {

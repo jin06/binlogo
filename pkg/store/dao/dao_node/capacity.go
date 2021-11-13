@@ -16,18 +16,12 @@ func CapacityPrefix() string {
 	return etcd.Prefix() + "/node/capacity"
 }
 
-func UpdateCapacity(cap *node.Capacity, args ...Option) (err error) {
-	opts := GetOptions(args...)
-	key := opts.Key
-	if key == "" {
-		if opts.NodeName != "" {
-			key = CapacityPrefix() + "/" + opts.NodeName
-		}
-	}
-	if key == "" {
-		err = errors.New("empty key")
+func UpdateCapacity(cap *node.Capacity) (err error) {
+	if cap.NodeName == "" {
+		err = errors.New("empty name")
 		return
 	}
+	key := CapacityPrefix() + "/" + cap.NodeName
 	b, err := json.Marshal(cap)
 	if err != nil {
 		return

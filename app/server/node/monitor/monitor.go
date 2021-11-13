@@ -53,10 +53,10 @@ func (m *Monitor) Run(ctx context.Context) (err error) {
 	if err != nil {
 		return
 	}
-	err = m.monitorRegister(nctx)
-	if err != nil {
-		return
-	}
+	//err = m.monitorRegister(nctx)
+	//if err != nil {
+	//	return
+	//}
 	err = m.monitorPipe(nctx)
 	if err != nil {
 		return

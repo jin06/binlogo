@@ -29,7 +29,7 @@ func RunNode() (err error) {
 		return
 	}
 	if n != nil {
-		if _, err = dao_node.UpdateNode(nModel.Name, dao_node.WithNodeIP(nModel.IP), dao_node.WithNodeVersion(nModel.Version)); err != nil {
+		if _, err = dao_node.UpdateNode(nModel.Name, node.WithNodeIP(nModel.IP), node.WithNodeVersion(nModel.Version)); err != nil {
 			return
 		}
 	} else {
@@ -37,7 +37,7 @@ func RunNode() (err error) {
 			return
 		}
 	}
-	err = dao_node.CreateStatusIfNotExist(nModel.Name, &node.Status{Ready: true})
+	err = dao_node.CreateStatusIfNotExist(&node.Status{NodeName: nModel.Name, Ready: true})
 	if err != nil {
 		logrus.Error(err)
 		return

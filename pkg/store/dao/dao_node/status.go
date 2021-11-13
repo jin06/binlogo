@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"github.com/coreos/etcd/clientv3"
 	"github.com/jin06/binlogo/pkg/etcd_client"
 	"github.com/jin06/binlogo/pkg/store/etcd"
@@ -12,12 +11,12 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func StatsPrefix() string {
+func StatusPrefix() string {
 	return etcd.Prefix() + "/node/status"
 }
 
 func CreateOrUpdateStatus(nodeName string, opts ...node.StatusOption) (ok bool, err error) {
-	key := StatsPrefix() + "/" + nodeName
+	key := StatusPrefix() + "/" + nodeName
 	res , err := etcd.E.Client.Get(context.TODO(), key)
 	if err != nil {
 		return
@@ -60,8 +59,11 @@ func GetStatus(nodeName string) (s *node.Status, err error) {
 	return
 }
 
-func CreateStatusIfNotExist(nodeName string, n *node.Status) (err error) {
-	key := StatsPrefix() + "/" + nodeName
+func CreateStatusIfNotExist(n *node.Status) (err error) {
+	if n.NodeName == "" {
+		return errors.New("empty name")
+	}
+	key := StatusPrefix() + "/" + n.NodeName
 	b, err := json.Marshal(n)
 	if err != nil {
 		return
@@ -78,7 +80,7 @@ func CreateStatusIfNotExist(nodeName string, n *node.Status) (err error) {
 }
 
 func StatusMap() (mapping map[string]*node.Status, err error) {
-	key := StatsPrefix()
+	key := StatusPrefix()
 	res, err := etcd.E.Client.Get(context.TODO(), key, clientv3.WithPrefix())
 	if err != nil {
 		return
@@ -94,15 +96,7 @@ func StatusMap() (mapping map[string]*node.Status, err error) {
 			logrus.Error(er)
 			continue
 		}
-		var nodeName string
-		_, er = fmt.Sscanf(string(v.Key), key+"/%s", &nodeName)
-		if er != nil {
-			logrus.Error(er)
-			continue
-		}
-		if nodeName != "" {
-			mapping[nodeName] = ele
-		}
+		mapping[ele.NodeName] = ele
 	}
 
 	return
@@ -112,7 +106,7 @@ func DeleteStatus(name string) (err error) {
 	if name == "" {
 		return errors.New("empty name")
 	}
-	key := StatsPrefix() + "/" + name
+	key := StatusPrefix() + "/" + name
 	_, err = etcd_client.Default().Delete(context.Background(), key)
 	if err != nil {
 		return

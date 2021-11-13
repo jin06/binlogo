@@ -16,12 +16,6 @@ type Options struct {
 	StatusReady *boolVal
 }
 
-func WithKey(key string) Option {
-	return func(opts *Options) {
-		opts.Key = key
-		return
-	}
-}
 
 type boolVal struct {
 	val bool
@@ -37,13 +31,6 @@ func GetOptions(args ...Option) *Options {
 	return opts
 }
 
-func WithStatusReady(b bool) Option {
-	return func(options *Options) {
-		options.StatusReady = &boolVal{
-			val: b,
-		}
-	}
-}
 func WithNodeName(name string) Option {
 	return func(options *Options) {
 		options.NodeName = name
@@ -51,14 +38,14 @@ func WithNodeName(name string) Option {
 	}
 }
 
-func WithNodeIP(ip net.IP) Option {
-	return func(options *Options) {
-		options.NodeIP = ip
-	}
-}
-
-func WithNodeVersion(ver string) Option {
-	return func(options *Options) {
-		options.NodeVersion = ver
-	}
-}
+//func WithNodeIP(ip net.IP) Option {
+//	return func(options *Options) {
+//		options.NodeIP = ip
+//	}
+//}
+//
+//func WithNodeVersion(ver string) Option {
+//	return func(options *Options) {
+//		options.NodeVersion = ver
+//	}
+//}

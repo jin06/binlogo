@@ -1,6 +1,7 @@
 package node
 
 type Status struct {
+	NodeName           string `json:"node_name"`
 	Ready              bool `json:"ready"`
 	NetworkUnavailable bool `json:"network_unavailable"`
 	MemoryPressure     bool `json:"memory_pressure"`
@@ -16,25 +17,25 @@ func WithReady(b bool) StatusOption {
 	}
 }
 
-func WithNetworkUnavailable( b bool)  StatusOption{
+func WithNetworkUnavailable(b bool) StatusOption {
 	return func(s *Status) {
 		s.NetworkUnavailable = b
 	}
 }
 
-func WithMemoryPressure( b bool) StatusOption  {
+func WithMemoryPressure(b bool) StatusOption {
 	return func(s *Status) {
 		s.MemoryPressure = b
 	}
 }
 
-func WithDiskPressure(b bool) StatusOption  {
+func WithDiskPressure(b bool) StatusOption {
 	return func(s *Status) {
 		s.DiskPressure = b
 	}
 }
 
-func WithCPUPressure(b bool ) StatusOption  {
+func WithCPUPressure(b bool) StatusOption {
 	return func(s *Status) {
 		s.CPUPressure = b
 	}
