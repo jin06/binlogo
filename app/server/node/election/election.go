@@ -46,35 +46,27 @@ func (e *Election) init() (err error) {
 	e.campaignVal = viper.GetString("node.name")
 
 	e.lock = sync.Mutex{}
+	e.client = etcd_client.Default()
 	return
 }
 
 func (e *Election) Run(ctx context.Context) {
 	e.campaign(ctx)
-	go func() {
-		for {
-			select {
-			case <-ctx.Done():
-				{
-					return
-				}
-			}
-		}
-	}()
 }
 
 func (e *Election) campaign(ctx context.Context) {
 	go func() {
+		defer e.Resign(ctx)
 		for {
 			e.SetRole(role.FOLLOWER)
 			//sen, err := concurrency.NewSession(e.client, concurrency.WithTTL(e.ttl))
-			cli, err := etcd_client.New()
-			if err != nil {
-				logrus.Error("campaign", err)
-				continue
-			}
+			//cli, err := etcd_client.New()
+			//if err != nil {
+			//	logrus.Error("campaign", err)
+			//	continue
+			//}
 
-			sen, errSe := concurrency.NewSession(cli, concurrency.WithTTL(e.ttl))
+			sen, errSe := concurrency.NewSession(e.client, concurrency.WithTTL(e.ttl))
 			if errSe != nil {
 				logrus.Error("Election error")
 				time.Sleep(time.Second * 5)
@@ -102,21 +94,35 @@ func (e *Election) campaign(ctx context.Context) {
 			logrus.Info("Election Watch ")
 
 			obsCh := e.election.Observe(ctx)
+		LOOP:
 			for {
-				gr,ok := <- obsCh
-				if !ok {
-					break
-				}
-				if len(gr.Kvs) == 0 {
-					break
-				}
-				if string(gr.Kvs[0].Value) != e.campaignVal {
-					break
+				select {
+				case <-ctx.Done():
+					{
+						return
+					}
+				case <-sen.Done():
+					{
+						break LOOP
+					}
+				case gr, ok := <-obsCh:
+					{
+						if !ok {
+							break LOOP
+						}
+						if len(gr.Kvs) == 0 {
+							break LOOP
+						}
+						if string(gr.Kvs[0].Value) != e.campaignVal {
+							break LOOP
+						}
+					}
 				}
 			}
 			if errResign := e.election.Resign(ctx); errResign != nil {
 				logrus.Errorln("Election failed, start new election.", errResign)
 			}
+			logrus.Errorln("Lost leader... ")
 			e.SetRole(role.FOLLOWER)
 			time.Sleep(time.Second)
 		}
@@ -148,6 +154,9 @@ func (e *Election) Role() role.Role {
 }
 
 func (e *Election) Resign(ctx context.Context) (err error) {
+	if e.election == nil {
+		return
+	}
 	err = e.election.Resign(ctx)
 	return
 }

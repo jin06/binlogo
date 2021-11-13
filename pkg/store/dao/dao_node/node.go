@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/coreos/etcd/clientv3"
+	"github.com/jin06/binlogo/pkg/etcd_client"
 	"github.com/jin06/binlogo/pkg/store/etcd"
 	"github.com/jin06/binlogo/pkg/store/model/node"
 	"github.com/sirupsen/logrus"
@@ -12,6 +13,10 @@ import (
 
 func NodePrefix() string {
 	return etcd.Prefix() + "/node/info"
+}
+
+func NodeRegisterPrefix() string {
+	return etcd_client.Prefix() + "/cluster/register"
 }
 
 func CreateNode(n *node.Node) (err error) {
@@ -100,8 +105,11 @@ func GetNode(name string) (n *node.Node, err error) {
 }
 
 func AllNodes() (list []*node.Node, err error) {
+	return _allNodes(NodePrefix() + "/")
+}
+func _allNodes(key string) (list []*node.Node, err error) {
 	list = []*node.Node{}
-	key := NodePrefix() + "/"
+	//key := NodePrefix() + "/"
 	res, err := etcd.E.Client.Get(context.TODO(), key, clientv3.WithPrefix())
 	if err != nil {
 		return
@@ -121,15 +129,48 @@ func AllNodes() (list []*node.Node, err error) {
 	return
 }
 
-func AllWorkNodes() (list []*node.Node, err error) {
-	list, err = AllNodes()
+func ALLRegisterNodes() (list []*node.Node, err error) {
+	key := NodeRegisterPrefix()
+	return _allNodes(key)
+}
+
+func AllNodesMap() (mapping map[string]*node.Node, err error) {
+	list, err := AllNodes()
 	if err != nil {
 		return
 	}
-	//for k, v := range list {
-	//	if v.Status == node.STATUS_OFF {
-	//		list = append(list[:k], list[k:]...)
-	//	}
-	//}
+	mapping = map[string]*node.Node{}
+	for _, v := range list {
+		mapping[v.Name] = v
+	}
+	return
+}
+
+func AllRegisterNodesMap() (mapping map[string]*node.Node, err error) {
+	list, err := ALLRegisterNodes()
+	if err != nil {
+		return
+	}
+	mapping = map[string]*node.Node{}
+	for _, v := range list {
+		mapping[v.Name] = v
+	}
+	return
+}
+
+func AllWorkNodesMap() (res map[string]*node.Node, err error) {
+	res, err = AllNodesMap()
+	if err != nil {
+		return
+	}
+	regMap, err :=  AllRegisterNodesMap()
+	if err != nil {
+		return
+	}
+	for k ,_ := range res {
+		if _, ok := regMap[k]; !ok {
+			delete(res, k)
+		}
+	}
 	return
 }

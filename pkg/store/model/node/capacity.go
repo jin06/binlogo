@@ -10,4 +10,5 @@ type Capacity struct {
 	CpuUsage    uint8     `json:"cpu_usage"`
 	MemoryUsage uint8     `json:"memory_usage"`
 	UpdateTime  time.Time `json:"update_time"`
+	Allocatable *Allocatable
 }

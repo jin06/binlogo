@@ -82,6 +82,7 @@ func (ns *NodeStatus) setStatus() (err error) {
 	capacity.CpuUsage = uint8((capacity.Cpu - al.Cpu) * 100 / capacity.Cpu)
 
 	capacity.MemoryUsage = uint8((capacity.Memory - al.Memory) * 100 / capacity.Memory)
+	capacity.Allocatable = al
 
 	ns.Cap = capacity
 	ns.Allocatable = al

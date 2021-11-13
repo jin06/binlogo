@@ -23,6 +23,7 @@ func (p *Pipeline) hello() {
 
 
 func main()  {
+	fmt.Println(1<<20)
 	fmt.Println("Test thing .. ")
 	s := "lllllisdjfisowe"
 	k := 6

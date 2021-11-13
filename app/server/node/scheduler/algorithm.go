@@ -11,25 +11,26 @@ import (
 
 type algorithm struct {
 	pipeline       *pipeline.Pipeline
-	allNodes       []*node.Node
-	potentialNodes []*node.Node
+	allNodes       map[string]*node.Node
+	potentialNodes map[string]*node.Node
 	nodesScores    map[string]int
 	bestNode       *node.Node
 	pb             *scheduler.PipelineBind
+	capacityMap    map[string]*node.Capacity
 }
 
 func newAlgorithm(p *pipeline.Pipeline) *algorithm {
 	a := &algorithm{}
 	a.pipeline = p
-	a.allNodes = []*node.Node{}
-	a.potentialNodes = []*node.Node{}
+	a.allNodes = map[string]*node.Node{}
+	a.potentialNodes = map[string]*node.Node{}
 	a.nodesScores = map[string]int{}
 	a.bestNode = &node.Node{}
 	return a
 }
 
 func (a *algorithm) cal() (err error) {
-	a.allNodes, err = dao_node.AllWorkNodes()
+	a.allNodes, err = dao_node.AllWorkNodesMap()
 	if err != nil {
 		return
 	}
@@ -58,13 +59,12 @@ func (a *algorithm) calBestNode() (err error) {
 		err = errors.New("no potential node")
 		return
 	}
-	a.bestNode = a.potentialNodes[0]
-	score := a.nodesScores[a.bestNode.Name]
+	score := 0
 
-	for k, v := range a.potentialNodes {
-		if a.nodesScores[v.Name] > score {
+	for k, _ := range a.potentialNodes {
+		if a.nodesScores[k] > score {
 			a.bestNode = a.potentialNodes[k]
-			score = a.nodesScores[v.Name]
+			score = a.nodesScores[k]
 		}
 	}
 	return
@@ -75,11 +75,20 @@ func (a *algorithm) calScore() (err error) {
 	if err != nil {
 		return
 	}
+	a.capacityMap, err = dao_node.CapacityMap()
+	if err != nil {
+		return
+	}
 	a.nodesScores = map[string]int{}
 	for _, v := range a.potentialNodes {
 		a.nodesScores[v.Name] = 0
 	}
 	scores, err := a._scoreNumOfPipelines()
+	if err != nil {
+		return
+	}
+	a.mergeScores(scores)
+	scores, err = a._scoreResources()
 	if err != nil {
 		return
 	}
@@ -99,6 +108,7 @@ func (a *algorithm) mergeScores(scores map[string]int) {
 	return
 }
 
+// Node's score depend on numbers of running pipeline in the node.
 func (a *algorithm) _scoreNumOfPipelines() (scores map[string]int, err error) {
 	weight := 5
 	scores = map[string]int{}
@@ -138,10 +148,47 @@ func (a *algorithm) _scoreNumOfPipelines() (scores map[string]int, err error) {
 	return
 }
 
-func (a *algorithm) _scoreCpu() (scores map[string]int, err error){
-	return
-}
+// Node's score depend on node's resources.
+func (a *algorithm) _scoreResources() (scores map[string]int, err error) {
+	weight := 10
+	scores = map[string]int{}
+	GB := uint64(1 << 20) // kb
 
-func (a *algorithm) _scoreMemory() (scores map[string]int, err error) {
+	for name, n := range a.potentialNodes {
+		scores[name] = 0
+		if val, ok := a.capacityMap[n.Name]; ok {
+			if val.CpuUsage > 90 || val.MemoryUsage > 80 {
+				continue
+			}
+			switch {
+			case val.CpuUsage > 30 && val.CpuUsage <= 90:
+				{
+					scores[name] += 1
+				}
+			case val.CpuUsage <= 30:
+				{
+					scores[name] += 2
+				}
+			}
+			switch {
+			case val.MemoryUsage > 30 && val.MemoryUsage <= 80:
+				{
+					scores[name] += 1
+				}
+			case val.MemoryUsage <= 30:
+				{
+					scores[name] += 2
+				}
+			}
+
+			if val.Allocatable.Memory > 4*GB {
+				scores[name] += 2
+			}
+		}
+	}
+
+	for k, _ := range scores {
+		scores[k] = scores[k] * weight
+	}
 	return
 }

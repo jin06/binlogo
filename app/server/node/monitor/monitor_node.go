@@ -43,6 +43,32 @@ func (m *Monitor) monitorNode(ctx context.Context) error {
 	return nil
 }
 
+func (m *Monitor) checkAllWorkNode() (err error) {
+	regNodesMap, err := dao_node.AllRegisterNodesMap()
+	if err != nil {
+		return
+	}
+	statusMap, err := dao_node.StatusMap()
+	if err != nil {
+		return
+	}
+	for k, val := range statusMap {
+		if _, ok := regNodesMap[k]; !ok {
+			if val.Ready == true {
+				_, err1 := dao_node.CreateOrUpdateStatus(k, dao_node.WithStatusReady(false))
+				if err1 != nil {
+					logrus.Error(err1)
+				}
+			}
+		} else {
+			if val.Ready == false {
+
+			}
+		}
+	}
+	return
+}
+
 func (m *Monitor) checkAllNodeBind() (err error) {
 	nodes, err := dao_node.AllNodes()
 	if err != nil {
