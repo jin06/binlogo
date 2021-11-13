@@ -5,19 +5,18 @@ import (
 	"github.com/jin06/binlogo/app/server/console/handler"
 	"github.com/jin06/binlogo/app/server/console/module/pipeline"
 	"github.com/jin06/binlogo/pkg/store/dao/dao_pipe"
+	"sort"
+	"strconv"
+	"strings"
 )
 
 func List(c *gin.Context) {
-	q := struct {
-		Name     string `json:"name"`
-		AliasZh  string `json:"alias_zh"`
-		SrvType  string `json:"service_type"`
-		Describe string `json:"describe"`
-	}{}
-	if err := c.Bind(&q); err != nil {
-		c.JSON(200, handler.Fail(err))
-		return
-	}
+	page, _ := strconv.Atoi(c.Query("page"))
+	limit, _ := strconv.Atoi(c.Query("limit"))
+	qSort := c.Query("sort")
+	name := c.Query("name")
+	status := c.Query("status")
+
 	all, err := dao_pipe.AllPipelines()
 
 	if err != nil {
@@ -32,13 +31,45 @@ func List(c *gin.Context) {
 		items = append(items, &pipeline.Item{Pipeline: v})
 	}
 
-	if err = pipeline.CompleteInfoList(items) ; err !=nil {
+	if err = pipeline.CompleteInfoList(items); err != nil {
 		c.JSON(200, handler.Fail(err))
 		return
 	}
 
+	resItems := []*pipeline.Item{}
+	for _, v := range items {
+		if status != "" {
+			if string(v.Pipeline.Status) != status {
+				continue
+			}
+		}
+		if name != "" {
+			if !strings.Contains(v.Pipeline.Name, name) && !strings.Contains(v.Pipeline.AliasName, name) {
+				continue
+			}
+		}
+		resItems = append(resItems, v)
+	}
+
+	sort.Slice(resItems, func(i, j int) bool {
+		if qSort == "+id" {
+			return resItems[i].Pipeline.CreateTime.Before(resItems[j].Pipeline.CreateTime)
+		} else {
+			return resItems[j].Pipeline.CreateTime.Before(resItems[i].Pipeline.CreateTime)
+		}
+	})
+
+	start := (page - 1) * limit
+	if start < 0 {
+		start = 0
+	}
+	end := start + limit
+	if end > len(resItems) {
+		end = len(resItems)
+	}
+
 	c.JSON(200, handler.Success(map[string]interface{}{
-		"items": items,
-		"total": len(items),
+		"items": resItems[start:end],
+		"total": len(resItems),
 	}))
 }

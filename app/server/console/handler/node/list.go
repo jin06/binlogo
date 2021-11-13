@@ -8,19 +8,15 @@ import (
 	"github.com/jin06/binlogo/pkg/store/dao/dao_cluster"
 	"github.com/jin06/binlogo/pkg/store/dao/dao_node"
 	"github.com/sirupsen/logrus"
+	"sort"
+	"strconv"
 )
 
 func List(c *gin.Context) {
-	q := struct {
-		Name   string `json:"name"`
-		Ip     string `json:"ip"`
-		Status string `json:"status"`
-	}{}
+	page, _ := strconv.Atoi(c.Query("page"))
+	limit, _ := strconv.Atoi(c.Query("limit"))
+	qSort := c.Query("sort")
 
-	if err := c.Bind(&q); err != nil {
-		c.JSON(200, handler.Fail(err))
-		return
-	}
 	all, err := dao_node.AllNodes()
 	if err != nil {
 		c.JSON(200, handler.Fail(err))
@@ -58,8 +54,25 @@ func List(c *gin.Context) {
 		items = append(items, i)
 	}
 
+	sort.Slice(items, func(i, j int) bool {
+		if qSort == "+id" {
+			return items[i].Node.CreateTime.Before(items[j].Node.CreateTime)
+		} else {
+			return items[j].Node.CreateTime.Before(items[i].Node.CreateTime)
+		}
+	})
+
+	start := (page - 1) * limit
+	if start < 0 {
+		start = 0
+	}
+	end := start + limit
+	if end > len(items) {
+		end = len(items)
+	}
+
 	c.JSON(200, handler.Success(map[string]interface{}{
-		"items": items,
+		"items": items[start:end],
 		"total": len(items),
 	}))
 }
