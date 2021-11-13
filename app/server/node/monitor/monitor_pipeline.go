@@ -6,7 +6,6 @@ import (
 	"github.com/jin06/binlogo/pkg/store/dao/dao_pipe"
 	"github.com/jin06/binlogo/pkg/store/dao/dao_sche"
 	"github.com/jin06/binlogo/pkg/store/model/pipeline"
-	"github.com/jin06/binlogo/pkg/watcher/instance"
 	"github.com/sirupsen/logrus"
 	"time"
 )
@@ -16,14 +15,14 @@ func (m *Monitor) monitorPipe(ctx context.Context) (err error) {
 	if err != nil {
 		return
 	}
-	insWatcher, err := instance.New(dao_pipe.InstancePrefix())
-	if err != nil {
-		return
-	}
-	insCh, err := insWatcher.WatchEtcdList(ctx)
-	if err != nil {
-		return
-	}
+	//insWatcher, err := instance.New(dao_pipe.InstancePrefix())
+	//if err != nil {
+	//	return
+	//}
+	//insCh, err := insWatcher.WatchEtcdList(ctx)
+	//if err != nil {
+	//	return
+	//}
 	m.checkAllPipelineBind()
 	m.checkAllPipelineDelete()
 	go func() {
@@ -66,18 +65,6 @@ func (m *Monitor) monitorPipe(ctx context.Context) (err error) {
 							}
 						}
 					}
-				}
-			case ins := <-insCh:
-				{
-					if ins.Event.Type == mvccpb.DELETE {
-						if val, ok := ins.Data.(*pipeline.Instance); ok {
-							_, err := dao_sche.DeletePipelineBind(val.PipelineName)
-							if err != nil {
-								logrus.Error("Delete pipeline bind failed: ", err)
-							}
-						}
-					}
-
 				}
 			}
 		}

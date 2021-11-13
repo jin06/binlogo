@@ -3,6 +3,7 @@ package monitor
 import (
 	"context"
 	"github.com/coreos/etcd/mvcc/mvccpb"
+	"github.com/jin06/binlogo/pkg/store/dao"
 	"github.com/jin06/binlogo/pkg/store/dao/dao_node"
 	"github.com/jin06/binlogo/pkg/store/dao/dao_sche"
 	"github.com/jin06/binlogo/pkg/store/model/node"
@@ -31,9 +32,12 @@ func (m *Monitor) monitorStatus(ctx context.Context) (err error) {
 				{
 					return
 				}
-			case <-time.Tick(120 * time.Second):
+			case <-time.Tick(60 * time.Second):
 				{
-					err =checkAllNodeStatus()
+					er := checkAllNodeStatus()
+					if er != nil {
+						logrus.Errorln(er)
+					}
 				}
 			case e := <-ch:
 				{
@@ -72,10 +76,16 @@ func checkAllNodeStatus() (err error) {
 
 	for k, v := range pb.Bindings {
 		if val, ok := mapping[v]; !ok {
-			dao_sche.UpdatePipelineBind(k, "")
+			err1 := dao.ClearOrDeleteBind(k)
+			if err1 != nil {
+				logrus.Error(err1)
+			}
 		} else {
 			if val.Ready == false {
-				dao_sche.UpdatePipelineBind(k, "")
+				err1 := dao.ClearOrDeleteBind(k)
+				if err1 != nil {
+					logrus.Errorln(err1)
+				}
 			}
 		}
 	}
@@ -89,7 +99,7 @@ func removePipelineBindIfBindNode(nodeName string) (err error) {
 	}
 	for k, v := range pb.Bindings {
 		if v == nodeName {
-			_, err = dao_sche.UpdatePipelineBind(k, "")
+			err = dao.ClearOrDeleteBind(k)
 			break
 		}
 	}

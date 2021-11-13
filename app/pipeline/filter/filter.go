@@ -3,14 +3,18 @@ package filter
 import (
 	"context"
 	message2 "github.com/jin06/binlogo/app/pipeline/message"
+	"github.com/jin06/binlogo/pkg/pipeline/pipe_tool"
+	pipeline2 "github.com/jin06/binlogo/pkg/store/model/pipeline"
 	"github.com/sirupsen/logrus"
+	"strings"
 )
 
 type Filter struct {
-	InChan  chan *message2.Message
-	OutChan chan *message2.Message
-	Options *Options
-	ctx     context.Context
+	InChan    chan *message2.Message
+	OutChan   chan *message2.Message
+	Options   *Options
+	ctx       context.Context
+	rulesTree tree
 }
 
 func New(opts ...Option) (filter *Filter, err error) {
@@ -25,38 +29,40 @@ func New(opts ...Option) (filter *Filter, err error) {
 }
 
 func (f *Filter) init() (err error) {
+	f.rulesTree = tree{
+		DBBlack:    map[string]bool{},
+		TableBlack: map[string]bool{},
+		DBWhite:    map[string]bool{},
+		TableWhite: map[string]bool{},
+	}
+	if f.Options.Pipe != nil {
+		for _, v := range f.Options.Pipe.Filters {
+			if !pipe_tool.FilterVerify(v) {
+				continue
+			}
+			arr := strings.Split(v.Rule, ".")
+			if len(arr) == 1 {
+				if v.Type == pipeline2.FILTER_BLACK {
+					f.rulesTree.DBBlack[v.Rule] = true
+				} else {
+					f.rulesTree.DBWhite[v.Rule] = true
+				}
+			} else {
+				if v.Type == pipeline2.FILTER_BLACK {
+					f.rulesTree.TableBlack[v.Rule] = true
+				} else {
+					f.rulesTree.TableWhite[v.Rule] = true
+				}
+			}
+
+		}
+	}
+
 	return
 }
 
-type RuleType byte
-
-var (
-	RULE_TYPE_BLACK RuleType = 1
-	RULE_TYPE_WHITE RuleType = 2
-)
-
-type Rule struct {
-	Type     RuleType
-	Database string
-	Table    string
-	MsgType  message2.MessageType
-}
-
 func (f *Filter) filer(msg *message2.Message) (err error) {
-	if len(f.Options.Rules) > 0 {
-		for _, v := range f.Options.Rules {
-			switch v.Type {
-			case RULE_TYPE_BLACK:
-				{
-
-				}
-			case RULE_TYPE_WHITE:
-				{
-
-				}
-			}
-		}
-	}
+	msg.Filter = f.rulesTree.isFilter(msg)
 	return
 }
 
@@ -88,7 +94,8 @@ func (f *Filter) Run(ctx context.Context) (err error) {
 				{
 					return
 				}
-				case msg := <-f.InChan:{
+			case msg := <-f.InChan:
+				{
 					f.handle(msg)
 					f.OutChan <- msg
 				}

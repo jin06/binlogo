@@ -92,3 +92,5 @@ func DeletePipelineBind(pName string) (ok bool, err error) {
 	ok = resp.Succeeded
 	return
 }
+
+
