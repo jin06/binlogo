@@ -153,11 +153,14 @@ func (m *Monitor) deletePipeline(p *pipeline.Pipeline) (err error) {
 			return
 		}
 	}
-	nodeName, err := dao_pipe.GetInstance(p.Name)
+	ins, err := dao_pipe.GetInstance(p.Name)
 	if err != nil {
 		return
 	}
-	if nodeName != "" {
+	//if nodeName != "" {
+	//	return
+	//}
+	if ins != nil {
 		return
 	}
 	err = dao_pipe.DeletePosition(p.Name)

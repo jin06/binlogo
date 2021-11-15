@@ -7,7 +7,6 @@ import (
 	"github.com/jin06/binlogo/pkg/store/model/node"
 	"github.com/jin06/binlogo/pkg/store/model/pipeline"
 	"github.com/jin06/binlogo/pkg/store/model/scheduler"
-	"github.com/sirupsen/logrus"
 )
 
 type Item struct {
@@ -16,9 +15,9 @@ type Item struct {
 }
 
 type Info struct {
-	BindNode    *node.Node `json:"bind_node"`
-	RunNodeName string     `json:"run_node_name"`
-	Status      Status     `json:"status"`
+	BindNode *node.Node         `json:"bind_node"`
+	Instance *pipeline.Instance `json:"instance"`
+	Status   Status             `json:"status"`
 }
 
 type Status string
@@ -44,16 +43,18 @@ func CompleteInfo(i *Item) (err error) {
 	return
 }
 
-func CompletePipelineRun(i *Item, pMap map[string]string) (err error) {
+func CompletePipelineRun(i *Item, pMap map[string]*pipeline.Instance) (err error) {
 	if pMap != nil {
-		i.Info.RunNodeName = pMap[i.Pipeline.Name]
+		if _, ok := pMap[i.Pipeline.Name]; ok {
+			i.Info.Instance = pMap[i.Pipeline.Name]
+		}
 		return
 	}
-	nodeName, err := dao_pipe.GetInstance(i.Pipeline.Name)
+	ins, err := dao_pipe.GetInstance(i.Pipeline.Name)
 	if err != nil {
 		return
 	}
-	i.Info.RunNodeName = nodeName
+	i.Info.Instance = ins
 	return
 }
 
@@ -102,7 +103,7 @@ func CompletePipelineStatus(i *Item) (err error) {
 		return
 	}
 	if i.Pipeline.Status == pipeline.STATUS_RUN {
-		if i.Info.RunNodeName == "" {
+		if i.Info.Instance == nil {
 			if i.Info.BindNode == nil {
 				i.Info.Status = STATUS_SCHEDULING
 				return
@@ -126,7 +127,6 @@ func CompleteInfoList(list []*Item) (err error) {
 		return
 	}
 	allInstance, err := dao_pipe.AllInstance()
-	logrus.Debug(allInstance)
 	if err != nil {
 		return
 	}

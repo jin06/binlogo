@@ -2,6 +2,7 @@ package console
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/jin06/binlogo/app/server/console/handler/instance"
 	"github.com/jin06/binlogo/app/server/console/handler/node"
 	"github.com/jin06/binlogo/app/server/console/handler/pipeline"
 	"github.com/jin06/binlogo/app/server/console/middleware"
@@ -18,4 +19,6 @@ func router(g *gin.Engine) {
 	g.POST("/api/pipeline/delete", pipeline.Delete)
 
 	g.GET("/api/node/list", node.List)
+
+	g.GET("/api/instance/get", instance.Get)
 }

@@ -10,6 +10,7 @@ import (
 	pipeline2 "github.com/jin06/binlogo/pkg/store/model/pipeline"
 	"github.com/sirupsen/logrus"
 	"sync"
+	"time"
 )
 
 type instance struct {
@@ -64,9 +65,14 @@ func (i *instance) init() (err error) {
 	if err != nil {
 		return
 	}
+	insModel := &pipeline2.Instance{
+		PipelineName: i.pipeName,
+		NodeName:     i.nodeName,
+		CreateTime:   time.Now(),
+	}
 	reg, err := register.New(
 		register.WithKey(dao_register.PipeInstancePrefix()+"/"+i.pipeName),
-		register.WithData(i.nodeName),
+		register.WithData(insModel),
 	)
 	i.pipeInfo = pipeInfo
 	i.pipeIns = pipe
@@ -96,7 +102,7 @@ func (i *instance) start() (err error) {
 	logrus.Info("pipeline instance start: ", i.pipeName)
 
 	select {
-	case <- ctx.Done():
+	case <-ctx.Done():
 		{
 			return
 		}
