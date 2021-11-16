@@ -1,9 +1,102 @@
 package pipe_tool
 
 import (
+	"errors"
+	"fmt"
+	"github.com/jin06/binlogo/app/pipeline/message"
 	"github.com/jin06/binlogo/pkg/store/model/pipeline"
 	"strings"
 )
+
+func NewFilter(filters []*pipeline.Filter) (f *Filter) {
+	f = &Filter{
+		DBBlack:    map[string]bool{},
+		TableBlack: map[string]bool{},
+		DBWhite:    map[string]bool{},
+		TableWhite: map[string]bool{},
+	}
+	for _, v := range filters {
+		if !FilterVerify(v) {
+			continue
+		}
+		arr := strings.Split(v.Rule, ".")
+		if len(arr) == 1 {
+			if v.Type == pipeline.FILTER_BLACK {
+				f.DBBlack[v.Rule] = true
+			} else {
+				f.DBWhite[v.Rule] = true
+			}
+		} else {
+			if v.Type == pipeline.FILTER_BLACK {
+				f.TableBlack[v.Rule] = true
+			} else {
+				f.TableWhite[v.Rule] = true
+			}
+		}
+	}
+	return
+}
+
+type Filter struct {
+	DBBlack    map[string]bool
+	TableBlack map[string]bool
+	DBWhite    map[string]bool
+	TableWhite map[string]bool
+}
+
+func (t *Filter) IsFilterWithName(name string) (bool, error) {
+	res := strings.Split(name, ".")
+	lh := len(res)
+	switch lh {
+	case 1:
+		{
+			database := res[0]
+			if _, ok := t.DBWhite[database]; ok {
+				return false, nil
+			}
+			if _, ok := t.DBBlack[database]; ok {
+				return true, nil
+			}
+		}
+	case 2:
+		{
+			database := res[0]
+			if _, ok := t.DBWhite[database]; ok {
+				return false, nil
+			}
+			if _, ok := t.TableWhite[name]; ok {
+				return false, nil
+			}
+			if _, ok := t.DBBlack[database]; ok {
+				return true, nil
+			}
+			if _, ok := t.TableBlack[name]; ok {
+				return true, nil
+			}
+			return false, nil
+		}
+	default:
+		return false, errors.New("wrong rule")
+	}
+	return false, nil
+}
+
+func (t *Filter) IsFilter(msg *message.Message) bool {
+	if _, ok := t.DBWhite[msg.Content.Head.Database]; ok {
+		return false
+	}
+	table := fmt.Sprintf("%s.%s", msg.Content.Head.Database, msg.Content.Head.Table)
+	if _, ok := t.TableWhite[table]; ok {
+		return false
+	}
+	if _, ok := t.DBBlack[msg.Content.Head.Database]; ok {
+		return true
+	}
+	if _, ok := t.TableBlack[table]; ok {
+		return true
+	}
+	return false
+}
 
 func FilterVerifyStr(s string) bool {
 	res := strings.Split(s, ".")
@@ -18,7 +111,7 @@ func FilterVerifyStr(s string) bool {
 
 func FilterVerify(f *pipeline.Filter) bool {
 
-	if f.Type != pipeline.FILTER_BLACK && f.Type != pipeline.FILTER_WHITE{
+	if f.Type != pipeline.FILTER_BLACK && f.Type != pipeline.FILTER_WHITE {
 		return false
 	}
 	res := strings.Split(f.Rule, ".")

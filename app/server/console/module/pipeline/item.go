@@ -44,6 +44,7 @@ func CompleteInfo(i *Item) (err error) {
 }
 
 func CompletePipelineRun(i *Item, pMap map[string]*pipeline.Instance) (err error) {
+	i.Info.Instance = &pipeline.Instance{}
 	if pMap != nil {
 		if _, ok := pMap[i.Pipeline.Name]; ok {
 			i.Info.Instance = pMap[i.Pipeline.Name]

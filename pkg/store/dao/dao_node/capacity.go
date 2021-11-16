@@ -60,3 +60,4 @@ func CapacityMap() (mapping map[string]*node.Capacity, err error) {
 
 	return
 }
+

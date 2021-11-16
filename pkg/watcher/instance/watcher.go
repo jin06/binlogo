@@ -10,22 +10,20 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-
 func withHandler(key string) watcher.Handler {
 	return func(e *clientv3.Event) (ev *watcher.Event, err error) {
 		ev = &watcher.Event{}
 		m := &pipeline.Instance{}
 		ev.Event = e
 		ev.Data = m
-		_, err = fmt.Sscanf(string(e.Kv.Key), key +"/%s", &m.PipelineName)
-		if err != nil {
-			logrus.Error(err)
-			return
-		}
 		if e.Type == mvccpb.DELETE {
-
+			_, err = fmt.Sscanf(string(e.Kv.Key), key+"/%s", &m.PipelineName)
+			if err != nil {
+				logrus.Error(err)
+				return
+			}
 		} else {
-			err = json.Unmarshal(e.Kv.Value , &m.NodeName)
+			err = json.Unmarshal(e.Kv.Value, &m)
 			if err != nil {
 				logrus.Error(err)
 				return
@@ -36,11 +34,10 @@ func withHandler(key string) watcher.Handler {
 }
 
 func New(key string) (w *watcher.General, err error) {
-	w, err  = watcher.NewGeneral(key)
+	w, err = watcher.NewGeneral(key)
 	if err != nil {
 		return
 	}
 	w.EventHandler = withHandler(key)
 	return
 }
-

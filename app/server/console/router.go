@@ -2,9 +2,11 @@ package console
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/jin06/binlogo/app/server/console/handler/cluster"
 	"github.com/jin06/binlogo/app/server/console/handler/instance"
 	"github.com/jin06/binlogo/app/server/console/handler/node"
 	"github.com/jin06/binlogo/app/server/console/handler/pipeline"
+	"github.com/jin06/binlogo/app/server/console/handler/position"
 	"github.com/jin06/binlogo/app/server/console/middleware"
 )
 
@@ -16,9 +18,16 @@ func router(g *gin.Engine) {
 	g.POST("/api/pipeline/create", pipeline.Create)
 	g.POST("/api/pipeline/update", pipeline.Update)
 	g.POST("/api/pipeline/update/status", pipeline.UpdateStatus)
+	g.POST("/api/pipeline/update/mode", pipeline.UpdateMode)
 	g.POST("/api/pipeline/delete", pipeline.Delete)
+	g.GET("/api/pipeline/is_filter", pipeline.IsFilter)
 
 	g.GET("/api/node/list", node.List)
 
 	g.GET("/api/instance/get", instance.Get)
+
+	g.GET("/api/position/get", position.Get)
+	g.POST("/api/position/update", position.Update)
+
+	g.GET("/api/cluster/get", cluster.Get)
 }

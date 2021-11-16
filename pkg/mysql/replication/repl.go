@@ -1,0 +1,4 @@
+package replication
+
+func GetMasterStatus() {
+}

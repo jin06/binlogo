@@ -76,3 +76,9 @@ func WithPipeDelete(d bool) OptionPipeline {
 		p.IsDelete = d
 	}
 }
+
+func WithPipeMode(mode Mode) OptionPipeline {
+	return func(p *Pipeline) {
+		p.Mysql.Mode = mode
+	}
+}

@@ -16,7 +16,7 @@ func Update(c *gin.Context) {
 		return
 	}
 	for _, v := range q.Filters {
-		if  !pipe_tool.FilterVerifyStr(v.Rule) {
+		if !pipe_tool.FilterVerifyStr(v.Rule) {
 			c.JSON(200, handler.Fail("Filter rule error, only support the format like database.table or database "))
 			return
 		}
@@ -62,4 +62,35 @@ func UpdateStatus(c *gin.Context) {
 		return
 	}
 	c.JSON(200, handler.Success("ok"))
+}
+
+func UpdateMode(c *gin.Context) {
+	q := struct {
+		PipeName string        `json:"name"`
+		Mode     pipeline.Mode `json:"mode"`
+	}{}
+	if err := c.BindJSON(&q); err != nil {
+		c.JSON(200, handler.Fail(err))
+		return
+	}
+	if q.Mode != pipeline.MODE_POSTION && q.Mode != pipeline.MODE_GTID {
+		c.JSON(200, handler.Fail("Wrong param mode: " + q.Mode))
+		return
+	}
+	pipe, err := dao_pipe.GetPipeline(q.PipeName)
+	if err != nil {
+		c.JSON(200, handler.Fail(err.Error()))
+		return
+	}
+	if pipe.Status == pipeline.STATUS_RUN {
+		c.JSON(200, handler.Fail("Only stopped pipeline can be updated"))
+		return
+	}
+	ok , err := dao_pipe.UpdatePipeline(q.PipeName, pipeline.WithPipeMode(q.Mode))
+	if err != nil || !ok {
+		c.JSON(200, handler.Fail("Update mode failed"))
+		return
+	}
+	c.JSON(200, handler.Success("ok"))
+
 }

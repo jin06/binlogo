@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"github.com/coreos/etcd/clientv3"
 	"github.com/jin06/binlogo/pkg/etcd_client"
 	"github.com/jin06/binlogo/pkg/store/etcd"
 	"github.com/jin06/binlogo/pkg/store/model/pipeline"
@@ -20,6 +21,40 @@ func UpdatePosition(p *pipeline.Position) (err error) {
 		return
 	}
 	_, err = etcd_client.Default().Put(context.TODO(), key, string(b))
+	return
+}
+
+func UpdatePositionSafe(pipeName string, opts ...pipeline.OptionPosition) (ok bool, err error)  {
+	if pipeName == "" {
+		err = errors.New("empty pipeline name")
+		return
+	}
+	key := PositionPrefix() + "/" + pipeName
+	res, err := etcd_client.Default().Get(context.Background(), key)
+	if err != nil {
+		return
+	}
+	revision := int64(0)
+	pos := &pipeline.Position{}
+	if len(res.Kvs) != 0  {
+		revision = res.Kvs[0].CreateRevision
+		err = json.Unmarshal(res.Kvs[0].Value, pos)
+		if err != nil {
+			return
+		}
+	}
+	pos.PipelineName = pipeName
+	for _, v := range opts {
+		v(pos)
+	}
+	txn := etcd_client.Default().Txn(context.Background()).
+		If(clientv3.Compare(clientv3.CreateRevision(key), "=", revision)).
+		Then(clientv3.OpPut(key, pos.Val()))
+	resp, err := txn.Commit()
+	if err != nil {
+		return
+	}
+	ok = resp.Succeeded
 	return
 }
 

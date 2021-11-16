@@ -26,3 +26,23 @@ func (s *Position) Unmarshal(val []byte) (err error) {
 	err = json.Unmarshal(val, s)
 	return
 }
+
+type OptionPosition func(position *Position)
+
+func WithBinlogFile(b string) OptionPosition {
+	return func(position *Position) {
+		position.BinlogFile = b
+	}
+}
+
+func WithPos(p uint32) OptionPosition {
+	return func(position *Position) {
+		position.BinlogPosition = p
+	}
+}
+
+func WithGTIDSet(g string) OptionPosition  {
+	return func(position *Position) {
+		position.GTIDSet = g
+	}
+}
