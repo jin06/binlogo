@@ -9,13 +9,8 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func New() (w *watcher.General, err error) {
-	key := dao_sche.PipeBindPrefix()
-	w, err = watcher.NewGeneral(key)
-	if err != nil {
-		return
-	}
-	w.EventHandler = func(e *clientv3.Event) (ev *watcher.Event, err error) {
+func withHandler() watcher.Handler {
+	return func(e *clientv3.Event) (ev *watcher.Event, err error) {
 		ev = &watcher.Event{}
 		m := &scheduler.PipelineBind{}
 		ev.Event = e
@@ -30,5 +25,13 @@ func New() (w *watcher.General, err error) {
 		}
 		return
 	}
+}
+func New() (w *watcher.General, err error) {
+	key := dao_sche.PipeBindPrefix()
+	w, err = watcher.NewGeneral(key)
+	if err != nil {
+		return
+	}
+	w.EventHandler = withHandler()
 	return
 }

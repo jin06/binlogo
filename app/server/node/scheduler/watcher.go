@@ -17,14 +17,14 @@ type Watcher struct {
 	notBindPipelineCh chan *pipeline2.Pipeline
 }
 
-func newWatcher() (m *Watcher, err error) {
-	m = &Watcher{
+func newWatcher() (w *Watcher, err error) {
+	w = &Watcher{
 	}
-	m.notBindPipelineCh = make(chan *pipeline2.Pipeline, 10000)
+	w.notBindPipelineCh = make(chan *pipeline2.Pipeline, 10000)
 	return
 }
 
-func (m *Watcher) run(ctx context.Context) (err error) {
+func (w *Watcher) run(ctx context.Context) (err error) {
 	wa, err := scheduler_binding.New()
 	if err != nil {
 		return
@@ -34,18 +34,18 @@ func (m *Watcher) run(ctx context.Context) (err error) {
 		return
 	}
 	go func() {
-		_ = m.putNotBindPipeToQueue(nil)
+		_ = w.putNotBindPipeToQueue(nil)
 		for {
 			select {
 			case <-ctx.Done():
 				{
 					return
 				}
-			case ev := <-waCh:
+			case ev := <- waCh:
 				{
 					if ev.Event.Type == mvccpb.PUT {
 						if val, ok := ev.Data.(*scheduler.PipelineBind); ok {
-							errPut := m.putNotBindPipeToQueue(val)
+							errPut := w.putNotBindPipeToQueue(val)
 							if errPut != nil {
 								logrus.Error("Put not bind pipeline to queue error: ", errPut)
 							}
@@ -59,7 +59,7 @@ func (m *Watcher) run(ctx context.Context) (err error) {
 	return nil
 }
 
-func (m *Watcher) putNotBindPipeToQueue(pb *scheduler.PipelineBind) (err error) {
+func (w *Watcher) putNotBindPipeToQueue(pb *scheduler.PipelineBind) (err error) {
 	if pb == nil {
 		pb, err = dao_sche.GetPipelineBind()
 		if err != nil {
@@ -68,7 +68,7 @@ func (m *Watcher) putNotBindPipeToQueue(pb *scheduler.PipelineBind) (err error) 
 	}
 	for k, v := range pb.Bindings {
 		if v == "" {
-			m.notBindPipelineCh <- &pipeline2.Pipeline{Name: k}
+			w.notBindPipelineCh <- &pipeline2.Pipeline{Name: k}
 		}
 	}
 	return

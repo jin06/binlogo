@@ -26,7 +26,6 @@ func (s *Scheduler) Run(ctx context.Context) (err error) {
 	s.runLock.Lock()
 	defer s.runLock.Unlock()
 	if s.status == SCHEDULER_RUN {
-		//logrus.Debug("Running, do nothing")
 		return
 	}
 	myCtx, cancel := context.WithCancel(ctx)
@@ -37,6 +36,10 @@ func (s *Scheduler) Run(ctx context.Context) (err error) {
 			s.status = SCHEDULER_RUN
 		}
 	}()
+	s.watcher, err = newWatcher()
+	if err != nil {
+		return
+	}
 	err = s.watcher.run(myCtx)
 	if err != nil {
 		return
@@ -97,17 +100,12 @@ func (s *Scheduler) watchPipeline(err error) {
 }
 
 func New(opts ...Option) (s *Scheduler) {
-	var err error
 	options := &Options{}
 	s = &Scheduler{options: options}
 	for _, v := range opts {
 		v(options)
 	}
 	s.runLock = sync.Mutex{}
-	s.watcher, err = newWatcher()
 	s.status = SCHEDULER_STOP
-	if err != nil {
-		logrus.Error(err)
-	}
 	return
 }
