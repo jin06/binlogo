@@ -17,9 +17,12 @@ func router(g *gin.Engine) {
 	g.GET("/", func(c *gin.Context) {
 		c.Redirect(http.StatusTemporaryRedirect, "/console")
 	})
+	g.Static("/console", "./assets/dist")
 
-	g.Static("/console","./assets")
-	g.Static("/static", "./assets/static")
+	//g.Static("/console","./assets/dist")
+	//g.Static("/static", "./assets/dist/static")
+	//g.Static("/favicon.ico", "./assets/dist/favicon.ico")
+	//g.Static("/paozi.jpeg", "./assets/dist/paozi.jpeg")
 
 
 	g.GET("/api/pipeline/list", pipeline.List)

@@ -1,0 +1,16 @@
+env: dev
+cluster:
+  name: cluster1
+node:
+  name:
+console:
+  port: 9990
+  listen: 0.0.0.0
+etcd:
+  endpoints:
+    - "localhost:12379"
+store:
+  type: etcd
+  etcd:
+    endpoints:
+      - "localhost:12379"

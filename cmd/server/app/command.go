@@ -29,11 +29,11 @@ func NewCommand() (cmd *cobra.Command) {
 		Run: func(cmd *cobra.Command, args []string) {
 			cfg, _ := cmd.Flags().GetString("config")
 			configs.InitViperFromFile(cfg)
+			hostname, _ := os.Hostname()
+			viper.SetDefault("node.name", hostname)
 			etcd2.DefaultETCD()
 			configs.ENV = configs.Env(viper.GetString("env"))
-			//blog.Env(configs.Env(viper.GetString("env")))
 			blog.Env(configs.ENV)
-			//RunServer()
 			logrus.Infoln("init configs finish")
 			if configs.ENV == configs.ENV_DEV {
 				go func() {
@@ -54,14 +54,7 @@ func NewCommand() (cmd *cobra.Command) {
 	}
 
 	cmd = &cobra.Command{Use: "binlogo"}
-	//var cfgFile string
-	//cmd.PersistentFlags().StringVar(&cfgFile, "config", "./configs/binlogo.yaml", "config file default is ./configs/binlogo.yaml")
 	cmd.PersistentFlags().String("config","./configs/binlogo.yaml","")
-	//panic(123)
-
-	//if err != nil {
-	//	panic(err)
-	//}
 	cmd.AddCommand(cmdRun, cmdVersion)
 	return
 }
