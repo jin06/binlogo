@@ -30,7 +30,29 @@ func GetInstance(pipeName string) (ins *pipeline.Instance, err error) {
 	return
 }
 
-func AllInstance() (all map[string]*pipeline.Instance, err error) {
+func AllInstance() (all []*pipeline.Instance, err error) {
+	all = []*pipeline.Instance{}
+	key := InstancePrefix() + "/"
+	res, err := etcd_client.Default().Get(context.Background(), key, clientv3.WithPrefix())
+	if err != nil {
+		return
+	}
+	if len(res.Kvs) == 0 {
+		return
+	}
+	for _, v := range res.Kvs {
+		item := &pipeline.Instance{}
+		er := json.Unmarshal(v.Value, item)
+		if er != nil {
+			logrus.Error(er)
+			continue
+		}
+		all = append(all, item)
+	}
+	return
+}
+
+func AllInstanceMap() (all map[string]*pipeline.Instance, err error) {
 	all = map[string]*pipeline.Instance{}
 	key := InstancePrefix() + "/"
 	res, err := etcd_client.Default().Get(context.Background(), key, clientv3.WithPrefix())
@@ -51,4 +73,3 @@ func AllInstance() (all map[string]*pipeline.Instance, err error) {
 	}
 	return
 }
-

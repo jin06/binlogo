@@ -127,7 +127,7 @@ func CompleteInfoList(list []*Item) (err error) {
 	if err != nil {
 		return
 	}
-	allInstance, err := dao_pipe.AllInstance()
+	allInstance, err := dao_pipe.AllInstanceMap()
 	if err != nil {
 		return
 	}

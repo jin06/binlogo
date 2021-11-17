@@ -25,9 +25,12 @@ func router(g *gin.Engine) {
 	g.GET("/api/node/list", node.List)
 
 	g.GET("/api/instance/get", instance.Get)
+	g.GET("/api/instance/list", instance.List)
 
 	g.GET("/api/position/get", position.Get)
 	g.POST("/api/position/update", position.Update)
 
 	g.GET("/api/cluster/get", cluster.Get)
+	g.GET("/api/cluster/list/register", cluster.RegisterList)
+	g.GET("/api/cluster/list/election", cluster.ElectionList)
 }
