@@ -9,6 +9,7 @@ import (
 	"github.com/jin06/binlogo/pkg/watcher"
 	"github.com/jin06/binlogo/pkg/watcher/scheduler_binding"
 	"github.com/sirupsen/logrus"
+	"time"
 )
 
 type Watcher struct {
@@ -50,6 +51,12 @@ func (w *Watcher) run(ctx context.Context) (err error) {
 								logrus.Error("Put not bind pipeline to queue error: ", errPut)
 							}
 						}
+					}
+				}
+				case <-time.Tick(60 * time.Second) :{
+					err1 := w.putNotBindPipeToQueue(nil)
+					if err1 != nil {
+						logrus.Error(err1)
 					}
 				}
 			}

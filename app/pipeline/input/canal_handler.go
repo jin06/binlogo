@@ -16,10 +16,8 @@ type canalHandler struct {
 }
 
 func (h *canalHandler) OnRow(e *canal.RowsEvent) error {
-	//logrus.Warnln(e)
 	msg := rowsMessage(e)
 	h.msg = msg
-	//h.ch <- msg
 	return nil
 }
 func (h *canalHandler) OnPosSynced(pos mysql.Position, set mysql.GTIDSet, force bool) error {
@@ -29,6 +27,7 @@ func (h *canalHandler) OnPosSynced(pos mysql.Position, set mysql.GTIDSet, force 
 			BinlogPosition: pos.Pos,
 			PipelineName:   h.pipe.Name,
 		}
+		//fmt.Println("on pos synced" ,set)
 		if set != nil {
 			h.msg.BinlogPosition.GTIDSet = set.String()
 		}
@@ -44,6 +43,9 @@ func (h *canalHandler) OnRotate(e *replication.RotateEvent) error {
 }
 
 func (h *canalHandler) OnXID(p mysql.Position) error {
+	//if h.msg != nil {
+	//	fmt.Println("on xid ", p)
+	//}
 	return nil
 }
 

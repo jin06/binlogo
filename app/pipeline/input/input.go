@@ -100,14 +100,18 @@ func (r *Input) runCanal() (err error) {
 
 	if r.pipe.Mysql.Mode == pipeline.MODE_GTID {
 		var canGTID mysql.GTIDSet
-		if pos == nil {
+		if pos != nil {
+			if pos.GTIDSet != "" {
+				canGTID, err = mysql.ParseGTIDSet(r.pipe.Mysql.Flavor.YaString(), pos.GTIDSet)
+				if err != nil {
+					return
+				}
+			}
+		}
+
+		if canGTID == nil {
 			pos = &pipeline.Position{}
 			canGTID, err = r.canal.GetMasterGTIDSet()
-			if err != nil {
-				return
-			}
-		} else {
-			canGTID, err = mysql.ParseGTIDSet(r.pipe.Mysql.Flavor.YaString(), pos.GTIDSet)
 			if err != nil {
 				return
 			}

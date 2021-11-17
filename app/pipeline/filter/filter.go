@@ -67,14 +67,11 @@ func (f *Filter) filer(msg *message2.Message) (err error) {
 }
 
 func (f *Filter) handle(msg *message2.Message) {
-	logrus.Debug("Filter wait message")
 	err := f.filer(msg)
 	if err != nil {
 		logrus.Error(err)
 		return
 	}
-	logrus.Debug("Filter message: ", msg)
-	//f.OutChan <- msg
 }
 
 func (f *Filter) Run(ctx context.Context) (err error) {

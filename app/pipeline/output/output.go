@@ -47,18 +47,18 @@ func (o *Output) init() (err error) {
 }
 
 func recordPosition(msg *message2.Message) (err error) {
-	logrus.Debugf(
-		"Record new replication position, file %s, pos %v",
-		msg.BinlogPosition.BinlogFile,
-		msg.BinlogPosition.BinlogPosition,
-	)
+	//logrus.Debugf(
+	//	"Record new replication position, file %s, pos %v",
+	//	msg.BinlogPosition.BinlogFile,
+	//	msg.BinlogPosition.BinlogPosition,
+	//)
 	err = dao_pipe.UpdatePosition(msg.BinlogPosition)
 	return
 }
 
 func (o *Output) handle(msg *message2.Message) {
-	logrus.Debug("Wait send message")
-	logrus.Debugf("Output read message: %v \n", *msg)
+	//logrus.Debug("Wait send message")
+	//logrus.Debugf("Output read message: %v \n", *msg)
 	if !msg.Filter {
 		ok, err := o.Sender.Send(msg)
 		if err != nil {
