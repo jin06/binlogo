@@ -8,10 +8,19 @@ import (
 	"github.com/jin06/binlogo/app/server/console/handler/pipeline"
 	"github.com/jin06/binlogo/app/server/console/handler/position"
 	"github.com/jin06/binlogo/app/server/console/middleware"
+	"net/http"
 )
 
 func router(g *gin.Engine) {
 	g.Use(middleware.Cors)
+
+	g.GET("/", func(c *gin.Context) {
+		c.Redirect(http.StatusTemporaryRedirect, "/console")
+	})
+
+	g.Static("/console","./assets")
+	g.Static("/static", "./assets/static")
+
 
 	g.GET("/api/pipeline/list", pipeline.List)
 	g.GET("/api/pipeline/get", pipeline.Get)
