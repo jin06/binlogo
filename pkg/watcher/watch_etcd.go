@@ -8,11 +8,11 @@ import (
 )
 
 type General struct {
-	key    string
-	EventHandler func(*clientv3.Event) (*Event,error)
+	key          string
+	EventHandler func(*clientv3.Event) (*Event, error)
 }
 
-type Handler func(*clientv3.Event) (*Event,error)
+type Handler func(*clientv3.Event) (*Event, error)
 
 func NewGeneral(key string) (w *General, err error) {
 	w = &General{
@@ -35,26 +35,21 @@ func (w *General) WatchEtcd(ctx context.Context, opts ...clientv3.OpOption) (ch 
 			close(ch)
 		}
 	}()
-	errCh := make(chan error)
 	go func() {
-		cli, err1 := etcd_client.New()
-		if err1 != nil {
-			errCh <- err1
-		}
-		defer func() {
-			cli.Close()
-		}()
-		watchCh := cli.Watch(ctx, w.key, opts...)
-		errCh <- nil
+		watchCh := etcd_client.Default().Watch(ctx, w.key, opts...)
+		LOOP:
 		for {
 			select {
-			case resp := <-watchCh:
+			case resp, ok := <-watchCh:
 				{
+					if !ok {
+						break LOOP
+					}
 					if resp.Err() != nil {
 						logrus.Error(resp.Err())
 					}
 					for _, val := range resp.Events {
-						ev, err2 :=w.EventHandler(val)
+						ev, err2 := w.EventHandler(val)
 						if err2 != nil {
 							logrus.Error("Event handle error: ", err2)
 							continue
@@ -64,14 +59,11 @@ func (w *General) WatchEtcd(ctx context.Context, opts ...clientv3.OpOption) (ch 
 				}
 			case <-ctx.Done():
 				{
-
 					return
 				}
 			}
 		}
 	}()
-	err = <-errCh
-
 	return
 }
 

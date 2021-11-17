@@ -54,7 +54,7 @@ func (s *Scheduler) _schedule(ctx context.Context) {
 			{
 				return
 			}
-		case p := <-s.watcher.notBindPipelineCh:
+		case p := <- s.watcher.notBindPipelineCh:
 			{
 				logrus.Infof("%s not bind node, bind one ", p.Name)
 				if err := s.scheduleOne(p); err != nil {
