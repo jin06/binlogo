@@ -3,6 +3,7 @@ package console
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/jin06/binlogo/app/server/console/handler/cluster"
+	"github.com/jin06/binlogo/app/server/console/handler/event"
 	"github.com/jin06/binlogo/app/server/console/handler/instance"
 	"github.com/jin06/binlogo/app/server/console/handler/node"
 	"github.com/jin06/binlogo/app/server/console/handler/pipeline"
@@ -45,4 +46,6 @@ func router(g *gin.Engine) {
 	g.GET("/api/cluster/get", cluster.Get)
 	g.GET("/api/cluster/list/register", cluster.RegisterList)
 	g.GET("/api/cluster/list/election", cluster.ElectionList)
+
+	g.GET("/api/event/list", event.List)
 }

@@ -2,6 +2,7 @@ package configs
 
 import (
 	"fmt"
+	"github.com/jin06/binlogo/pkg/util/ip"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"os"
@@ -23,4 +24,12 @@ func InitViperFromFile(file string) {
 	}
 	viper.SetDefault("console.listen", CONSOLE_LISTEN)
 	viper.SetDefault("console.port", CONSOLE_PORT)
+}
+
+func InitConfigs() {
+	hostname, _ := os.Hostname()
+	viper.SetDefault("node.name", hostname)
+	ENV = Env(viper.GetString("env"))
+	NodeName = viper.GetString("node.name")
+	NodeIP, _  = ip.LocalIp()
 }

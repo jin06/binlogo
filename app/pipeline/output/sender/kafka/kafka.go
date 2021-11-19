@@ -4,26 +4,36 @@ import (
 	"encoding/json"
 	"github.com/Shopify/sarama"
 	message2 "github.com/jin06/binlogo/app/pipeline/message"
+	"github.com/jin06/binlogo/pkg/store/model/pipeline"
 	"github.com/sirupsen/logrus"
+	"strings"
 )
 
 type Kafka struct {
-	Options      *Options
+	Kafka        *pipeline.Kafka
 	SyncProducer sarama.SyncProducer
 }
 
-func New(options *Options) (kaf *Kafka, err error) {
-	kaf = &Kafka{
-		Options: options,
-	}
+func New(kafka *pipeline.Kafka) (kaf *Kafka, err error) {
+	kaf = &Kafka{Kafka: kafka}
 	err = kaf.init()
 	return
 }
 
 func (s *Kafka) init() (err error) {
-	addr := s.Options.Kafka.Brokers
+	addr := strings.Split(s.Kafka.Brokers, ",")
 	cfg := sarama.NewConfig()
 	cfg.Producer.Return.Successes = true
+	if s.Kafka.RequiredAcks != nil {
+		cfg.Producer.RequiredAcks = *s.Kafka.RequiredAcks
+	}
+	if s.Kafka.Compression != nil {
+		cfg.Producer.Compression = *s.Kafka.Compression
+	}
+	if s.Kafka.Retries != nil {
+		cfg.Producer.Retry.Max = *s.Kafka.Retries
+	}
+
 	producer, err := sarama.NewSyncProducer(addr, cfg)
 	if err != nil {
 		logrus.Error(err)
@@ -38,14 +48,10 @@ func (s *Kafka) Send(msg *message2.Message) (ok bool, err error) {
 }
 
 func (s *Kafka) doSend(msg *message2.Message) (ok bool, err error) {
-	key := kafkaKey{
-		database: msg.Content.Head.Database,
-		table:    msg.Content.Head.Table,
-	}
-	keyByte, _ := json.Marshal(key)
+	keyByte := []byte( msg.Content.Head.Database + "." + msg.Content.Head.Table )
 	valByte, _ := json.Marshal(msg.Content)
 	pMsg := sarama.ProducerMessage{
-		Topic: s.Options.Kafka.Topic,
+		Topic: s.Kafka.Topic,
 		Key:   sarama.ByteEncoder(keyByte),
 		Value: sarama.ByteEncoder(valByte),
 	}

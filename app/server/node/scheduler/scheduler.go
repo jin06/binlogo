@@ -2,7 +2,9 @@ package scheduler
 
 import (
 	"context"
+	"github.com/jin06/binlogo/pkg/event"
 	"github.com/jin06/binlogo/pkg/store/dao/dao_sche"
+	event2 "github.com/jin06/binlogo/pkg/store/model/event"
 	"github.com/jin06/binlogo/pkg/store/model/pipeline"
 	"github.com/sirupsen/logrus"
 	"sync"
@@ -60,7 +62,8 @@ func (s *Scheduler) _schedule(ctx context.Context) {
 		case p := <- s.watcher.notBindPipelineCh:
 			{
 				logrus.Infof("%s not bind node, bind one ", p.Name)
-				if err := s.scheduleOne(p); err != nil {
+				err := s.scheduleOne(p)
+				if err != nil {
 					logrus.Error(err)
 				}
 			}
@@ -83,6 +86,13 @@ func (s *Scheduler) scheduleOne(p *pipeline.Pipeline) (err error) {
 	logrus.Debugf("schedule one: %v", p)
 	//p := s.queue.getOne()
 	a := newAlgorithm(p)
+	defer func() {
+		if err != nil {
+			event.Event(event2.NewErrorPipeline(p.Name, "Scheduling error, " + err.Error()))
+		} else {
+			event.Event(event2.NewInfoPipeline(p.Name, p.Name + " is scheduled to node " + a.bestNode.Name))
+		}
+	}()
 	err = a.cal()
 	if err != nil {
 		return

@@ -4,9 +4,11 @@ import (
 	"context"
 	"errors"
 	"github.com/jin06/binlogo/app/pipeline/pipeline"
+	"github.com/jin06/binlogo/pkg/event"
 	"github.com/jin06/binlogo/pkg/register"
 	"github.com/jin06/binlogo/pkg/store/dao/dao_pipe"
 	"github.com/jin06/binlogo/pkg/store/dao/dao_register"
+	event2 "github.com/jin06/binlogo/pkg/store/model/event"
 	pipeline2 "github.com/jin06/binlogo/pkg/store/model/pipeline"
 	"github.com/sirupsen/logrus"
 	"sync"
@@ -87,6 +89,10 @@ func (i *instance) start() (err error) {
 	i.status = STATUS_RUN
 	defer func() {
 		i.status = STATUS_STOP
+		if err != nil {
+			event.Event(event2.NewErrorPipeline(i.pipeName,  "Pipeline instance stopped error: " + err.Error()))
+		}
+		event.Event(event2.NewInfoPipeline(i.pipeName, "Pipeline instance stopped"))
 	}()
 	err = i.init()
 	if err != nil {
@@ -100,6 +106,7 @@ func (i *instance) start() (err error) {
 	i.pipeReg.Run(ctx)
 	i.pipeIns.Run(ctx)
 	logrus.Info("pipeline instance start: ", i.pipeName)
+	event.Event(event2.NewInfoPipeline(i.pipeName,  "Pipeline instance start success"))
 
 	select {
 	case <-ctx.Done():

@@ -6,7 +6,6 @@ import (
 )
 
 func RunConsole() (err error) {
-	ctx := context.TODO()
-	err = console.Run(ctx)
+	err = console.Run(context.Background())
 	return
 }

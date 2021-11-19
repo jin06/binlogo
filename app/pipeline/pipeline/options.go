@@ -22,4 +22,3 @@ func OptionPosition(option *pipeline.Position) Option {
 		options.Position = option
 	}
 }
-

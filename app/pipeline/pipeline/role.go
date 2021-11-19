@@ -6,4 +6,3 @@ var (
 	RoleLeader   Role = 1
 	RoleFollower Role = 2
 )
-

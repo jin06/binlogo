@@ -7,6 +7,8 @@ import (
 	input2 "github.com/jin06/binlogo/app/pipeline/input"
 	message2 "github.com/jin06/binlogo/app/pipeline/message"
 	output2 "github.com/jin06/binlogo/app/pipeline/output"
+	"github.com/jin06/binlogo/pkg/event"
+	event2 "github.com/jin06/binlogo/pkg/store/model/event"
 	"sync"
 )
 
@@ -118,13 +120,22 @@ func (p *Pipeline) Run(ctx context.Context) {
 			cancel()
 		}()
 		if err = p.Input.Run(myCtx); err != nil {
+			event.Event(event2.NewErrorPipeline(p.Options.Pipeline.Name, "Start input error: "+err.Error()))
 			return
+		} else {
+			event.Event(event2.NewInfoPipeline(p.Options.Pipeline.Name, "Start input succeeded"))
 		}
 		if err = p.Filter.Run(myCtx); err != nil {
+			event.Event(event2.NewErrorPipeline(p.Options.Pipeline.Name, "Start filter error: "+err.Error()))
 			return
+		} else {
+			event.Event(event2.NewInfoPipeline(p.Options.Pipeline.Name, "Start filter succeeded"))
 		}
 		if err = p.Output.Run(myCtx); err != nil {
+			event.Event(event2.NewErrorPipeline(p.Options.Pipeline.Name, "Start output error: "+err.Error()))
 			return
+		} else {
+			event.Event(event2.NewInfoPipeline(p.Options.Pipeline.Name, "Start output succeeded"))
 		}
 		for {
 			select {

@@ -37,10 +37,11 @@ type Content struct {
 }
 
 type Head struct {
-	Type     string `json:"type"`
-	Time     uint32 `json:"time"`
-	Database string `json:"database"`
-	Table    string `json:"table"`
+	Type     string             `json:"type"`
+	Time     uint32             `json:"time"`
+	Database string             `json:"database"`
+	Table    string             `json:"table"`
+	Position *pipeline.Position `json:"position"`
 }
 
 func (msg *Message) Json() (string, error) {

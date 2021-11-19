@@ -116,7 +116,6 @@ func (r *Input) runCanal() (err error) {
 				return
 			}
 		}
-		logrus.Errorln(canGTID.String())
 		r.canal.SetEventHandler(&canalHandler{
 			ch:   r.OutChan,
 			pipe: r.pipe,

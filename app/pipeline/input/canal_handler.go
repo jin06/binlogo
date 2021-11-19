@@ -31,7 +31,8 @@ func (h *canalHandler) OnPosSynced(pos mysql.Position, set mysql.GTIDSet, force 
 		if set != nil {
 			h.msg.BinlogPosition.GTIDSet = set.String()
 		}
-
+		h.msg.Content.Head.Position = h.msg.BinlogPosition
+		//
 		h.ch <- h.msg
 		h.msg = nil
 	}

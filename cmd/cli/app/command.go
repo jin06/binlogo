@@ -16,7 +16,6 @@ func NewCommand() (cmd *cobra.Command) {
 	cmd = &cobra.Command{Use: "binctl", Run: func(cmd *cobra.Command, args []string) {
 		//fmt.Println("Operate pipeline")
 		//fmt.Println("init binctl")
-
 	}}
 	cmd.AddCommand(cmdMemory())
 	cmd.AddCommand(cmdPipeline())
@@ -68,10 +67,8 @@ func cmdCreatePipe() (cmd *cobra.Command) {
 					Sender: &pipeline.Sender{
 						Type: pipeline.SNEDER_TYPE_STDOUT,
 						Kafka: &pipeline.Kafka{
-							Brokers: []string{
-								"kafka-banana.shan.svc.cluster.local:9092",
-							},
-							Topic: "binlogo-test1",
+							Brokers: "kafka-banana.shan.svc.cluster.local:9092",
+							Topic:   "binlogo-test1",
 						},
 					},
 				},

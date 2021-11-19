@@ -37,9 +37,7 @@ func (o *Output) init() (err error) {
 		fallthrough
 	default:
 		o.Sender, err = kafka2.New(
-			&kafka2.Options{
-				Kafka: o.Options.Output.Sender.Kafka,
-			},
+			o.Options.Output.Sender.Kafka,
 		)
 	}
 
