@@ -20,12 +20,6 @@ func router(g *gin.Engine) {
 	})
 	g.Static("/console", "./assets/dist")
 
-	//g.Static("/console","./assets/dist")
-	//g.Static("/static", "./assets/dist/static")
-	//g.Static("/favicon.ico", "./assets/dist/favicon.ico")
-	//g.Static("/paozi.jpeg", "./assets/dist/paozi.jpeg")
-
-
 	g.GET("/api/pipeline/list", pipeline.List)
 	g.GET("/api/pipeline/get", pipeline.Get)
 	g.POST("/api/pipeline/create", pipeline.Create)
@@ -34,6 +28,8 @@ func router(g *gin.Engine) {
 	g.POST("/api/pipeline/update/mode", pipeline.UpdateMode)
 	g.POST("/api/pipeline/delete", pipeline.Delete)
 	g.GET("/api/pipeline/is_filter", pipeline.IsFilter)
+	g.POST("/api/pipeline/add_filter", pipeline.AddFilter)
+	g.POST("/api/pipeline/update_filter", pipeline.UpdateFilter)
 
 	g.GET("/api/node/list", node.List)
 

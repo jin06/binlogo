@@ -82,3 +82,17 @@ func WithPipeMode(mode Mode) OptionPipeline {
 		p.Mysql.Mode = mode
 	}
 }
+
+func WithAddFilter(filter *Filter) OptionPipeline {
+	return func(p *Pipeline) {
+		p.Filters = append(p.Filters, filter)
+	}
+}
+
+func WithUpdateFilter(index int, filter *Filter) OptionPipeline {
+	return func(p  *Pipeline) {
+		if len(p.Filters) > index {
+			p.Filters[index] = filter
+		}
+	}
+}
