@@ -120,23 +120,18 @@ func (p *Pipeline) Run(ctx context.Context) {
 			cancel()
 		}()
 		if err = p.Input.Run(myCtx); err != nil {
-			event.Event(event2.NewErrorPipeline(p.Options.Pipeline.Name, "Start input error: "+err.Error()))
+			event.Event(event2.NewErrorPipeline(p.Options.Pipeline.Name, "Start error: "+err.Error()))
 			return
-		} else {
-			event.Event(event2.NewInfoPipeline(p.Options.Pipeline.Name, "Start input succeeded"))
 		}
 		if err = p.Filter.Run(myCtx); err != nil {
-			event.Event(event2.NewErrorPipeline(p.Options.Pipeline.Name, "Start filter error: "+err.Error()))
+			event.Event(event2.NewErrorPipeline(p.Options.Pipeline.Name, "Start error: "+err.Error()))
 			return
-		} else {
-			event.Event(event2.NewInfoPipeline(p.Options.Pipeline.Name, "Start filter succeeded"))
 		}
 		if err = p.Output.Run(myCtx); err != nil {
-			event.Event(event2.NewErrorPipeline(p.Options.Pipeline.Name, "Start output error: "+err.Error()))
+			event.Event(event2.NewErrorPipeline(p.Options.Pipeline.Name, "Start error: "+err.Error()))
 			return
-		} else {
-			event.Event(event2.NewInfoPipeline(p.Options.Pipeline.Name, "Start output succeeded"))
 		}
+		event.Event(event2.NewInfoPipeline(p.Options.Pipeline.Name, "Start succeeded"))
 		for {
 			select {
 			case <-ctx.Done():
