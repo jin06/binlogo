@@ -1,4 +1,4 @@
-env: dev
+env: production
 cluster:
   name: cluster1
 node:
@@ -9,8 +9,4 @@ console:
 etcd:
   endpoints:
     - "localhost:12379"
-store:
-  type: etcd
-  etcd:
-    endpoints:
-      - "localhost:12379"
+  password:

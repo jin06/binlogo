@@ -16,6 +16,7 @@ func New() (cli *clientv3.Client, err error) {
 	cfg := clientv3.Config{
 		Endpoints:   viper.GetStringSlice("etcd.endpoints"),
 		DialTimeout: 5 * time.Second,
+		Password: viper.GetString("etcd.password"),
 	}
 	cli, err = clientv3.New(cfg)
 	return

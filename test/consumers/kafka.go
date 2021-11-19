@@ -7,7 +7,7 @@ import (
 
 func main() {
 	addr := []string{
-		"kafka-banana.shan.svc.cluster.local:9092",
+		"",
 	}
 	cfg := sarama.NewConfig()
 	cfg.ClientID = "test123"
