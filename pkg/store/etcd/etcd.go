@@ -19,7 +19,7 @@ func DefaultETCD() {
 	prefix := Prefix()
 	etcd, err := NewETCD(
 		//options.Endpoints(config.Cfg.Store.Etcd.Endpoints),
-		options2.Endpoints(viper.GetStringSlice("store.etcd.endpoints")),
+		options2.Endpoints(viper.GetStringSlice("etcd.endpoints")),
 		//options.Prefix("binlogo/"+config.Cfg.Cluster.Name),
 		options2.Prefix(prefix),
 		options2.Timeout(5*time.Second),
