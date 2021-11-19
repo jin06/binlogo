@@ -5,7 +5,7 @@ Binlogo
 Binlogo is the distributed, visualized application based on MySQL binlog.
 In short, binlogo is to process the data changes of MySQL into easy to
 understand messages and send them to different places according to
-the user's configuration. This is some advantage:
+the user's configuration. This is some advantages:
 
 * Distributed, multi node improves availability.
 * Visualization, can complete common operations and
