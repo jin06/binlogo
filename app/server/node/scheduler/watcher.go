@@ -34,6 +34,7 @@ func (w *Watcher) run(ctx context.Context) (err error) {
 	if err != nil {
 		return
 	}
+	// todo bug when disconnection
 	go func() {
 		_ = w.putNotBindPipeToQueue(nil)
 		for {

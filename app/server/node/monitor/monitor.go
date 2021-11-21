@@ -27,9 +27,25 @@ func NewMonitor() (m *Monitor, err error) {
 	m = &Monitor{
 		status: STATUS_STOP,
 	}
+	//m.pipeWatcher, err = pipeline.New(dao_pipe.PipelinePrefix())
+	//m.nodeWatcher, err = node.New(dao_node.NodePrefix())
+	//m.registerWatcher, err = node.New(dao_cluster.RegisterPrefix())
+	return
+}
+
+func (m *Monitor) init() (err error) {
 	m.pipeWatcher, err = pipeline.New(dao_pipe.PipelinePrefix())
+	if err != nil {
+		return
+	}
 	m.nodeWatcher, err = node.New(dao_node.NodePrefix())
+	if err != nil {
+		return
+	}
 	m.registerWatcher, err = node.New(dao_cluster.RegisterPrefix())
+	if err != nil {
+		return
+	}
 	return
 }
 
@@ -37,10 +53,13 @@ func (m *Monitor) Run(ctx context.Context) (err error) {
 	m.lock.Lock()
 	defer m.lock.Unlock()
 	if m.status == STATUS_RUN {
-		//logrus.Debug("Monitor is running, do nothing")
 		return
 	}
-	nctx, cancel := context.WithCancel(ctx)
+	err = m.init()
+	if err != nil {
+		return
+	}
+	myCtx, cancel := context.WithCancel(ctx)
 	defer func() {
 		if err != nil {
 			cancel()
@@ -49,7 +68,7 @@ func (m *Monitor) Run(ctx context.Context) (err error) {
 		}
 	}()
 	m.cancel = cancel
-	err = m.monitorNode(nctx)
+	err = m.monitorNode(myCtx)
 	if err != nil {
 		return
 	}
@@ -57,11 +76,11 @@ func (m *Monitor) Run(ctx context.Context) (err error) {
 	//if err != nil {
 	//	return
 	//}
-	err = m.monitorPipe(nctx)
+	err = m.monitorPipe(myCtx)
 	if err != nil {
 		return
 	}
-	err = m.monitorStatus(nctx)
+	err = m.monitorStatus(myCtx)
 	if err != nil {
 		return
 	}

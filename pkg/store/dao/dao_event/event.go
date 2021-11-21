@@ -14,8 +14,16 @@ func EventPrefix() string {
 	return etcd_client.Prefix() + "/event"
 }
 
-func List(res_type string, res_name string, opts ...clientv3.OpOption) (list []*event.Event, err error) {
-	key := EventPrefix() + "/" + res_type + "/" + res_name
+func PipelinePrefix() string {
+	return EventPrefix() + "/pipeline"
+}
+
+func NodePrefix() string  {
+	return EventPrefix() + "/node"
+}
+
+func List(resType string, resName string, opts ...clientv3.OpOption) (list []*event.Event, err error) {
+	key := EventPrefix() + "/" + resType + "/" + resName
 	resp, err := etcd_client.Default().Get(context.Background(), key, opts...)
 	list = []*event.Event{}
 	for _, v := range resp.Kvs {
@@ -40,5 +48,14 @@ func Update(e *event.Event) (err error) {
 		return
 	}
 	_, err = etcd_client.Default().Put(context.Background(), key, string(b))
+	return
+}
+
+func DeleteRange(fromKey string, endKey string) (deleted int64, err error) {
+	res, err := etcd_client.Default().Delete(context.Background(), fromKey, clientv3.WithRange(endKey))
+	if err != nil {
+		return
+	}
+	deleted = res.Deleted
 	return
 }

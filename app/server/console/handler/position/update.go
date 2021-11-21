@@ -3,6 +3,7 @@ package position
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/jin06/binlogo/app/server/console/handler"
+	pipeline2 "github.com/jin06/binlogo/app/server/console/module/pipeline"
 	"github.com/jin06/binlogo/pkg/store/dao/dao_pipe"
 	"github.com/jin06/binlogo/pkg/store/model/pipeline"
 )
@@ -18,6 +19,15 @@ func Update(c *gin.Context) {
 	}
 	if q.Mode != pipeline.MODE_POSTION && q.Mode != pipeline.MODE_GTID {
 		c.JSON(200, handler.Fail("mode error: "+q.Mode))
+		return
+	}
+	pipeStatus, err := pipeline2.PipeStatus(q.Position.PipelineName)
+	if err != nil  {
+		c.JSON(200, handler.Fail(err))
+		return
+	}
+	if pipeStatus == pipeline.STATUS_RUN {
+		c.JSON(200, handler.Fail("Only stopped pipeline can be updated"))
 		return
 	}
 	switch q.Mode {

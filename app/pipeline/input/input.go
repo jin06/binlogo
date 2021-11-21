@@ -7,7 +7,9 @@ import (
 	"github.com/go-mysql-org/go-mysql/canal"
 	"github.com/go-mysql-org/go-mysql/mysql"
 	message2 "github.com/jin06/binlogo/app/pipeline/message"
+	"github.com/jin06/binlogo/pkg/event"
 	"github.com/jin06/binlogo/pkg/store/dao/dao_pipe"
+	event2 "github.com/jin06/binlogo/pkg/store/model/event"
 	"github.com/jin06/binlogo/pkg/store/model/node"
 	"github.com/jin06/binlogo/pkg/store/model/pipeline"
 	"github.com/sirupsen/logrus"
@@ -120,7 +122,14 @@ func (r *Input) runCanal() (err error) {
 			ch:   r.OutChan,
 			pipe: r.pipe,
 		})
-		go r.canal.StartFromGTID(canGTID)
+		//go r.canal.StartFromGTID(canGTID)
+		go func() {
+			startErr := r.canal.StartFromGTID(canGTID)
+			if startErr != nil {
+				fmt.Println("123",  startErr)
+				event.Event(event2.NewErrorPipeline(r.pipe.Name, "Start mysql replication error: " + startErr.Error()))
+			}
+		}()
 		return
 	}
 
@@ -146,7 +155,14 @@ func (r *Input) runCanal() (err error) {
 			ch:   r.OutChan,
 			pipe: r.pipe,
 		})
-		go r.canal.RunFrom(canPos)
+		//go r.canal.RunFrom(canPos)
+		go func() {
+			startErr := r.canal.RunFrom(canPos)
+			if startErr != nil {
+				fmt.Println(startErr)
+				event.Event(event2.NewErrorPipeline(r.pipe.Name, "Start mysql replication error: " + startErr.Error()))
+			}
+		}()
 		return
 	}
 

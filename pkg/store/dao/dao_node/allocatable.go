@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/jin06/binlogo/pkg/etcd_client"
-	"github.com/jin06/binlogo/pkg/store/etcd"
 	"github.com/jin06/binlogo/pkg/store/model/node"
 )
 
@@ -21,13 +20,11 @@ func UpdateAllocatable(al *node.Allocatable) (err error) {
 		err = errors.New("empty key")
 		return
 	}
-	ctx, cancel := context.WithTimeout(context.TODO(), etcd.E.Timeout)
-	defer cancel()
 	b, err := json.Marshal(al)
 	if err != nil {
 		return
 	}
-	_, err = etcd_client.Default().Put(ctx, key, string(b))
+	_, err = etcd_client.Default().Put(context.Background(), key, string(b))
 	return
 
 }

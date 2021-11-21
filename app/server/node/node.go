@@ -3,6 +3,7 @@ package node
 import (
 	"context"
 	"github.com/jin06/binlogo/app/server/node/election"
+	"github.com/jin06/binlogo/app/server/node/manager/manager_event"
 	"github.com/jin06/binlogo/app/server/node/manager/manager_pipe"
 	"github.com/jin06/binlogo/app/server/node/manager/manager_status"
 	"github.com/jin06/binlogo/app/server/node/monitor"
@@ -27,6 +28,7 @@ type Node struct {
 	monitor        *monitor.Monitor
 	leaderRunMutex sync.Mutex
 	pipeManager    *manager_pipe.Manager
+	eventManager   *manager_event.Manager
 }
 
 type NodeMode byte
@@ -80,6 +82,7 @@ func (n *Node) init() (err error) {
 		return
 	}
 	n.pipeManager = manager_pipe.New(n.Options.Node)
+	n.eventManager = manager_event.New()
 	return
 }
 
@@ -170,11 +173,16 @@ func (n *Node) leaderRun(ctx context.Context, r role.Role) {
 			if err != nil {
 				return
 			}
+			err = n.eventManager.Run(ctx)
+			if err != nil {
+				return
+			}
 		}
 	default:
 		{
 			n.Scheduler.Stop()
 			n.monitor.Stop(ctx)
+			n.eventManager.Stop()
 		}
 	}
 }

@@ -58,16 +58,16 @@ func (m *Manager) Run(ctx context.Context) (err error) {
 }
 
 func (m *Manager) syncStatus() (err error) {
-	m.syncMutex.Lock()
-	defer m.syncMutex.Unlock()
+	//m.syncMutex.Lock()
+	//defer m.syncMutex.Unlock()
 	ns := NewNodeStatus(m.Node.Name)
 	err = ns.syncNodeStatus()
 	return
 }
 
 func (m *Manager) syncIP() (err error) {
-	m.nodeMutex.Lock()
-	defer m.nodeMutex.Unlock()
+	//m.nodeMutex.Lock()
+	//defer m.nodeMutex.Unlock()
 	var nip net.IP
 	if nip, err = ip.LocalIp(); err != nil {
 		return

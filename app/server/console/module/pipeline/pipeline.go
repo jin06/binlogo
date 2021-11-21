@@ -3,6 +3,7 @@ package pipeline
 import (
 	"errors"
 	"github.com/jin06/binlogo/pkg/store/dao/dao_pipe"
+	"github.com/jin06/binlogo/pkg/store/model/pipeline"
 )
 
 func GetItemByName(name string) (item *Item, err error) {
@@ -21,5 +22,14 @@ func GetItemByName(name string) (item *Item, err error) {
 	if err != nil {
 		return
 	}
+	return
+}
+
+func PipeStatus(name string) ( status pipeline.Status,err error) {
+	pipe, err := dao_pipe.GetPipeline(name)
+	if err != nil {
+		return
+	}
+	status = pipe.Status
 	return
 }

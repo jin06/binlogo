@@ -2,3 +2,4 @@
 vendor/
 vendor2/
 configs/*test*.yaml
+_output
