@@ -11,7 +11,7 @@ the user's configuration. This is some advantages:
 * Visualization, can complete common operations and
   observe the status of the whole cluster in the control background
 
-### get-started
+### Get Started
 
 * Install etcd. Binlogo relies on etcd, so you must install etcd first.
 
@@ -24,7 +24,7 @@ the user's configuration. This is some advantages:
 
 * Create Pipeline: 
 
-> Follow the stemps. 
+> Follow the steps. 
 
 ![avatar](/docs/assets/pic/create_pipe_step1.en.png)
 
@@ -34,7 +34,7 @@ the user's configuration. This is some advantages:
 
 > Click button to run the pipeline instance. 
 
-![avatar](/docs/assets/pic/create_pipe_step2.en.png)
+![avatar](/docs/assets/pic/run_pipeline_step1.en.png)
 
 2. Operation condition.
 
@@ -69,10 +69,10 @@ the user's configuration. This is some advantages:
 
 ![avatar](/docs/assets/pic/output_kafka_step2.en.png)
 
-### docs
+### Docs
 
 * [docs link](https://github.com/jin06/binlogo/wiki)
 
-### questions
+### Questions
 * To Report bug: https://github.com/jin06/binlogo/issues[GitHub Issue]
 * Contact author: jinlong4696@163.com
