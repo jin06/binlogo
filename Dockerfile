@@ -12,8 +12,6 @@ WORKDIR /binlogo
 
 COPY . .
 
-RUN go get
-
 RUN go build ./cmd/server/binlogo.go
 
 FROM scratch as final
