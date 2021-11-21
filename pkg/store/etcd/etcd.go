@@ -48,6 +48,7 @@ func NewETCD(opt ...options2.Option) (etcd *ETCD, err error) {
 	cli, err := clientv3.New(clientv3.Config{
 		Endpoints:   etcd.Options.Endpoints,
 		DialTimeout: 5 * time.Second,
+		Password: viper.GetString("etcd.password"),
 	})
 	if err != nil {
 		return

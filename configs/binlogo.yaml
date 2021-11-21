@@ -1,12 +1,15 @@
 env: production
 cluster:
   name: cluster1
+# node configs. Different node should have different name.
 node:
   name: node1
+# console configs
 console:
   port: 9999
   listen: 0.0.0.0
+# Etcd configs
 etcd:
   endpoints:
-    - "localhost:12379"
+    - "localhost:2379"
   password:

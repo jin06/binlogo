@@ -1,0 +1,12 @@
+env:
+cluster:
+  name:
+node:
+  name:
+console:
+  port:
+  listen:
+etcd:
+  endpoints:
+#    - "localhost:2379"
+

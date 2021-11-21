@@ -23,9 +23,8 @@ require (
 	github.com/hashicorp/consul/api v1.11.0
 	github.com/jonboulle/clockwork v0.2.2 // indirect
 	github.com/prometheus/client_golang v1.11.0 // indirect
-	github.com/rs/zerolog v1.26.0 // indirect
 	github.com/shirou/gopsutil/v3 v3.21.10
-	github.com/siddontang/go-log v0.0.0-20190221022429-1e957dd83bed
+	github.com/siddontang/go-log v0.0.0-20190221022429-1e957dd83bed // indirect
 	github.com/sirupsen/logrus v1.8.1
 	github.com/soheilhy/cmux v0.1.5 // indirect
 	github.com/spf13/cobra v1.2.1

@@ -18,7 +18,11 @@ the user's configuration. This is some advantages:
 * Install binlogo. Binlogo's download address: [Download Address]()
 
 * Start binlogo.
-  > $ ./binlogo server --config ./configs/binlogo.yaml 
+  * Edit config. ${binlogo-path}/configs/binlogo.yaml
+    
+    ![avatar](/docs/assets/pic/edit_config_step1.en.png)
+    
+  * > $ ./binlogo server --config ./configs/binlogo.yaml 
 
 * Open browser: http://127.0.0.1:9999/console
 
@@ -30,13 +34,13 @@ the user's configuration. This is some advantages:
 
 ![avatar](/docs/assets/pic/create_pipe_step2.en.png)
 
-1. Run pipeline.
+* Run pipeline.
 
 > Click button to run the pipeline instance. 
 
 ![avatar](/docs/assets/pic/run_pipeline_step1.en.png)
 
-2. Operation condition.
+* Operation condition.
 
 > You can see the operation condition of pipeline.
  
@@ -45,7 +49,7 @@ the user's configuration. This is some advantages:
 
 ![avatar](/docs/assets/pic/pipeline_condition_step2.en.png)
 
-3. See the output 
+* See the output 
 
 > Insert some into mysql, watch the ouput on stdout.
  
@@ -53,7 +57,7 @@ the user's configuration. This is some advantages:
 
 ![avatar](/docs/assets/pic/output_step2.en.png)
 
-4. Configuration output to Kafka
+* Configuration output to Kafka
 
 > * High performance, possible data loss. 
 >   *  acks=1 
