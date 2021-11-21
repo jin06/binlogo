@@ -14,18 +14,22 @@ COPY . .
 
 RUN go build ./cmd/server/binlogo.go
 
-FROM scratch as final
-ENV ETCD_ENDPOINTS="127.0.0.1:2379" \
-    ETCD_PASSWORD="" \
-    NODE_NAME="" \
-    BINLOGO_ENV="production" \
-    CONSOLE_LISTEN="0.0.0.0" \
-    CONSOLE_PORT="9999" \
-    CLUSTER_NAME="cluster"
-COPY --from=builder /binlogo/binlogo /binlogo/bin/binlogo
-COPY --from=builder /binlogo/configs/binlogo_docker.yaml /binlogo/configs/binlogo_docker.yaml
+FROM alpine:3.10 as final
+
+ENV ETCD_ENDPOINTS="127.0.0.1:2379"
+ENV ETCD_PASSWORD=""
+ENV NODE_NAME=""
+ENV BINLOGO_ENV="production"
+ENV CONSOLE_LISTEN="0.0.0.0"
+ENV CONSOLE_PORT="9999"
+ENV CLUSTER_NAME="cluster"
+
+COPY --from=builder /binlogo/binlogo /binlogo/binlogo
+COPY --from=builder /binlogo/configs/binlogo_docker.yaml /binlogo/configs/binlogo.yaml
+COPY --from=builder /binlogo/assets /binlogo/assets
+WORKDIR /binlogo
 
 EXPOSE 9999
+RUN cd /binlogo
 
-#CMD ["/binlogo/bin/binlogo server --/binlogo/configs/binlogo_docker.yaml"]
-CMD ["tail -f"]
+CMD ["/binlogo/binlogo","server", "--config", "/binlogo/configs/binlogo.yaml"]
