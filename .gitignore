@@ -4,3 +4,5 @@ vendor2/
 configs/*test*.yaml
 _output
 ./binlogo
+./bin
+.DS_Store
