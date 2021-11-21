@@ -2,13 +2,15 @@ FROM golang:1.16-alpine as builder
 
 LABEL maintainer="jinlog<jinlong4696@163.com>"
 
-ENV GOPROXY=https://goproxy.cn,https://goproxy.io,direct \
-    GO111MODULE=on \
+ENV GO111MODULE=on \
+    GOPROXY=https://goproxy.cn,https://goproxy.io,direct \
     CGO_ENABLED=0 \
     GOOS=linux \
     GOARCH=amd64
 
-ADD . .
+ADD . /binlogo
+
+RUN go mod vendor
 
 RUN go build -o /binlogo/binlogo /binlogo/cmd/server/binlogo.go
 
@@ -21,8 +23,7 @@ ENV ETCD_ENDPOINTS="127.0.0.1:2379" \
     CONSOLE_PORT="9999" \
     CLUSTER_NAME="cluster"
 COPY --from=builder /binlogo /binlogo
-ADD /binlogo .
 
 EXPOSE 9999
 
-CMD ["/binlogo/binlogo server --configs/binlogo_docker.yaml"]
+CMD ["/binlogo/binlogo server --/binlogo/configs/binlogo_docker.yaml"]
