@@ -18,17 +18,56 @@ the user's configuration. This is some advantages:
 * Install binlogo. Binlogo's download address: [Download Address]()
 
 * Start binlogo.
-  > $ binlog --config ./configs/binlogo.yaml 
+  > $ ./binlogo server --config ./configs/binlogo.yaml 
 
 * Open browser: http://127.0.0.1:9999/console
 
 * Create Pipeline: 
 
-* Config pipeline.
+> Follow the stemps. 
 
-* Run it.
+![avatar](/docs/assets/pic/create_pipe_step1.en.png)
 
-* Watch.
+![avatar](/docs/assets/pic/create_pipe_step2.en.png)
+
+1. Run pipeline.
+
+> Click button to run the pipeline instance. 
+
+![avatar](/docs/assets/pic/create_pipe_step2.en.png)
+
+2. Operation condition.
+
+> You can see the operation condition of pipeline.
+ 
+ 
+![avatar](/docs/assets/pic/pipeline_condition_step1.en.png)
+
+![avatar](/docs/assets/pic/pipeline_condition_step2.en.png)
+
+3. See the output 
+
+> Insert some into mysql, watch the ouput on stdout.
+ 
+![avatar](/docs/assets/pic/output_step1.en.png)
+
+![avatar](/docs/assets/pic/output_step2.en.png)
+
+4. Configuration output to Kafka
+
+> * High performance, possible data loss. 
+>   *  acks=1 
+>   *  enable.idempotence=false
+>   *  compression.type=snappy
+>   *  retries=0
+> * For reliability performance: 
+>   * acks=-1
+>   * enable.idempotence=true
+>   * retries=3 or larger one
+
+![avatar](/docs/assets/pic/output_kafka_step1.en.png)
+
+![avatar](/docs/assets/pic/output_kafka_step2.en.png)
 
 ### docs
 
