@@ -1,3 +1,3 @@
 package configs
 
-const VERSITON = "1.0.7"
+const VERSITON = "1.0.8"
