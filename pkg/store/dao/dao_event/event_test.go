@@ -59,8 +59,11 @@ func TestDeleteRange(t *testing.T) {
 		t.Fail()
 	}
 	for _,v := range list {
-		deleted , err2 := DeleteRange(v.Key, v.Key)
+		from := EventPrefix() + "/" + string(v.ResourceType) + "/" + v.ResourceName + "/" + v.Key
+		to := EventPrefix() + "/" + string(v.ResourceType) + "/" + v.ResourceName + "/" + v.Key
+		deleted , err2 := DeleteRange(from, to)
 		if err2 != nil {
+			t.Error(err2)
 			t.Fail()
 		}
 		if deleted == 0{
