@@ -89,7 +89,9 @@ Binlogo是一个基于MySQL的binlog开发的数据同步中间件。同步binlo
 
 ![avatar](/docs/assets/pic/docker_step1.en.png)
 
+### 其他输出端
 
+* [HTTP](/docs/zh/配置http输出.md)
 
 ### 文档
 
