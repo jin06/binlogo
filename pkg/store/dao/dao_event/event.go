@@ -24,7 +24,11 @@ func NodePrefix() string  {
 
 func List(resType string, resName string, opts ...clientv3.OpOption) (list []*event.Event, err error) {
 	key := EventPrefix() + "/" + resType + "/" + resName
+	opts = append(opts, clientv3.WithPrefix())
 	resp, err := etcd_client.Default().Get(context.Background(), key, opts...)
+	if err != nil {
+		return
+	}
 	list = []*event.Event{}
 	for _, v := range resp.Kvs {
 		e := &event.Event{}

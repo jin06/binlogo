@@ -2,7 +2,6 @@ package event
 
 import (
 	"context"
-	"fmt"
 	"github.com/jin06/binlogo/pkg/store/model/event"
 )
 
@@ -14,7 +13,7 @@ func Init() {
 }
 
 func Event(e *event.Event) {
-	fmt.Println(e)
+	//fmt.Println(e)
 	go DefaultRecorder.Event(e)
 }
 

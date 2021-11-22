@@ -14,10 +14,16 @@
 # cp -fr configs bin/1.0.11/binlogo-v1.0.11-windows-amd64
 # cp -fr configs bin/1.0.11/binlogo-v1.0.11-linux-amd64
 
-# docker
-# docker build -t jin06/binlogo .
-
 # compress files
 #  zip -q -r -o bin/1.0.11/binlogo-v1.0.11-darwin-amd64.zip bin/1.0.11/binlogo-v1.0.11-darwin-amd64
 #  zip -q -r -o bin/1.0.11/binlogo-v1.0.11-windows-amd64.zip bin/1.0.11/binlogo-v1.0.11-windows-amd64
 #  tar -zcvf bin/1.0.11/binlogo-v1.0.11-linux-amd64.tar.gz bin/1.0.11/binlogo-v1.0.11-linux-amd64
+
+
+# docker
+# docker build -t jin06/binlogo .
+# docker
+# docker push jin06/binlogo
+# docker tag jin06/binlogo jin06/binlogo:1.0.11
+# docker push jin06/binlogo:1.0.11
+
