@@ -5,6 +5,7 @@ import (
 	"github.com/jin06/binlogo/app/server/console/handler"
 	"github.com/jin06/binlogo/app/server/console/module/pipeline"
 	"github.com/jin06/binlogo/pkg/store/dao/dao_pipe"
+	pipeline2 "github.com/jin06/binlogo/pkg/store/model/pipeline"
 	"sort"
 	"strconv"
 	"strings"
@@ -27,6 +28,9 @@ func List(c *gin.Context) {
 	for _, v := range all {
 		if v.IsDelete {
 			continue
+		}
+		if v.Output.Sender.Http == nil {
+			v.Output.Sender.Http = &pipeline2.Http{}
 		}
 		items = append(items, &pipeline.Item{Pipeline: v})
 	}

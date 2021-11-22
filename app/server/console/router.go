@@ -45,4 +45,5 @@ func router(g *gin.Engine) {
 	g.GET("/api/cluster/list/election", cluster.ElectionList)
 
 	g.GET("/api/event/list", event.List)
+
 }

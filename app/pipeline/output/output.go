@@ -4,6 +4,7 @@ import (
 	"context"
 	message2 "github.com/jin06/binlogo/app/pipeline/message"
 	sender2 "github.com/jin06/binlogo/app/pipeline/output/sender"
+	"github.com/jin06/binlogo/app/pipeline/output/sender/http"
 	kafka2 "github.com/jin06/binlogo/app/pipeline/output/sender/kafka"
 	stdout2 "github.com/jin06/binlogo/app/pipeline/output/sender/stdout"
 	"github.com/jin06/binlogo/pkg/store/dao/dao_pipe"
@@ -33,6 +34,8 @@ func (o *Output) init() (err error) {
 	switch o.Options.Output.Sender.Type {
 	case pipeline.SNEDER_TYPE_STDOUT:
 		o.Sender, err = stdout2.New()
+	case pipeline.SNEDER_TYPE_HTTP:
+		o.Sender, err = http.New(o.Options.Output.Sender.Http)
 	case pipeline.SENDER_TYPE_KAFKA:
 		fallthrough
 	default:
@@ -57,6 +60,12 @@ func recordPosition(msg *message2.Message) (err error) {
 func (o *Output) handle(msg *message2.Message) {
 	//logrus.Debug("Wait send message")
 	//logrus.Debugf("Output read message: %v \n", *msg)
+	defer func() {
+		err2 := recordPosition(msg)
+		if err2 != nil {
+			logrus.Error("Record position error, ", err2)
+		}
+	}()
 	if !msg.Filter {
 		ok, err := o.Sender.Send(msg)
 		if err != nil {
@@ -68,9 +77,9 @@ func (o *Output) handle(msg *message2.Message) {
 			return
 		}
 	}
-	if err := recordPosition(msg); err != nil {
-		logrus.Error(err)
-	}
+	//if err := recordPosition(msg); err != nil {
+	//	logrus.Error(err)
+	//}
 }
 
 func (o *Output) Run(ctx context.Context) (err error) {

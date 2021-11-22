@@ -6,12 +6,14 @@ import (
 
 const SENDER_TYPE_KAFKA = "kafka"
 const SNEDER_TYPE_STDOUT = "stdout"
+const SNEDER_TYPE_HTTP = "http"
 
 type Sender struct {
 	Name   string  `json:"name"`
 	Type   string  `json:"type"`
 	Kafka  *Kafka  `json:"kafka"`
 	Stdout *Stdout `json:"stdout"`
+	Http   *Http   `json:"http"`
 }
 
 type Kafka struct {
@@ -24,4 +26,9 @@ type Kafka struct {
 }
 
 type Stdout struct {
+}
+
+type Http struct {
+	API     string `json:"api"`
+	Retries int    `json:"retries"`
 }
