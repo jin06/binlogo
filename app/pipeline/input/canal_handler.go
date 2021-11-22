@@ -1,6 +1,7 @@
 package input
 
 import (
+	"fmt"
 	"github.com/go-mysql-org/go-mysql/canal"
 	"github.com/go-mysql-org/go-mysql/mysql"
 	"github.com/go-mysql-org/go-mysql/replication"
@@ -20,6 +21,11 @@ func (h *canalHandler) OnRow(e *canal.RowsEvent) error {
 	h.msg = msg
 	return nil
 }
+func (h *canalHandler) OnTableChanged(schema string, table string) error   {
+	//fmt.Println(schema)
+	//fmt.Println(table)
+	return nil
+}
 func (h *canalHandler) OnPosSynced(pos mysql.Position, set mysql.GTIDSet, force bool) error {
 	if h.msg != nil {
 		h.msg.BinlogPosition = &pipeline.Position{
@@ -36,6 +42,7 @@ func (h *canalHandler) OnPosSynced(pos mysql.Position, set mysql.GTIDSet, force 
 		h.ch <- h.msg
 		h.msg = nil
 	}
+	fmt.Println(pos)
 	return nil
 }
 
@@ -56,4 +63,11 @@ func (h *canalHandler) String() string {
 
 func (h *canalHandler) OnGTID(set mysql.GTIDSet) (err error) {
 	return
+}
+
+func (h *canalHandler) OnDDL(nextPos mysql.Position, queryEvent *replication.QueryEvent) error {
+	//fmt.Println(nextPos, queryEvent)
+	//fmt.Println(string(queryEvent.Query))
+	//queryEvent.Dump(os.Stdout)
+	return nil
 }

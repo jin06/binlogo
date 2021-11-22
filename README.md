@@ -17,6 +17,8 @@ the user's configuration. This is some advantages:
 
 * Install binlogo. Binlogo's download address: [Download Address](https://github.com/jin06/binlogo/releases)
 
+* Message Format： [Data format of binlogo output](/docs/message-format.md)
+
 * Start binlogo.
   * Edit config. ${binlogo-path}/configs/binlogo.yaml
     
@@ -87,10 +89,9 @@ the user's configuration. This is some advantages:
 ![avatar](/docs/assets/pic/docker_step1.en.png)
 
 
-
 ### Docs
 
-* [docs link](https://github.com/jin06/binlogo/wiki)
+* [文档链接](https://github.com/jin06/binlogo/wiki)
 
 ### Questions
 * To Report bug: [GitHub Issue](https://github.com/jin06/binlogo/issues)
