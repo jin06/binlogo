@@ -15,7 +15,7 @@ the user's configuration. This is some advantages:
 
 * Install etcd. Binlogo relies on etcd, so you must install etcd first.
 
-* Install binlogo. Binlogo's download address: [Download Address]()
+* Install binlogo. Binlogo's download address: [Download Address](https://github.com/jin06/binlogo/releases)
 
 * Start binlogo.
   * Edit config. ${binlogo-path}/configs/binlogo.yaml
@@ -93,5 +93,5 @@ the user's configuration. This is some advantages:
 * [docs link](https://github.com/jin06/binlogo/wiki)
 
 ### Questions
-* To Report bug: https://github.com/jin06/binlogo/issues[GitHub Issue]
+* To Report bug: [GitHub Issue](https://github.com/jin06/binlogo/issues)
 * Contact author: jinlong4696@163.com
