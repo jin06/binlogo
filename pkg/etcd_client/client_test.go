@@ -7,7 +7,7 @@ import (
 )
 
 func TestNew(t *testing.T) {
-	endPoints :=  []string{"127.0.0.1:12379"}
+	endPoints := []string{"127.0.0.1:12379"}
 	viper.SetDefault("etcd.endpoints", endPoints)
 	viper.SetDefault("etcd.password", "")
 	viper.GetStringSlice("etcd.endpoints")

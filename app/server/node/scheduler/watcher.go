@@ -19,8 +19,7 @@ type Watcher struct {
 }
 
 func newWatcher() (w *Watcher, err error) {
-	w = &Watcher{
-	}
+	w = &Watcher{}
 	w.notBindPipelineCh = make(chan *pipeline2.Pipeline, 10000)
 	return
 }
@@ -43,7 +42,7 @@ func (w *Watcher) run(ctx context.Context) (err error) {
 				{
 					return
 				}
-			case ev := <- waCh:
+			case ev := <-waCh:
 				{
 					if ev.Event.Type == mvccpb.PUT {
 						if val, ok := ev.Data.(*scheduler.PipelineBind); ok {
@@ -54,7 +53,8 @@ func (w *Watcher) run(ctx context.Context) (err error) {
 						}
 					}
 				}
-				case <-time.Tick(60 * time.Second) :{
+			case <-time.Tick(60 * time.Second):
+				{
 					err1 := w.putNotBindPipeToQueue(nil)
 					if err1 != nil {
 						logrus.Error(err1)

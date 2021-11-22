@@ -58,9 +58,9 @@ func (ns *NodeStatus) setStatus() (err error) {
 	c := ts[0]
 
 	capacity := &node.Capacity{
-		NodeName: ns.NodeName,
-		Memory: v.Total,
-		Cpu:    c.User + c.System + c.Idle,
+		NodeName:   ns.NodeName,
+		Memory:     v.Total,
+		Cpu:        c.User + c.System + c.Idle,
 		UpdateTime: time.Now(),
 	}
 	if cpuInfo, err1 := cpu.Info(); err1 == nil {
@@ -74,9 +74,9 @@ func (ns *NodeStatus) setStatus() (err error) {
 	}
 
 	al := &node.Allocatable{
-		NodeName: ns.NodeName,
-		Memory: v.Available,
-		Cpu:    c.Idle,
+		NodeName:   ns.NodeName,
+		Memory:     v.Available,
+		Cpu:        c.Idle,
 		UpdateTime: time.Now(),
 	}
 

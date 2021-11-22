@@ -41,7 +41,7 @@ func WithPos(p uint32) OptionPosition {
 	}
 }
 
-func WithGTIDSet(g string) OptionPosition  {
+func WithGTIDSet(g string) OptionPosition {
 	return func(position *Position) {
 		position.GTIDSet = g
 	}

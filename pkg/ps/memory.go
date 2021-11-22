@@ -6,7 +6,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func Memory() (err error){
+func Memory() (err error) {
 	v, err := mem.VirtualMemory()
 	if err != nil {
 		return

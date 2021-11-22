@@ -48,7 +48,7 @@ func NewETCD(opt ...options2.Option) (etcd *ETCD, err error) {
 	cli, err := clientv3.New(clientv3.Config{
 		Endpoints:   etcd.Options.Endpoints,
 		DialTimeout: 5 * time.Second,
-		Password: viper.GetString("etcd.password"),
+		Password:    viper.GetString("etcd.password"),
 	})
 	if err != nil {
 		return
@@ -107,7 +107,7 @@ func (e *ETCD) Update(m model2.Model) (ok bool, err error) {
 	defer cancel()
 	key := e.Prefix + "/" + m.Key()
 	val := m.Val()
-	_,err = e.Client.Put(ctx, key, val)
+	_, err = e.Client.Put(ctx, key, val)
 	if err != nil {
 		return
 	}
@@ -206,5 +206,3 @@ func (e *ETCD) List(key string) (list []model2.Model, err error) {
 func Get(m model2.Model) (bool, error) {
 	return E.Get(m)
 }
-
-

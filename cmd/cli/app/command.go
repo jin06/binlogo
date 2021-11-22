@@ -60,8 +60,7 @@ func cmdCreatePipe() (cmd *cobra.Command) {
 					ServerId: 1001,
 				},
 				Filters: []*pipeline.Filter{
-					{
-					},
+					{},
 				},
 				Output: &pipeline.Output{
 					Sender: &pipeline.Sender{

@@ -1,5 +1,5 @@
 package pipeline
 
 type Output struct {
-	Sender     *Sender `json:"sender"`
+	Sender *Sender `json:"sender"`
 }

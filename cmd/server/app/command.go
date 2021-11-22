@@ -39,7 +39,7 @@ func NewCommand() (cmd *cobra.Command) {
 			logrus.Infoln("init configs finish")
 			if configs.ENV == configs.ENV_DEV {
 				go func() {
-					logrus.Println(http.ListenAndServe("localhost:6060",nil))
+					logrus.Println(http.ListenAndServe("localhost:6060", nil))
 				}()
 			}
 			RunEvent()
@@ -59,7 +59,7 @@ func NewCommand() (cmd *cobra.Command) {
 	}
 
 	cmd = &cobra.Command{Use: "binlogo"}
-	cmd.PersistentFlags().String("config","./configs/binlogo.yaml","")
+	cmd.PersistentFlags().String("config", "./configs/binlogo.yaml", "")
 	cmd.AddCommand(cmdRun, cmdVersion)
 	return
 }

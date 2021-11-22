@@ -2,7 +2,6 @@ module github.com/jin06/binlogo
 
 go 1.16
 
-replace github.com/coreos/bbolt v1.3.6 => go.etcd.io/bbolt v1.3.6
 
 replace google.golang.org/grpc v1.42.0 => google.golang.org/grpc v1.26.0
 
@@ -35,3 +34,4 @@ require (
 	google.golang.org/grpc v1.42.0 // indirect
 	sigs.k8s.io/yaml v1.3.0 // indirect
 )
+replace github.com/coreos/bbolt v1.3.6 => go.etcd.io/bbolt v1.3.6

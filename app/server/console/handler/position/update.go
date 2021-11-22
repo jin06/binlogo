@@ -22,7 +22,7 @@ func Update(c *gin.Context) {
 		return
 	}
 	pipeStatus, err := pipeline2.PipeStatus(q.Position.PipelineName)
-	if err != nil  {
+	if err != nil {
 		c.JSON(200, handler.Fail(err))
 		return
 	}
@@ -35,7 +35,7 @@ func Update(c *gin.Context) {
 		{
 			ok, err := dao_pipe.UpdatePositionSafe(q.Position.PipelineName, pipeline.WithGTIDSet(q.Position.GTIDSet))
 			if err != nil || !ok {
-				c.JSON(200, handler.Fail("update failed " + err.Error()))
+				c.JSON(200, handler.Fail("update failed "+err.Error()))
 				return
 			}
 		}
@@ -43,7 +43,7 @@ func Update(c *gin.Context) {
 		{
 			ok, err := dao_pipe.UpdatePositionSafe(q.Position.PipelineName, pipeline.WithBinlogFile(q.Position.BinlogFile), pipeline.WithPos(q.Position.BinlogPosition))
 			if err != nil || !ok {
-				c.JSON(200, handler.Fail("update failed " + err.Error()))
+				c.JSON(200, handler.Fail("update failed "+err.Error()))
 				return
 			}
 		}

@@ -160,11 +160,11 @@ func AllWorkNodesMap() (res map[string]*node.Node, err error) {
 	if err != nil {
 		return
 	}
-	regMap, err :=  AllRegisterNodesMap()
+	regMap, err := AllRegisterNodesMap()
 	if err != nil {
 		return
 	}
-	for k ,_ := range res {
+	for k := range res {
 		if _, ok := regMap[k]; !ok {
 			delete(res, k)
 		}

@@ -16,7 +16,7 @@ func New() (std *Stdout, err error) {
 	return
 }
 
-func (s *Stdout) Send(msg *message2.Message) ( bool,  error) {
+func (s *Stdout) Send(msg *message2.Message) (bool, error) {
 	_, err := fmt.Fprintln(os.Stdout, msg.ToString())
 	if err != nil {
 		blog.Error(err)
@@ -25,10 +25,10 @@ func (s *Stdout) Send(msg *message2.Message) ( bool,  error) {
 	if err != nil {
 		blog.Error(err)
 	}
-	_, err = fmt.Fprintf(os.Stdout,"Content json: %s \n", string(b))
+	_, err = fmt.Fprintf(os.Stdout, "Content json: %s \n", string(b))
 	if err != nil {
 		blog.Error(err)
 	}
 
-	return  true, nil
+	return true, nil
 }

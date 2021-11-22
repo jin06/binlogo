@@ -74,7 +74,7 @@ func UpdateMode(c *gin.Context) {
 		return
 	}
 	if q.Mode != pipeline.MODE_POSTION && q.Mode != pipeline.MODE_GTID {
-		c.JSON(200, handler.Fail("Wrong param mode: " + q.Mode))
+		c.JSON(200, handler.Fail("Wrong param mode: "+q.Mode))
 		return
 	}
 	pipe, err := dao_pipe.GetPipeline(q.PipeName)
@@ -86,7 +86,7 @@ func UpdateMode(c *gin.Context) {
 		c.JSON(200, handler.Fail("Only stopped pipeline can be updated"))
 		return
 	}
-	ok , err := dao_pipe.UpdatePipeline(q.PipeName, pipeline.WithPipeMode(q.Mode))
+	ok, err := dao_pipe.UpdatePipeline(q.PipeName, pipeline.WithPipeMode(q.Mode))
 	if err != nil || !ok {
 		c.JSON(200, handler.Fail("Update mode failed"))
 		return

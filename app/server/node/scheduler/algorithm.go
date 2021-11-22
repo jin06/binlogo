@@ -61,7 +61,7 @@ func (a *algorithm) calBestNode() (err error) {
 	}
 	score := 0
 
-	for k, _ := range a.potentialNodes {
+	for k := range a.potentialNodes {
 		if a.nodesScores[k] > score {
 			a.bestNode = a.potentialNodes[k]
 			score = a.nodesScores[k]
@@ -187,7 +187,7 @@ func (a *algorithm) _scoreResources() (scores map[string]int, err error) {
 		}
 	}
 
-	for k, _ := range scores {
+	for k := range scores {
 		scores[k] = scores[k] * weight
 	}
 	return

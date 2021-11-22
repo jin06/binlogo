@@ -11,10 +11,10 @@ import (
 )
 
 type Manager struct {
-	mapping        map[string]bool
-	mappingIns     map[string]*instance
-	node           *node.Node
-	mutex          sync.Mutex
+	mapping    map[string]bool
+	mappingIns map[string]*instance
+	node       *node.Node
+	mutex      sync.Mutex
 }
 
 func New(n *node.Node) (m *Manager) {
@@ -47,10 +47,10 @@ func (m *Manager) Run(ctx context.Context) {
 					}
 					m.dispatch()
 				}
-			//case <-time.Tick(time.Second * 1):
-			//	{
-			//		m.dispatch()
-			//	}
+				//case <-time.Tick(time.Second * 1):
+				//	{
+				//		m.dispatch()
+				//	}
 			}
 		}
 	}()
@@ -76,7 +76,7 @@ func (m *Manager) scanPipelines(pb *scheduler.PipelineBind) (err error) {
 		}
 	}
 
-	for pName, _ := range m.mapping {
+	for pName := range m.mapping {
 		if _, ok := pb.Bindings[pName]; !ok {
 			m.mapping[pName] = false
 		}

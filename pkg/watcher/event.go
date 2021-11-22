@@ -6,5 +6,5 @@ import (
 
 type Event struct {
 	Event *clientv3.Event
-	Data interface{}
+	Data  interface{}
 }

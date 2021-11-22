@@ -88,8 +88,7 @@ func AllPipelines() (list []*pipeline.Pipeline, err error) {
 		return
 	}
 	for _, v := range res.Kvs {
-		ele := &pipeline.Pipeline{
-		}
+		ele := &pipeline.Pipeline{}
 		er := ele.Unmarshal(v.Value)
 		if er != nil {
 			logrus.Error(er)
@@ -161,12 +160,12 @@ func AllPipelinesMap() (mapping map[string]*pipeline.Pipeline, err error) {
 	return
 }
 
-func DeletePipeline(name string) (err error){
+func DeletePipeline(name string) (err error) {
 	if name == "" {
 		return errors.New("empty name")
 	}
 	key := PipelinePrefix() + "/" + name
-	_ , err = etcd_client.Default().Delete(context.Background(), key)
+	_, err = etcd_client.Default().Delete(context.Background(), key)
 	if err != nil {
 		return
 	}
@@ -177,7 +176,7 @@ func DeleteCompletePipeline(name string) (err error) {
 	if name == "" {
 		return errors.New("empty name")
 	}
-	err =DeletePipeline(name)
+	err = DeletePipeline(name)
 	if err != nil {
 		return
 	}

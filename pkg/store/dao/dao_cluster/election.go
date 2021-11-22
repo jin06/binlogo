@@ -31,7 +31,7 @@ func AllElections() (res []map[string]interface{}, err error) {
 	}
 	res = []map[string]interface{}{}
 
-	for _,v := range resp.Kvs {
+	for _, v := range resp.Kvs {
 		item := map[string]interface{}{}
 		item["create_revision"] = v.CreateRevision
 		item["node"] = string(v.Value)

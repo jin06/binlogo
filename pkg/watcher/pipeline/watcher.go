@@ -16,10 +16,10 @@ func withHandler(key string) watcher.Handler {
 		ev.Event = e
 		ev.Data = m
 		if e.Type == mvccpb.DELETE {
-			_, err = fmt.Sscanf(string(e.Kv.Key), key +"/%s", &m.Name)
+			_, err = fmt.Sscanf(string(e.Kv.Key), key+"/%s", &m.Name)
 			if err != nil {
 				logrus.Error(err)
-			return
+				return
 			}
 		} else {
 			err = m.Unmarshal(e.Kv.Value)
@@ -33,11 +33,10 @@ func withHandler(key string) watcher.Handler {
 }
 
 func New(key string) (w *watcher.General, err error) {
-	w, err  = watcher.NewGeneral(key)
+	w, err = watcher.NewGeneral(key)
 	if err != nil {
 		return
 	}
 	w.EventHandler = withHandler(key)
 	return
 }
-

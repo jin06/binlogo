@@ -48,7 +48,7 @@ func (s *Kafka) Send(msg *message2.Message) (ok bool, err error) {
 }
 
 func (s *Kafka) doSend(msg *message2.Message) (ok bool, err error) {
-	keyByte := []byte( msg.Content.Head.Database + "." + msg.Content.Head.Table )
+	keyByte := []byte(msg.Content.Head.Database + "." + msg.Content.Head.Table)
 	valByte, _ := json.Marshal(msg.Content)
 	pMsg := sarama.ProducerMessage{
 		Topic: s.Kafka.Topic,

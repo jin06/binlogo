@@ -48,5 +48,5 @@ func InitConfigs() {
 
 	ENV = Env(viper.GetString("env"))
 	NodeName = viper.GetString("node.name")
-	NodeIP, _  = ip.LocalIp()
+	NodeIP, _ = ip.LocalIp()
 }

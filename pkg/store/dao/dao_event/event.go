@@ -18,7 +18,7 @@ func PipelinePrefix() string {
 	return EventPrefix() + "/pipeline"
 }
 
-func NodePrefix() string  {
+func NodePrefix() string {
 	return EventPrefix() + "/node"
 }
 

@@ -36,7 +36,7 @@ func (h *Http) Send(msg *message2.Message) (ok bool, err error) {
 }
 
 type HttpResult struct {
-	Code int `json:"code"`
+	Code int    `json:"code"`
 	Data string `json:"data"`
 }
 

@@ -6,7 +6,7 @@ type PipelineBind struct {
 	Bindings map[string]string `json:"bindings"`
 }
 
-func EmptyPipelineBind() *PipelineBind{
+func EmptyPipelineBind() *PipelineBind {
 	return &PipelineBind{
 		Bindings: map[string]string{},
 	}

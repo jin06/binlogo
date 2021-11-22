@@ -13,7 +13,7 @@ func PipeBindPrefix() string {
 }
 
 func GetPipelineBind() (pb *scheduler.PipelineBind, err error) {
-	res, err := etcd.E.Client.Get(context.TODO(), PipeBindPrefix() )
+	res, err := etcd.E.Client.Get(context.TODO(), PipeBindPrefix())
 	if err != nil {
 		return
 	}
@@ -98,5 +98,3 @@ func DeletePipelineBind(pName string) (ok bool, err error) {
 	ok = resp.Succeeded
 	return
 }
-
-

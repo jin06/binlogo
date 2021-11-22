@@ -25,7 +25,7 @@ func TestInitViperFromFile(t *testing.T) {
 	if viper.GetString("console.listen") != "0.0.0.0" {
 		t.Fail()
 	}
-	if !reflect.DeepEqual(viper.GetStringSlice("etcd.endpoints"), []string{"localhost:2379"}){
+	if !reflect.DeepEqual(viper.GetStringSlice("etcd.endpoints"), []string{"localhost:2379"}) {
 		t.Fail()
 	}
 }

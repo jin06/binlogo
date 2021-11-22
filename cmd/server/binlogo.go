@@ -18,4 +18,3 @@ func run() (err error) {
 	command := app.NewCommand()
 	return command.Execute()
 }
-

@@ -6,8 +6,8 @@ import (
 	"time"
 )
 
-func main()  {
-	for i:=0;i<100;i++ {
+func main() {
+	for i := 0; i < 100; i++ {
 		fmt.Println(uint32(rand.New(rand.NewSource(time.Now().UnixNano())).Int31n(100000000)))
 	}
 }

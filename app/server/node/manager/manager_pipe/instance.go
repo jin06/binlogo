@@ -57,8 +57,7 @@ func (i *instance) init() (err error) {
 		return
 	}
 	if posPos == nil {
-		posPos = &pipeline2.Position{
-		}
+		posPos = &pipeline2.Position{}
 	}
 	pipe, err := pipeline.New(
 		pipeline.OptionPipeline(pipeInfo),
@@ -90,7 +89,7 @@ func (i *instance) start() (err error) {
 	defer func() {
 		i.status = STATUS_STOP
 		if err != nil {
-			event.Event(event2.NewErrorPipeline(i.pipeName,  "Pipeline instance stopped error: " + err.Error()))
+			event.Event(event2.NewErrorPipeline(i.pipeName, "Pipeline instance stopped error: "+err.Error()))
 		}
 		event.Event(event2.NewInfoPipeline(i.pipeName, "Pipeline instance stopped"))
 	}()
@@ -106,7 +105,7 @@ func (i *instance) start() (err error) {
 	i.pipeReg.Run(ctx)
 	i.pipeIns.Run(ctx)
 	logrus.Info("pipeline instance start: ", i.pipeName)
-	event.Event(event2.NewInfoPipeline(i.pipeName,  "Pipeline instance start success"))
+	event.Event(event2.NewInfoPipeline(i.pipeName, "Pipeline instance start success"))
 
 	select {
 	case <-ctx.Done():

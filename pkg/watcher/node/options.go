@@ -1,4 +1,5 @@
 package node
+
 type Options struct {
 	Etcd *struct {
 		Endpoints []string

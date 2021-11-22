@@ -16,7 +16,6 @@ type Options struct {
 	StatusReady *boolVal
 }
 
-
 type boolVal struct {
 	val bool
 }

@@ -11,5 +11,3 @@ func OptionNode(node *node.Node) Option {
 		r.node = node
 	}
 }
-
-

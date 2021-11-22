@@ -8,7 +8,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func (m *Monitor) monitorRegister(ctx context.Context) (err error){
+func (m *Monitor) monitorRegister(ctx context.Context) (err error) {
 	ch, err := m.registerWatcher.WatchEtcdList(ctx)
 	if err != nil {
 		return err
@@ -16,10 +16,12 @@ func (m *Monitor) monitorRegister(ctx context.Context) (err error){
 	go func() {
 		for {
 			select {
-				case <- ctx.Done(): {
+			case <-ctx.Done():
+				{
 					return
 				}
-				case n := <- ch:{
+			case n := <-ch:
+				{
 					if n.Event.Type == mvccpb.DELETE {
 						if val, ok := n.Data.(*node.Node); ok {
 							pb, er := dao_sche.GetPipelineBind()

@@ -19,7 +19,7 @@ func Create(c *gin.Context) {
 		return
 	}
 	for _, v := range q.Filters {
-		if  !pipe_tool.FilterVerifyStr(v.Rule) {
+		if !pipe_tool.FilterVerifyStr(v.Rule) {
 			c.JSON(200, handler.Fail("Filter rule error, only support the format like database.table or database "))
 			return
 		}

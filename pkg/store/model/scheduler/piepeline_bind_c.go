@@ -9,13 +9,11 @@ type PipelineBindH struct {
 	*model.Header
 }
 
-func NewPipelineBindH () *PipelineBindH{
-	r := &PipelineBindH{
-	}
+func NewPipelineBindH() *PipelineBindH {
+	r := &PipelineBindH{}
 	r.PipelineBind = &PipelineBind{
 		Bindings: map[string]string{},
 	}
 	r.Header = &model.Header{}
 	return r
 }
-

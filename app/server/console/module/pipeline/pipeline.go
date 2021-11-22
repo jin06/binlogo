@@ -25,7 +25,7 @@ func GetItemByName(name string) (item *Item, err error) {
 	return
 }
 
-func PipeStatus(name string) ( status pipeline.Status,err error) {
+func PipeStatus(name string) (status pipeline.Status, err error) {
 	pipe, err := dao_pipe.GetPipeline(name)
 	if err != nil {
 		return

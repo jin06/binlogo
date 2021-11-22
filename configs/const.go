@@ -14,6 +14,5 @@ const (
 
 const (
 	CONSOLE_LISTEN = "0.0.0.0"
-	CONSOLE_PORT = "9999"
+	CONSOLE_PORT   = "9999"
 )
-

@@ -20,7 +20,7 @@ func Fail(msg interface{}) Result {
 	errMsg := fmt.Sprintf("%v", msg)
 	result := Result{
 		Code: 500,
-		Msg: errMsg,
+		Msg:  errMsg,
 	}
 	return result
 }

@@ -90,7 +90,7 @@ func WithAddFilter(filter *Filter) OptionPipeline {
 }
 
 func WithUpdateFilter(index int, filter *Filter) OptionPipeline {
-	return func(p  *Pipeline) {
+	return func(p *Pipeline) {
 		if len(p.Filters) > index {
 			p.Filters[index] = filter
 		}

@@ -18,7 +18,7 @@ const (
 
 type Base struct {
 	Status Status
-	mutex sync.Mutex
+	mutex  sync.Mutex
 }
 
 func (base *Base) Lock() {

@@ -59,7 +59,7 @@ func (s *Scheduler) _schedule(ctx context.Context) {
 			{
 				return
 			}
-		case p := <- s.watcher.notBindPipelineCh:
+		case p := <-s.watcher.notBindPipelineCh:
 			{
 				logrus.Infof("%s not bind node, bind one ", p.Name)
 				err := s.scheduleOne(p)
@@ -88,9 +88,9 @@ func (s *Scheduler) scheduleOne(p *pipeline.Pipeline) (err error) {
 	a := newAlgorithm(p)
 	defer func() {
 		if err != nil {
-			event.Event(event2.NewErrorPipeline(p.Name, "Scheduling error, " + err.Error()))
+			event.Event(event2.NewErrorPipeline(p.Name, "Scheduling error, "+err.Error()))
 		} else {
-			event.Event(event2.NewInfoPipeline(p.Name, p.Name + " is scheduled to node " + a.bestNode.Name))
+			event.Event(event2.NewInfoPipeline(p.Name, p.Name+" is scheduled to node "+a.bestNode.Name))
 		}
 	}()
 	err = a.cal()

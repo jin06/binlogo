@@ -23,4 +23,3 @@ func OptionPrefix(prefix string) Option {
 		e.prefix = prefix
 	}
 }
-

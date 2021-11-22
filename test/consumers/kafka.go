@@ -11,7 +11,7 @@ func main() {
 	}
 	cfg := sarama.NewConfig()
 	cfg.ClientID = "test123"
-	consume, err := sarama.NewConsumer(addr,cfg)
+	consume, err := sarama.NewConsumer(addr, cfg)
 	if err != nil {
 		panic(err)
 	}

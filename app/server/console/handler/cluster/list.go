@@ -52,6 +52,6 @@ func ElectionList(c *gin.Context) {
 	})
 	c.JSON(200, handler.Success(map[string]interface{}{
 		"items": all,
-		"total" : len(all),
+		"total": len(all),
 	}))
 }

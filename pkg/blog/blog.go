@@ -22,7 +22,7 @@ func Env(env configs.Env) {
 			logrus.SetReportCaller(true)
 			logrus.SetFormatter(&logrus.TextFormatter{
 				//DisableColors:true,
-				TimestampFormat:"2006-01-02 15:03:04",
+				TimestampFormat: "2006-01-02 15:03:04",
 			})
 		}
 	case configs.ENV_TEST:

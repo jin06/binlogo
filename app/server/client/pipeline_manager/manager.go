@@ -6,8 +6,8 @@ import (
 )
 
 type Manager struct {
-	status   Status
-	runMutex sync.Mutex
+	status      Status
+	runMutex    sync.Mutex
 	statusMutex sync.Mutex
 }
 
@@ -20,8 +20,8 @@ const (
 
 func New() *Manager {
 	m := &Manager{
-		status:   STATUS_STOP,
-		runMutex: sync.Mutex{},
+		status:      STATUS_STOP,
+		runMutex:    sync.Mutex{},
 		statusMutex: sync.Mutex{},
 	}
 	return m
@@ -36,7 +36,6 @@ func (m *Manager) setStatus(status Status) {
 func (m *Manager) Status() Status {
 	return m.status
 }
-
 
 func (m *Manager) Run(ctx context.Context) (err error) {
 	m.runMutex.Lock()

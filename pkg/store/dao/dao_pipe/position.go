@@ -24,7 +24,7 @@ func UpdatePosition(p *pipeline.Position) (err error) {
 	return
 }
 
-func UpdatePositionSafe(pipeName string, opts ...pipeline.OptionPosition) (ok bool, err error)  {
+func UpdatePositionSafe(pipeName string, opts ...pipeline.OptionPosition) (ok bool, err error) {
 	if pipeName == "" {
 		err = errors.New("empty pipeline name")
 		return
@@ -36,7 +36,7 @@ func UpdatePositionSafe(pipeName string, opts ...pipeline.OptionPosition) (ok bo
 	}
 	revision := int64(0)
 	pos := &pipeline.Position{}
-	if len(res.Kvs) != 0  {
+	if len(res.Kvs) != 0 {
 		revision = res.Kvs[0].CreateRevision
 		err = json.Unmarshal(res.Kvs[0].Value, pos)
 		if err != nil {
@@ -74,7 +74,7 @@ func GetPosition(pipeName string) (p *pipeline.Position, err error) {
 	return
 }
 
-func DeletePosition( name string) (err error) {
+func DeletePosition(name string) (err error) {
 	if name == "" {
 		return errors.New("empty name")
 	}

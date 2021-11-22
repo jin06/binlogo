@@ -49,7 +49,7 @@ func (m *Monitor) monitorNode(ctx context.Context) (err error) {
 			case e := <-regCh:
 				{
 					if val, ok := e.Data.(*nodeModel.Node); ok {
-						if e.Event.Type ==mvccpb.DELETE {
+						if e.Event.Type == mvccpb.DELETE {
 							_, err1 := dao_node.CreateOrUpdateStatus(val.Name, nodeModel.WithReady(false), nodeModel.WithNetworkUnavailable(true))
 							if err1 != nil {
 								logrus.Errorln(err1)
@@ -84,7 +84,7 @@ func (m *Monitor) checkAllNode() (err error) {
 	if err != nil {
 		return
 	}
-	for k, _ := range nodesMap {
+	for k := range nodesMap {
 		_, ok := regNodesMap[k]
 		readyStat := false
 		networkStat := true
@@ -101,7 +101,7 @@ func (m *Monitor) checkAllNode() (err error) {
 	if err != nil {
 		return
 	}
-	for k, _ := range statusMap {
+	for k := range statusMap {
 		if _, ok := nodesMap[k]; !ok {
 			err1 := dao_node.DeleteStatus(k)
 			if err1 != nil {

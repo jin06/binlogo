@@ -111,7 +111,7 @@ func (m *Monitor) checkAllPipelineBind() {
 		return
 	}
 
-	for k, _ := range pb.Bindings {
+	for k := range pb.Bindings {
 		if _, ok := pipes[k]; !ok {
 			_, errDel := dao_sche.DeletePipelineBind(k)
 			if errDel != nil {

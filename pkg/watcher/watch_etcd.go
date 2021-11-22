@@ -37,7 +37,7 @@ func (w *General) WatchEtcd(ctx context.Context, opts ...clientv3.OpOption) (ch 
 	}()
 	go func() {
 		watchCh := etcd_client.Default().Watch(ctx, w.key, opts...)
-		LOOP:
+	LOOP:
 		for {
 			select {
 			case resp, ok := <-watchCh:

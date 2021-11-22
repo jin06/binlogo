@@ -17,7 +17,7 @@ func StatusPrefix() string {
 
 func CreateOrUpdateStatus(nodeName string, opts ...node.StatusOption) (ok bool, err error) {
 	key := StatusPrefix() + "/" + nodeName
-	res , err := etcd.E.Client.Get(context.TODO(), key)
+	res, err := etcd.E.Client.Get(context.TODO(), key)
 	if err != nil {
 		return
 	}
@@ -25,19 +25,19 @@ func CreateOrUpdateStatus(nodeName string, opts ...node.StatusOption) (ok bool, 
 	s := &node.Status{}
 	if len(res.Kvs) > 0 {
 		revision = res.Kvs[0].CreateRevision
-		err = json.Unmarshal(res.Kvs[0].Value, &s )
+		err = json.Unmarshal(res.Kvs[0].Value, &s)
 		if err != nil {
 			return
 		}
 	}
-	for _, v:= range opts {
+	for _, v := range opts {
 		v(s)
 	}
 
 	txn := etcd.E.Client.Txn(context.TODO()).If(clientv3.Compare(clientv3.CreateRevision(key), "=", revision))
-	b, _  := json.Marshal(s)
+	b, _ := json.Marshal(s)
 	txn = txn.Then(clientv3.OpPut(key, string(b)))
-	resp , err := txn.Commit()
+	resp, err := txn.Commit()
 	if err != nil {
 		return
 	}

@@ -8,6 +8,7 @@ import (
 	"testing"
 	"time"
 )
+
 const (
 	nodeName = "test_node_test"
 	pipeName = "test_pipeline_test"
@@ -21,17 +22,17 @@ func init() {
 
 func TestUpdate(t *testing.T) {
 	e := event.Event{
-		Key: key.GetKey(),
-		Type: event.INFO,
+		Key:          key.GetKey(),
+		Type:         event.INFO,
 		ResourceType: event.PIPELINE,
 		ResourceName: pipeName,
-		FirstTime: time.Now(),
-		LastTime: time.Now(),
-		Count: 1,
-		MessageType: "",
-		Message: "test message",
-		NodeName: nodeName,
-		NodeIP: net.IP{},
+		FirstTime:    time.Now(),
+		LastTime:     time.Now(),
+		Count:        1,
+		MessageType:  "",
+		Message:      "test message",
+		NodeName:     nodeName,
+		NodeIP:       net.IP{},
 	}
 	err := Update(&e)
 	if err != nil {
@@ -41,7 +42,7 @@ func TestUpdate(t *testing.T) {
 
 func TestList(t *testing.T) {
 	time.Sleep(time.Second)
-	list , err := List("pipeline", pipeName)
+	list, err := List("pipeline", pipeName)
 	if err != nil {
 		t.Log(err)
 		t.Fail()
@@ -54,21 +55,20 @@ func TestList(t *testing.T) {
 
 func TestDeleteRange(t *testing.T) {
 	time.Sleep(time.Second)
-	list , err := List("pipeline", pipeName)
+	list, err := List("pipeline", pipeName)
 	if err != nil {
 		t.Fail()
 	}
-	for _,v := range list {
+	for _, v := range list {
 		from := EventPrefix() + "/" + string(v.ResourceType) + "/" + v.ResourceName + "/" + v.Key
 		to := EventPrefix() + "/" + string(v.ResourceType) + "/" + v.ResourceName + "/" + v.Key
-		deleted , err2 := DeleteRange(from, to)
+		deleted, err2 := DeleteRange(from, to)
 		if err2 != nil {
 			t.Error(err2)
 			t.Fail()
 		}
-		if deleted == 0{
+		if deleted == 0 {
 			t.Fail()
 		}
 	}
 }
-

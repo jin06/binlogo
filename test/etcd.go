@@ -8,7 +8,8 @@ import (
 	model2 "github.com/jin06/binlogo/pkg/store/model"
 	"time"
 )
-func main()  {
+
+func main() {
 
 	cli, err := clientv3.New(clientv3.Config{
 		Endpoints:   []string{"localhost:12379"},
@@ -28,14 +29,14 @@ func main()  {
 		fmt.Println(err)
 	}
 	key := "/binlogo/culster1/database/1"
-	resp, err := cli.Put(ctx, key,string(js) )
+	resp, err := cli.Put(ctx, key, string(js))
 	resp = resp
 	//fmt.Println(resp)
 	if err != nil {
 		// handle error!
 	}
 	fmt.Println(1111)
-	get , err := cli.Get(ctx, key)
+	get, err := cli.Get(ctx, key)
 	fmt.Println(get.Kvs)
 	_ = get
 	fmt.Println(2222)

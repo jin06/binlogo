@@ -12,8 +12,8 @@ type Factory struct {
 	Role Role
 }
 
-func (f *Factory) isRole (role Role) bool {
-	return f.Role & role == role
+func (f *Factory) isRole(role Role) bool {
+	return f.Role&role == role
 }
 
 func (f *Factory) IsMaster() bool {

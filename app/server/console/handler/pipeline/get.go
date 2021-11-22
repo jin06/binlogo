@@ -9,11 +9,11 @@ import (
 func Get(c *gin.Context) {
 	name := c.Query("name")
 	if name == "" {
-		c.JSON(200,handler.Fail("Name is null"))
+		c.JSON(200, handler.Fail("Name is null"))
 		return
 	}
 
-	item , err := pipeline.GetItemByName(name)
+	item, err := pipeline.GetItemByName(name)
 	if err != nil {
 		c.JSON(200, handler.Fail(err))
 		return

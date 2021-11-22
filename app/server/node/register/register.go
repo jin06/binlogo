@@ -49,7 +49,8 @@ func (r *Register) Run(ctx context.Context) (err error) {
 							break
 						}
 					}
-					case <-ctx.Done():{
+				case <-ctx.Done():
+					{
 						er := r.revoke()
 						if er != nil {
 							logrus.Errorln(er)

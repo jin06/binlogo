@@ -8,7 +8,7 @@ import (
 var DefaultRecorder *Recorder
 
 func Init() {
-	DefaultRecorder , _ = New()
+	DefaultRecorder, _ = New()
 	DefaultRecorder.Loop(context.Background())
 }
 
@@ -16,4 +16,3 @@ func Event(e *event.Event) {
 	//fmt.Println(e)
 	go DefaultRecorder.Event(e)
 }
-

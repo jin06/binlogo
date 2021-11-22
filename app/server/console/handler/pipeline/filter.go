@@ -39,12 +39,12 @@ func AddFilter(c *gin.Context) {
 		PipeName string           `json:"pipe_name"`
 		Filter   *pipeline.Filter `json:"filter"`
 	}{}
-	if err := c.BindJSON(q);err != nil {
+	if err := c.BindJSON(q); err != nil {
 		c.JSON(200, handler.Fail(err))
 		return
 	}
 	ok, err := dao_pipe.UpdatePipeline(q.PipeName, pipeline.WithAddFilter(q.Filter))
-	if err != nil  || !ok {
+	if err != nil || !ok {
 		c.JSON(200, handler.Fail("Add filter failed."))
 		return
 	}
@@ -57,12 +57,12 @@ func UpdateFilter(c *gin.Context) {
 		Index    int              `json:"index"`
 		Filter   *pipeline.Filter `json:"filter"`
 	}{}
-	if err := c.BindJSON(q);err != nil {
+	if err := c.BindJSON(q); err != nil {
 		c.JSON(200, handler.Fail(err))
 		return
 	}
 	ok, err := dao_pipe.UpdatePipeline(q.PipeName, pipeline.WithUpdateFilter(q.Index, q.Filter))
-	if err != nil  || !ok {
+	if err != nil || !ok {
 		c.JSON(200, handler.Fail("Update filter failed."))
 		return
 	}

@@ -11,9 +11,9 @@ import (
 
 type canalHandler struct {
 	canal.DummyEventHandler
-	ch           chan *message.Message
-	pipe         *pipeline.Pipeline
-	msg          *message.Message
+	ch   chan *message.Message
+	pipe *pipeline.Pipeline
+	msg  *message.Message
 }
 
 func (h *canalHandler) OnRow(e *canal.RowsEvent) error {
@@ -21,7 +21,7 @@ func (h *canalHandler) OnRow(e *canal.RowsEvent) error {
 	h.msg = msg
 	return nil
 }
-func (h *canalHandler) OnTableChanged(schema string, table string) error   {
+func (h *canalHandler) OnTableChanged(schema string, table string) error {
 	//fmt.Println(schema)
 	//fmt.Println(table)
 	return nil

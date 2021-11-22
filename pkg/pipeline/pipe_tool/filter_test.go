@@ -7,12 +7,12 @@ import (
 
 func TestIsFilterWithName(t *testing.T) {
 	filters := []*pipeline.Filter{
-		&pipeline.Filter{pipeline.FILTER_BLACK, "mysql"},
-		&pipeline.Filter{pipeline.FILTER_BLACK, "base1"},
-		&pipeline.Filter{pipeline.FILTER_WHITE, "base1.tbl1"},
+		{pipeline.FILTER_BLACK, "mysql"},
+		{pipeline.FILTER_BLACK, "base1"},
+		{pipeline.FILTER_WHITE, "base1.tbl1"},
 	}
 	f := NewFilter(filters)
-	ok , err := f.IsFilterWithName("mysql.user")
+	ok, err := f.IsFilterWithName("mysql.user")
 	if err != nil {
 		t.Error(err)
 		t.Fail()

@@ -11,4 +11,3 @@ func PipePrefix() string {
 func PipeInstancePrefix() string {
 	return etcd_client.Prefix() + "/pipeline/instance"
 }
-

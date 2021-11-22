@@ -70,7 +70,7 @@ func (r Recorder) _send(ctx context.Context) {
 
 func (r Recorder) flush(force bool) {
 	if force || len(r.flushMap) >= 100 {
-		for _,v := range r.flushMap {
+		for _, v := range r.flushMap {
 			dao_event.Update(v)
 		}
 		r.flushMap = map[string]*event.Event{}

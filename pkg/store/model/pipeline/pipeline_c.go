@@ -26,6 +26,6 @@ func NewPipelineH() *PipelineH {
 	return p
 }
 
-func (m *PipelineH) String() string{
+func (m *PipelineH) String() string {
 	return fmt.Sprintf("pipeline : %v \nheader : %v \n", m.Pipeline, m.Header)
 }
