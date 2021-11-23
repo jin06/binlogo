@@ -2,6 +2,7 @@ Binlogo
 =====================================
 [![Go Reference](https://pkg.go.dev/badge/github.com/jin06/binlogo)](https://pkg.go.dev/github.com/jin06/binlogo)
 [![Go Report Card](https://goreportcard.com/badge/github.com/jin06/binlogo)](https://goreportcard.com/report/github.com/jin06/binlogo)
+[![Coverage Status](https://coveralls.io/repos/github/jin06/binlogo/badge.svg?branch=master)](https://coveralls.io/github/jin06/binlogo?branch=master)
 </br>
 [中文](README_zh.md) | [English](README.md)
 
