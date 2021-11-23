@@ -3,6 +3,7 @@ Binlogo
 [![Go Reference](https://pkg.go.dev/badge/github.com/jin06/binlogo)](https://pkg.go.dev/github.com/jin06/binlogo)
 [![Go Report Card](https://goreportcard.com/badge/github.com/jin06/binlogo)](https://goreportcard.com/report/github.com/jin06/binlogo)
 [![codecov](https://codecov.io/gh/jin06/binlogo/branch/master/graph/badge.svg)](https://codecov.io/gh/jin06/binlogo)
+![GitHub commit activity](https://img.shields.io/github/commit-activity/m/jin06/binlogo)
 </br>
 [中文](README_zh.md) | [English](README.md)
 
