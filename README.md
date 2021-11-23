@@ -1,5 +1,8 @@
 Binlogo
 =====================================
+[![Go Reference](https://pkg.go.dev/badge/github.com/jin06/binlogo)](https://pkg.go.dev/github.com/jin06/binlogo)
+[![Go Report Card](https://goreportcard.com/badge/github.com/jin06/binlogo)](https://goreportcard.com/report/github.com/jin06/binlogo)
+</br>
 [中文](README_zh.md) | [English](README.md)
 
 Binlogo is the distributed, visualized application based on MySQL binlog.
