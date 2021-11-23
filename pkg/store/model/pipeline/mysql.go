@@ -15,7 +15,7 @@ type Mode string
 
 const (
 	MODE_GTID    Mode = "gtid"
-	MODE_POSTION Mode = "position"
+	MODE_POISTION Mode = "position"
 )
 
 type Flavor string

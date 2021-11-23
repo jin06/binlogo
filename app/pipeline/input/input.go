@@ -133,7 +133,7 @@ func (r *Input) runCanal() (err error) {
 		return
 	}
 
-	if r.pipe.Mysql.Mode == pipeline.MODE_POSTION {
+	if r.pipe.Mysql.Mode == pipeline.MODE_POISTION {
 		logrus.Debugln("Run pipeline in mode position", r.Options.PipeName)
 		var canPos mysql.Position
 		if pos == nil {

@@ -73,7 +73,7 @@ func UpdateMode(c *gin.Context) {
 		c.JSON(200, handler.Fail(err))
 		return
 	}
-	if q.Mode != pipeline.MODE_POSTION && q.Mode != pipeline.MODE_GTID {
+	if q.Mode != pipeline.MODE_POISTION && q.Mode != pipeline.MODE_GTID {
 		c.JSON(200, handler.Fail("Wrong param mode: "+q.Mode))
 		return
 	}
