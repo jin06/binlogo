@@ -2,7 +2,6 @@ package dao_cluster
 
 import (
 	"context"
-	"fmt"
 	"github.com/coreos/etcd/clientv3"
 	"github.com/jin06/binlogo/pkg/etcd_client"
 )
@@ -39,7 +38,6 @@ func AllElections() (res []map[string]interface{}, err error) {
 		item := map[string]interface{}{}
 		item["create_revision"] = v.CreateRevision
 		item["node"] = string(v.Value)
-		fmt.Println(v.ProtoMessage)
 		res = append(res, item)
 	}
 	return

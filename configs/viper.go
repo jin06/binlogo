@@ -1,7 +1,6 @@
 package configs
 
 import (
-	"fmt"
 	"github.com/jin06/binlogo/pkg/util/ip"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
@@ -17,13 +16,12 @@ func InitViperFromFile(file string) {
 	if file == "" {
 		file = "./configs/binlogo.yaml"
 	}
-	fmt.Println("init config from ", file)
+	//fmt.Println("init config from ", file)
 	viper.SetConfigFile(file)
 	if err := viper.ReadInConfig(); err != nil {
 		logrus.Error(err.Error())
 		os.Exit(1)
 	}
-
 }
 
 // InitConfigs sets some default values to viper from system environment

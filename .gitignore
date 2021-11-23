@@ -6,3 +6,6 @@ _output
 binlogo
 bin/
 .DS_Store
+scripts/codecov-token
+profile.out
+coverage.txt
