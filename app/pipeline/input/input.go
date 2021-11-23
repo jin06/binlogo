@@ -16,6 +16,7 @@ import (
 	"strconv"
 )
 
+// Input read binlog event from mysql
 type Input struct {
 	OutChan      chan *message2.Message
 	Options      *Options
@@ -26,6 +27,7 @@ type Input struct {
 	node         *node.Node
 }
 
+// Run Input start working
 func (r *Input) Run(ctx context.Context) (err error) {
 	myCtx, cancel := context.WithCancel(ctx)
 	r.ctx = myCtx
@@ -60,6 +62,7 @@ func (r *Input) Run(ctx context.Context) (err error) {
 	return
 }
 
+// New returns a new Input
 func New(opts ...Option) (input *Input, err error) {
 	options := &Options{}
 	for _, v := range opts {
@@ -133,7 +136,7 @@ func (r *Input) runCanal() (err error) {
 		return
 	}
 
-	if r.pipe.Mysql.Mode == pipeline.MODE_POISTION {
+	if r.pipe.Mysql.Mode == pipeline.MODE_POSITION {
 		logrus.Debugln("Run pipeline in mode position", r.Options.PipeName)
 		var canPos mysql.Position
 		if pos == nil {
@@ -173,6 +176,7 @@ func (r *Input) runCanal() (err error) {
 	return
 }
 
+// Context returns Input's context
 func (r *Input) Context() context.Context {
 	return r.ctx
 }

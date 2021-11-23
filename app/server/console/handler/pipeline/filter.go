@@ -3,7 +3,7 @@ package pipeline
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/jin06/binlogo/app/server/console/handler"
-	"github.com/jin06/binlogo/pkg/pipeline/pipe_tool"
+	"github.com/jin06/binlogo/pkg/pipeline/tool"
 	"github.com/jin06/binlogo/pkg/store/dao/dao_pipe"
 	"github.com/jin06/binlogo/pkg/store/model/pipeline"
 )
@@ -24,7 +24,7 @@ func IsFilter(c *gin.Context) {
 		c.JSON(200, handler.Fail(err))
 		return
 	}
-	validator := pipe_tool.NewFilter(pipe.Filters)
+	validator := tool.NewFilter(pipe.Filters)
 	isFilter, err := validator.IsFilterWithName(rule)
 	if err != nil {
 		c.JSON(200, handler.Fail(err))

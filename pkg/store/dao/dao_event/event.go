@@ -56,7 +56,7 @@ func Update(e *event.Event) (err error) {
 }
 
 func DeleteRange(fromKey string, endKey string) (deleted int64, err error) {
-	res, err := etcd_client.Default().Delete(context.Background(), fromKey, clientv3.WithRange(endKey), clientv3.WithFromKey())
+	res, err := etcd_client.Default().Delete(context.Background(), fromKey, clientv3.WithRange(endKey))
 	if err != nil {
 		return
 	}

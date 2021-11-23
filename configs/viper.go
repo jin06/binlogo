@@ -12,6 +12,7 @@ import (
 //	InitViperFromFile()
 //}
 
+// InitViperFromFile read config file and write to viper
 func InitViperFromFile(file string) {
 	if file == "" {
 		file = "./configs/binlogo.yaml"
@@ -25,6 +26,7 @@ func InitViperFromFile(file string) {
 
 }
 
+// InitConfigs sets some default values to viper from system environment
 func InitConfigs() {
 	node_name := os.Getenv("NODE_NAME")
 	if node_name == "" {

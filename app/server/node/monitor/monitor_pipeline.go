@@ -11,7 +11,8 @@ import (
 )
 
 func (m *Monitor) monitorPipe(ctx context.Context) (err error) {
-	ch, err := m.pipeWatcher.WatchEtcdList(ctx)
+	//ch, err := m.pipeWatcher.WatchEtcdList(ctx)
+	ch, err := m.newPipeWatcherCh(ctx)
 	if err != nil {
 		return
 	}

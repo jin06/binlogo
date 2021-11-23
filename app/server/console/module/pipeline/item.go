@@ -9,41 +9,32 @@ import (
 	"github.com/jin06/binlogo/pkg/store/model/scheduler"
 )
 
+// Item for front display
 type Item struct {
 	Pipeline *pipeline.Pipeline `json:"pipeline"`
 	Info     *Info              `json:"info"`
 }
 
+// Info for front display
 type Info struct {
 	BindNode *node.Node         `json:"bind_node"`
 	Instance *pipeline.Instance `json:"instance"`
-	Status   Status             `json:"status"`
 }
 
-type Status string
-
-const (
-	STATUS_RUN        = "run"
-	STATUS_STOP       = "stop"
-	STATUS_STOPPING   = "stopping"
-	STATUS_SCHEDULING = "scheduling"
-	STATUS_SCHEDULED  = "scheduled"
-	STATUS_DELETING   = "deleting"
-)
-
+// CompleteInfo complete info for item
 func CompleteInfo(i *Item) (err error) {
 	err = CompletePipelineBind(i, nil)
 	if err != nil {
 		return
 	}
-	err = CompletePipelineRun(i, nil)
+	err = completePipelineRun(i, nil)
 	if err != nil {
 		return
 	}
 	return
 }
 
-func CompletePipelineRun(i *Item, pMap map[string]*pipeline.Instance) (err error) {
+func completePipelineRun(i *Item, pMap map[string]*pipeline.Instance) (err error) {
 	i.Info.Instance = &pipeline.Instance{}
 	if pMap != nil {
 		if _, ok := pMap[i.Pipeline.Name]; ok {
@@ -59,6 +50,7 @@ func CompletePipelineRun(i *Item, pMap map[string]*pipeline.Instance) (err error
 	return
 }
 
+// CompletePipelineBind complete pipeline bind info
 func CompletePipelineBind(i *Item, pb *scheduler.PipelineBind) (err error) {
 	if pb == nil {
 		pb, err = dao_sche.GetPipelineBind()
@@ -88,40 +80,7 @@ func CompletePipelineBind(i *Item, pb *scheduler.PipelineBind) (err error) {
 	return
 }
 
-func CompletePipelineStatus(i *Item) (err error) {
-	if i.Pipeline.IsDelete == true {
-		i.Info.Status = STATUS_DELETING
-		return
-	}
-	if i.Pipeline.Status == pipeline.STATUS_STOP {
-		if i.Info.BindNode == nil {
-			if i.Info.BindNode.Name != "" {
-				i.Info.Status = STATUS_STOPPING
-				return
-			}
-		}
-		i.Info.Status = STATUS_STOP
-		return
-	}
-	if i.Pipeline.Status == pipeline.STATUS_RUN {
-		if i.Info.Instance == nil {
-			if i.Info.BindNode == nil {
-				i.Info.Status = STATUS_SCHEDULING
-				return
-			}
-			if i.Info.BindNode.Name == "" {
-				i.Info.Status = STATUS_SCHEDULING
-				return
-			}
-			i.Info.Status = STATUS_SCHEDULED
-			return
-		}
-	}
-
-	i.Info.Status = STATUS_RUN
-	return
-}
-
+// CompleteInfoList complete pipeline list info
 func CompleteInfoList(list []*Item) (err error) {
 	pb, err := dao_sche.GetPipelineBind()
 	if err != nil {
@@ -135,7 +94,7 @@ func CompleteInfoList(list []*Item) (err error) {
 		if err1 := CompletePipelineBind(v, pb); err1 != nil {
 			continue
 		}
-		if err2 := CompletePipelineRun(v, allInstance); err2 != nil {
+		if err2 := completePipelineRun(v, allInstance); err2 != nil {
 			return
 		}
 	}

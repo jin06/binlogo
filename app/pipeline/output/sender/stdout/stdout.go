@@ -4,30 +4,34 @@ import (
 	"encoding/json"
 	"fmt"
 	message2 "github.com/jin06/binlogo/app/pipeline/message"
-	"github.com/jin06/binlogo/pkg/blog"
+	"github.com/sirupsen/logrus"
 	"os"
 )
 
+// Stdout send message to stdout
+// It is mainly used for testing and debugging
 type Stdout struct {
 }
 
+// New returns a new Stdout
 func New() (std *Stdout, err error) {
 	std = &Stdout{}
 	return
 }
 
+// Send logic and control
 func (s *Stdout) Send(msg *message2.Message) (bool, error) {
 	_, err := fmt.Fprintln(os.Stdout, msg.ToString())
 	if err != nil {
-		blog.Error(err)
+		logrus.Errorln(err)
 	}
 	b, err := json.Marshal(msg.Content)
 	if err != nil {
-		blog.Error(err)
+		logrus.Errorln(err)
 	}
 	_, err = fmt.Fprintf(os.Stdout, "Content json: %s \n", string(b))
 	if err != nil {
-		blog.Error(err)
+		logrus.Errorln(err)
 	}
 
 	return true, nil

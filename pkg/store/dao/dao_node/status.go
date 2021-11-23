@@ -11,10 +11,13 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+// StatusPrefix returns etcd prefix of node status
 func StatusPrefix() string {
-	return etcd.Prefix() + "/node/status"
+	return etcd_client.Prefix() + "/node/status"
 }
 
+// CreateOrUpdateStatus crate of update status in etcd
+// create if not exist
 func CreateOrUpdateStatus(nodeName string, opts ...node.StatusOption) (ok bool, err error) {
 	key := StatusPrefix() + "/" + nodeName
 	res, err := etcd.E.Client.Get(context.TODO(), key)
@@ -45,6 +48,7 @@ func CreateOrUpdateStatus(nodeName string, opts ...node.StatusOption) (ok bool, 
 	return
 }
 
+// GetStatus get node status from etcd
 func GetStatus(nodeName string) (s *node.Status, err error) {
 	key := NodePrefix() + "/" + nodeName
 	res, err := etcd.E.Client.Get(context.TODO(), key)
@@ -59,6 +63,7 @@ func GetStatus(nodeName string) (s *node.Status, err error) {
 	return
 }
 
+// CreateStatusIfNotExist create status if not exist
 func CreateStatusIfNotExist(n *node.Status) (err error) {
 	if n.NodeName == "" {
 		return errors.New("empty name")
@@ -79,6 +84,7 @@ func CreateStatusIfNotExist(n *node.Status) (err error) {
 	return
 }
 
+// StatusMap returns all node status in map form
 func StatusMap() (mapping map[string]*node.Status, err error) {
 	key := StatusPrefix()
 	res, err := etcd.E.Client.Get(context.TODO(), key, clientv3.WithPrefix())
@@ -102,6 +108,7 @@ func StatusMap() (mapping map[string]*node.Status, err error) {
 	return
 }
 
+// DeleteStatus delete node status in etcd
 func DeleteStatus(name string) (err error) {
 	if name == "" {
 		return errors.New("empty name")

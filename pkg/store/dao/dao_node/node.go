@@ -11,14 +11,17 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+// NodePrefix returns etcd prefix of node
 func NodePrefix() string {
-	return etcd.Prefix() + "/node/info"
+	return etcd_client.Prefix() + "/node/info"
 }
 
+// NodeRegisterPrefix returns etcd prefix of register node
 func NodeRegisterPrefix() string {
 	return etcd_client.Prefix() + "/cluster/register"
 }
 
+// CreateNode create a node in etcd
 func CreateNode(n *node.Node) (err error) {
 	key := NodePrefix() + "/" + n.Name
 	ctx, cancel := context.WithTimeout(context.TODO(), etcd.E.Timeout)
@@ -31,6 +34,7 @@ func CreateNode(n *node.Node) (err error) {
 	return
 }
 
+// CreateNodeIfNotExist create a node in etcd if that not exist
 func CreateNodeIfNotExist(n *node.Node) (err error) {
 	key := NodePrefix() + "/" + n.Name
 	ctx, cancel := context.WithTimeout(context.TODO(), etcd.E.Timeout)
@@ -50,6 +54,7 @@ func CreateNodeIfNotExist(n *node.Node) (err error) {
 	return
 }
 
+// UpdateNode update a node data in etcd
 func UpdateNode(nodeName string, opts ...node.NodeOption) (ok bool, err error) {
 	if nodeName == "" {
 		err = errors.New("empty node name")
@@ -85,6 +90,7 @@ func UpdateNode(nodeName string, opts ...node.NodeOption) (ok bool, err error) {
 	return
 }
 
+// GetNode get node data from etcd
 func GetNode(name string) (n *node.Node, err error) {
 	ctx, cancel := context.WithTimeout(context.TODO(), etcd.E.Timeout)
 	defer cancel()
@@ -101,9 +107,11 @@ func GetNode(name string) (n *node.Node, err error) {
 	return
 }
 
+// AllNodes return all node data from etcd
 func AllNodes() (list []*node.Node, err error) {
 	return _allNodes(NodePrefix() + "/")
 }
+
 func _allNodes(key string) (list []*node.Node, err error) {
 	list = []*node.Node{}
 	//key := NodePrefix() + "/"
@@ -126,11 +134,13 @@ func _allNodes(key string) (list []*node.Node, err error) {
 	return
 }
 
+// ALLRegisterNodes returns all register nodes
 func ALLRegisterNodes() (list []*node.Node, err error) {
 	key := NodeRegisterPrefix()
 	return _allNodes(key)
 }
 
+// AllNodesMap  returns all register nodes in map form
 func AllNodesMap() (mapping map[string]*node.Node, err error) {
 	list, err := AllNodes()
 	if err != nil {
@@ -143,6 +153,7 @@ func AllNodesMap() (mapping map[string]*node.Node, err error) {
 	return
 }
 
+// AllRegisterNodesMap returns all register nodes from etcd in map form
 func AllRegisterNodesMap() (mapping map[string]*node.Node, err error) {
 	list, err := ALLRegisterNodes()
 	if err != nil {
@@ -155,6 +166,7 @@ func AllRegisterNodesMap() (mapping map[string]*node.Node, err error) {
 	return
 }
 
+// AllWorkNodesMap returns all register nodes from etcd in map form
 func AllWorkNodesMap() (res map[string]*node.Node, err error) {
 	res, err = AllNodesMap()
 	if err != nil {

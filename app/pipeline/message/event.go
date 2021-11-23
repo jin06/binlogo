@@ -1,5 +1,0 @@
-package message
-
-func Event() {
-
-}

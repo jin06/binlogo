@@ -8,9 +8,12 @@ import (
 	"github.com/jin06/binlogo/pkg/store/model/node"
 )
 
+// AllocatablePrefix returns prefix key of etcd for allocatable
 func AllocatablePrefix() string {
 	return etcd_client.Prefix() + "/node/allocatable"
 }
+
+// UpdateAllocatable update allocatable data to etcd
 func UpdateAllocatable(al *node.Allocatable) (err error) {
 	if al.NodeName == "" {
 		return errors.New("empty name")

@@ -11,6 +11,7 @@ import (
 	"time"
 )
 
+// New returns a new *Register
 func New(opts ...Option) (r *Register, err error) {
 	r = &Register{
 		ttl: 5,
@@ -26,6 +27,7 @@ func New(opts ...Option) (r *Register, err error) {
 	return
 }
 
+// Register Encapsulation of etcd register
 type Register struct {
 	lease                  clientv3.Lease
 	leaseID                clientv3.LeaseID
@@ -37,6 +39,7 @@ type Register struct {
 	ctx                    context.Context
 }
 
+// Run start register
 func (r *Register) Run(ctx context.Context) {
 	myCtx, cancel := context.WithCancel(ctx)
 	r.ctx = myCtx
@@ -167,6 +170,7 @@ func (r *Register) watch() (ok bool, err error) {
 	return
 }
 
+// Context returns register's context
 func (r *Register) Context() context.Context {
 	return r.ctx
 }

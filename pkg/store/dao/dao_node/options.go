@@ -1,41 +1,37 @@
 package dao_node
 
-import (
-	"github.com/jin06/binlogo/pkg/node/role"
-	"net"
-)
+// StatusReady node is ready or not
+//type StatusReady bool
+//
+//type Options struct {
+//	Key         string
+//	NodeName    string
+//	NodeIP      net.IP
+//	NodeVersion string
+//	NodeRole    role.Role
+//	StatusReady *boolVal
+//}
+//
+//type boolVal struct {
+//	val bool
+//}
 
-type StatusReady bool
+//type Option func(*Options)
 
-type Options struct {
-	Key         string
-	NodeName    string
-	NodeIP      net.IP
-	NodeVersion string
-	NodeRole    role.Role
-	StatusReady *boolVal
-}
-
-type boolVal struct {
-	val bool
-}
-
-type Option func(*Options)
-
-func GetOptions(args ...Option) *Options {
-	opts := &Options{}
-	for _, v := range args {
-		v(opts)
-	}
-	return opts
-}
-
-func WithNodeName(name string) Option {
-	return func(options *Options) {
-		options.NodeName = name
-		return
-	}
-}
+//func GetOptions(args ...Option) *Options {
+//	opts := &Options{}
+//	for _, v := range args {
+//		v(opts)
+//	}
+//	return opts
+//}
+//
+//func WithNodeName(name string) Option {
+//	return func(options *Options) {
+//		options.NodeName = name
+//		return
+//	}
+//}
 
 //func WithNodeIP(ip net.IP) Option {
 //	return func(options *Options) {

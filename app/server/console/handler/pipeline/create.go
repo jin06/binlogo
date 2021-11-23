@@ -3,7 +3,7 @@ package pipeline
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/jin06/binlogo/app/server/console/handler"
-	"github.com/jin06/binlogo/pkg/pipeline/pipe_tool"
+	"github.com/jin06/binlogo/pkg/pipeline/tool"
 	"github.com/jin06/binlogo/pkg/store/dao/dao_pipe"
 	"github.com/jin06/binlogo/pkg/store/model/pipeline"
 	"github.com/sirupsen/logrus"
@@ -19,7 +19,7 @@ func Create(c *gin.Context) {
 		return
 	}
 	for _, v := range q.Filters {
-		if !pipe_tool.FilterVerifyStr(v.Rule) {
+		if !tool.FilterVerifyStr(v.Rule) {
 			c.JSON(200, handler.Fail("Filter rule error, only support the format like database.table or database "))
 			return
 		}

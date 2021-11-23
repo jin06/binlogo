@@ -9,12 +9,14 @@ import (
 	"time"
 )
 
+// Mutex Distributed lock encapsulating etcd
 type Mutex struct {
 	mutex   *concurrency.Mutex
 	session *concurrency.Session
 	timeout time.Duration
 }
 
+// New returns a new *Mutex
 func New(key string, opts ...Option) (m *Mutex, err error) {
 	m = &Mutex{
 		timeout: time.Second * 5,
@@ -38,12 +40,14 @@ func (m *Mutex) initOptions(opts ...Option) {
 	}
 }
 
+// Lock lock
 func (m *Mutex) Lock() (err error) {
 	ctx, _ := context.WithTimeout(context.TODO(), m.timeout)
 	err = m.mutex.Lock(ctx)
 	return
 }
 
+// Unlock unlock
 func (m *Mutex) Unlock() (err error) {
 	err = m.mutex.Unlock(context.TODO())
 	if err != nil {

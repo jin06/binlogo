@@ -12,6 +12,7 @@ import (
 	"github.com/spf13/viper"
 )
 
+// NewCommand return a new *cobra.Command for cli
 func NewCommand() (cmd *cobra.Command) {
 	cmd = &cobra.Command{Use: "binctl", Run: func(cmd *cobra.Command, args []string) {
 		//fmt.Println("Operate pipeline")

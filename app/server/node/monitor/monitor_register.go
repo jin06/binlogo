@@ -9,9 +9,13 @@ import (
 )
 
 func (m *Monitor) monitorRegister(ctx context.Context) (err error) {
-	ch, err := m.registerWatcher.WatchEtcdList(ctx)
+	//ch, err := m.registerWatcher.WatchEtcdList(ctx)
+	//if err != nil {
+	//	return err
+	//}
+	ch, err := m.newNodeRegWatcherCh(ctx)
 	if err != nil {
-		return err
+		return
 	}
 	go func() {
 		for {

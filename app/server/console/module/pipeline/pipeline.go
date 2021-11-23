@@ -6,6 +6,7 @@ import (
 	"github.com/jin06/binlogo/pkg/store/model/pipeline"
 )
 
+// GetItemByName get item by pipeline name
 func GetItemByName(name string) (item *Item, err error) {
 	if name == "" {
 		err = errors.New("empty name")
@@ -25,6 +26,7 @@ func GetItemByName(name string) (item *Item, err error) {
 	return
 }
 
+// PipeStatus get pipeline status by pipeline name
 func PipeStatus(name string) (status pipeline.Status, err error) {
 	pipe, err := dao_pipe.GetPipeline(name)
 	if err != nil {

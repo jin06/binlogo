@@ -8,10 +8,12 @@ import (
 	"time"
 )
 
+// Prefix return cluster prefix
 func Prefix() string {
 	return fmt.Sprintf("/%s/%s", configs.APP, viper.GetString("cluster.name"))
 }
 
+// New return a etcd Client object
 func New() (cli *clientv3.Client, err error) {
 	cfg := clientv3.Config{
 		Endpoints:   viper.GetStringSlice("etcd.endpoints"),
@@ -24,6 +26,7 @@ func New() (cli *clientv3.Client, err error) {
 
 var client *clientv3.Client
 
+// Default global default clientv3.Client
 func Default() *clientv3.Client {
 	if client == nil {
 		var err error

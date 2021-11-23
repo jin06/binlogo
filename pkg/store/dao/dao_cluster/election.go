@@ -7,9 +7,12 @@ import (
 	"github.com/jin06/binlogo/pkg/etcd_client"
 )
 
+// ElectionPrefix returns etcd prefix
 func ElectionPrefix() string {
 	return etcd_client.Prefix() + "/cluster/election"
 }
+
+// LeaderNode return current name of current leader node
 func LeaderNode() (nodeName string, err error) {
 	key := ElectionPrefix()
 	resp, err := etcd_client.Default().Get(context.Background(), key, clientv3.WithFirstCreate()...)
@@ -23,6 +26,7 @@ func LeaderNode() (nodeName string, err error) {
 	return
 }
 
+// AllElections returns all nodes in the election
 func AllElections() (res []map[string]interface{}, err error) {
 	key := ElectionPrefix()
 	resp, err := etcd_client.Default().Get(context.Background(), key, clientv3.WithPrefix())

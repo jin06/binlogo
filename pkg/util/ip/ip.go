@@ -4,6 +4,8 @@ import (
 	"net"
 )
 
+// LocalIp get local host ip
+// returns the first network ip
 func LocalIp() (i net.IP, err error) {
 	addrs, err := net.InterfaceAddrs()
 	for _, v := range addrs {

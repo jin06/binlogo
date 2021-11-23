@@ -8,10 +8,12 @@ import (
 	"github.com/jin06/binlogo/pkg/store/model/scheduler"
 )
 
+// PipeBindPrefix returns etcd prefix of pipeline bind
 func PipeBindPrefix() string {
-	return etcd.Prefix() + "/scheduler/pipeline_bind"
+	return etcd_client.Prefix() + "/scheduler/pipeline_bind"
 }
 
+// GetPipelineBind get pipeline bind from etcd
 func GetPipelineBind() (pb *scheduler.PipelineBind, err error) {
 	res, err := etcd.E.Client.Get(context.TODO(), PipeBindPrefix())
 	if err != nil {
@@ -25,6 +27,7 @@ func GetPipelineBind() (pb *scheduler.PipelineBind, err error) {
 	return
 }
 
+// UpdatePipelineBindIfNotExist update pipeline bind if the pipeline not exist in pipeline bind
 func UpdatePipelineBindIfNotExist(pName string, nName string) (err error) {
 	res, err := etcd_client.Default().Get(context.TODO(), PipeBindPrefix())
 	if err != nil {
@@ -50,6 +53,7 @@ func UpdatePipelineBindIfNotExist(pName string, nName string) (err error) {
 	return
 }
 
+// UpdatePipelineBind update pipeline bind ignore exists
 func UpdatePipelineBind(pName string, nName string) (ok bool, err error) {
 	res, err := etcd_client.Default().Get(context.TODO(), PipeBindPrefix())
 	if err != nil {
@@ -73,6 +77,7 @@ func UpdatePipelineBind(pName string, nName string) (ok bool, err error) {
 	return
 }
 
+// DeletePipelineBind delete pipeline bind in etcd
 func DeletePipelineBind(pName string) (ok bool, err error) {
 	res, err := etcd_client.Default().Get(context.TODO(), PipeBindPrefix())
 	if err != nil {

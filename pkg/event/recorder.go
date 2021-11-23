@@ -10,6 +10,8 @@ import (
 	"time"
 )
 
+// Recorder record event.
+// Aggregate events and delete old events regularly
 type Recorder struct {
 	incomeChan chan *event.Event
 	flushChan  chan *event.Event
@@ -18,6 +20,7 @@ type Recorder struct {
 	flushMap   map[string]*event.Event
 }
 
+// New Returns a new Recorder
 func New() (*Recorder, error) {
 	r := &Recorder{}
 	r.incomeChan = make(chan *event.Event, 16384)
@@ -28,6 +31,7 @@ func New() (*Recorder, error) {
 	return r, nil
 }
 
+// Loop start event record loop
 func (r Recorder) Loop(ctx context.Context) {
 	go r._dispatch(ctx)
 	go r._send(ctx)
@@ -77,6 +81,7 @@ func (r Recorder) flush(force bool) {
 	}
 }
 
+// Event pass event to income chan
 func (r Recorder) Event(e *event.Event) {
 	r.incomeChan <- e
 	return

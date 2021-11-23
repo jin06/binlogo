@@ -6,6 +6,7 @@ import (
 	"github.com/spf13/viper"
 )
 
+// Prefix will deprecated
 func Prefix() string {
 	return fmt.Sprintf("/%s/%s", configs.APP, viper.GetString("cluster.name"))
 }

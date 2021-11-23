@@ -17,7 +17,7 @@ func Update(c *gin.Context) {
 		c.JSON(200, handler.Fail(err))
 		return
 	}
-	if q.Mode != pipeline.MODE_POISTION && q.Mode != pipeline.MODE_GTID {
+	if q.Mode != pipeline.MODE_POSITION && q.Mode != pipeline.MODE_GTID {
 		c.JSON(200, handler.Fail("mode error: "+q.Mode))
 		return
 	}
@@ -39,7 +39,7 @@ func Update(c *gin.Context) {
 				return
 			}
 		}
-	case pipeline.MODE_POISTION:
+	case pipeline.MODE_POSITION:
 		{
 			ok, err := dao_pipe.UpdatePositionSafe(q.Position.PipelineName, pipeline.WithBinlogFile(q.Position.BinlogFile), pipeline.WithPos(q.Position.BinlogPosition))
 			if err != nil || !ok {

@@ -6,14 +6,15 @@ import (
 	"errors"
 	"github.com/coreos/etcd/clientv3"
 	"github.com/jin06/binlogo/pkg/etcd_client"
-	"github.com/jin06/binlogo/pkg/store/etcd"
 	"github.com/jin06/binlogo/pkg/store/model/pipeline"
 )
 
+// PositionPrefix returns etcd prefix of pipeline position
 func PositionPrefix() string {
-	return etcd.Prefix() + "/pipeline/position"
+	return etcd_client.Prefix() + "/pipeline/position"
 }
 
+// UpdatePosition update pipeline position in etcd
 func UpdatePosition(p *pipeline.Position) (err error) {
 	key := PositionPrefix() + "/" + p.PipelineName
 	b, err := json.Marshal(p)
@@ -24,6 +25,8 @@ func UpdatePosition(p *pipeline.Position) (err error) {
 	return
 }
 
+// UpdatePositionSafe  update pipeline position in etcd in safe mode.
+// there will be version judgment when updating
 func UpdatePositionSafe(pipeName string, opts ...pipeline.OptionPosition) (ok bool, err error) {
 	if pipeName == "" {
 		err = errors.New("empty pipeline name")
@@ -58,6 +61,7 @@ func UpdatePositionSafe(pipeName string, opts ...pipeline.OptionPosition) (ok bo
 	return
 }
 
+// GetPosition get pipeline position from etcd
 func GetPosition(pipeName string) (p *pipeline.Position, err error) {
 	key := PositionPrefix() + "/" + pipeName
 	res, err := etcd_client.Default().Get(context.TODO(), key)
@@ -74,6 +78,7 @@ func GetPosition(pipeName string) (p *pipeline.Position, err error) {
 	return
 }
 
+// DeletePosition delete pipeline positon by pipeline name in etcd
 func DeletePosition(name string) (err error) {
 	if name == "" {
 		return errors.New("empty name")

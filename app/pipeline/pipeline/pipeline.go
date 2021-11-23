@@ -12,13 +12,14 @@ import (
 	"sync"
 )
 
+// Pipeline for handle message
+// contains input, filter, output
 type Pipeline struct {
 	Input    *input2.Input
 	Output   *output2.Output
 	Filter   *filter2.Filter
 	OutChan  *OutChan
 	Options  Options
-	Role     Role
 	cancel   context.CancelFunc
 	runMutex sync.Mutex
 	status   status
@@ -32,6 +33,7 @@ const (
 	STATUS_STOP status = 2
 )
 
+// New returns a new pipeline
 func New(opt ...Option) (p *Pipeline, err error) {
 	options := Options{}
 	for _, v := range opt {
@@ -46,6 +48,7 @@ func New(opt ...Option) (p *Pipeline, err error) {
 	return
 }
 
+// OutChan  is used to deliver messages in different components
 type OutChan struct {
 	Input  chan *message2.Message
 	Filter chan *message2.Message
@@ -105,6 +108,7 @@ func (p *Pipeline) initOutput() (err error) {
 	return
 }
 
+// Run pipeline start working
 func (p *Pipeline) Run(ctx context.Context) {
 	p.runMutex.Lock()
 	defer p.runMutex.Unlock()
@@ -155,6 +159,7 @@ func (p *Pipeline) Run(ctx context.Context) {
 	}()
 }
 
+// Context return pipeline's context use for cancel
 func (p *Pipeline) Context() context.Context {
 	return p.ctx
 }

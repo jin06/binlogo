@@ -12,6 +12,8 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+// Output handle message output
+// depends pipeline config, send message to stdout、kafka, etc.
 type Output struct {
 	InChan  chan *message2.Message
 	Sender  sender2.Sender
@@ -19,6 +21,7 @@ type Output struct {
 	ctx     context.Context
 }
 
+// New return a Output object
 func New(opts ...Option) (out *Output, err error) {
 	options := &Options{}
 	for _, v := range opts {
@@ -82,6 +85,7 @@ func (o *Output) handle(msg *message2.Message) {
 	//}
 }
 
+// Run start Output to send message
 func (o *Output) Run(ctx context.Context) (err error) {
 	err = o.init()
 	if err != nil {
@@ -109,6 +113,7 @@ func (o *Output) Run(ctx context.Context) (err error) {
 	return
 }
 
+// Context return Output's context
 func (o *Output) Context() context.Context {
 	return o.ctx
 }

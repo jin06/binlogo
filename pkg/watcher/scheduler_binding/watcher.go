@@ -26,6 +26,8 @@ func withHandler() watcher.Handler {
 		return
 	}
 }
+
+// New returns a new pipeline bind watcher
 func New() (w *watcher.General, err error) {
 	key := dao_sche.PipeBindPrefix()
 	w, err = watcher.NewGeneral(key)

@@ -13,6 +13,7 @@ import (
 	"os"
 )
 
+// NewCommand returns a new command for binlogo server
 func NewCommand() (cmd *cobra.Command) {
 	cmdVersion := &cobra.Command{
 		Use:   "version",

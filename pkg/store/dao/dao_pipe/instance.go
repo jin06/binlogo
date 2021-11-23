@@ -9,10 +9,13 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+// InstancePrefix returns etcd prefix of pipeline instance
 func InstancePrefix() string {
 	return etcd_client.Prefix() + "/pipeline/instance"
 }
 
+// GetInstance get a pipeline instance from etcd
+// get by pipeline name pipeName
 func GetInstance(pipeName string) (ins *pipeline.Instance, err error) {
 	key := InstancePrefix() + "/" + pipeName
 	res, err := etcd_client.Default().Get(context.Background(), key)
@@ -30,6 +33,7 @@ func GetInstance(pipeName string) (ins *pipeline.Instance, err error) {
 	return
 }
 
+// AllInstance returns all pipeline instances in array form
 func AllInstance() (all []*pipeline.Instance, err error) {
 	all = []*pipeline.Instance{}
 	key := InstancePrefix() + "/"
@@ -52,6 +56,7 @@ func AllInstance() (all []*pipeline.Instance, err error) {
 	return
 }
 
+// AllInstanceMap returns all pipeline instances in map form
 func AllInstanceMap() (all map[string]*pipeline.Instance, err error) {
 	all = map[string]*pipeline.Instance{}
 	key := InstancePrefix() + "/"

@@ -11,7 +11,7 @@ import (
 	"github.com/jin06/binlogo/pkg/node/role"
 	"github.com/jin06/binlogo/pkg/register"
 	store2 "github.com/jin06/binlogo/pkg/store"
-	"github.com/jin06/binlogo/pkg/store/dao/dao_cluster"
+	"github.com/jin06/binlogo/pkg/store/dao/dao_node"
 	"github.com/sirupsen/logrus"
 	"sync"
 	"time"
@@ -67,7 +67,7 @@ func New(opts ...Option) (node *Node, err error) {
 func (n *Node) init() (err error) {
 	n.Register, err = register.New(
 		register.WithTTL(5),
-		register.WithKey(dao_cluster.RegisterPrefix()+"/"+n.Options.Node.Name),
+		register.WithKey(dao_node.NodeRegisterPrefix()+"/"+n.Options.Node.Name),
 		register.WithData(n.Options.Node),
 	)
 	if err != nil {

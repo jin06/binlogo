@@ -30,6 +30,7 @@ func withHandler(key string) watcher.Handler {
 	}
 }
 
+// New returns a new node status watcher
 func New(key string) (w *watcher.General, err error) {
 	w, err = watcher.NewGeneral(key)
 	if err != nil {

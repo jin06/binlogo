@@ -10,6 +10,9 @@ import (
 	"github.com/jin06/binlogo/pkg/store/model/scheduler"
 )
 
+// ClearOrDeleteBind clear or delete pipeline bind
+// sets pipeline bind to blank if pipeline is expected to run, so pipeline will be scheduled to a node later
+// delete pipeline bind if pipeline is expected to stop, pipeline will not be scheduled a node.
 func ClearOrDeleteBind(name string) (err error) {
 	if name == "" {
 		err = errors.New("empty name")

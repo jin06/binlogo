@@ -7,15 +7,16 @@ import (
 	"fmt"
 	"github.com/coreos/etcd/clientv3"
 	"github.com/jin06/binlogo/pkg/etcd_client"
-	"github.com/jin06/binlogo/pkg/store/etcd"
 	"github.com/jin06/binlogo/pkg/store/model/node"
 	"github.com/sirupsen/logrus"
 )
 
+// CapacityPrefix returns prefix key of etcd for capacity
 func CapacityPrefix() string {
-	return etcd.Prefix() + "/node/capacity"
+	return etcd_client.Prefix() + "/node/capacity"
 }
 
+// UpdateCapacity update capacity data to etcd
 func UpdateCapacity(cap *node.Capacity) (err error) {
 	if cap.NodeName == "" {
 		err = errors.New("empty name")
@@ -30,6 +31,7 @@ func UpdateCapacity(cap *node.Capacity) (err error) {
 	return
 }
 
+// CapacityMap returns capacity data in map form
 func CapacityMap() (mapping map[string]*node.Capacity, err error) {
 	key := CapacityPrefix()
 	res, err := etcd_client.Default().Get(context.TODO(), key, clientv3.WithPrefix())

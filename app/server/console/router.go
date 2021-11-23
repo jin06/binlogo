@@ -8,12 +8,12 @@ import (
 	"github.com/jin06/binlogo/app/server/console/handler/node"
 	"github.com/jin06/binlogo/app/server/console/handler/pipeline"
 	"github.com/jin06/binlogo/app/server/console/handler/position"
-	"github.com/jin06/binlogo/app/server/console/middleware"
+	mid "github.com/jin06/binlogo/app/server/console/middleware"
 	"net/http"
 )
 
 func router(g *gin.Engine) {
-	g.Use(middleware.Cors)
+	g.Use(mid.Cors)
 
 	g.GET("/", func(c *gin.Context) {
 		c.Redirect(http.StatusTemporaryRedirect, "/console")

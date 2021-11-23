@@ -12,6 +12,7 @@ import (
 	"time"
 )
 
+// RunNode run node.
 func RunNode() (err error) {
 	nModel := &node.Node{
 		Name:       viper.GetString("node.name"),

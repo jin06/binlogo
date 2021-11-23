@@ -7,11 +7,14 @@ import (
 )
 
 const (
+	// STATUS_NEW a new message
 	STATUS_NEW = iota
 )
 
+// STATUS for message control
 type STATUS int16
 
+// Message basic message for pipeline handle
 type Message struct {
 	Status         int16
 	Filter         bool
@@ -19,6 +22,7 @@ type Message struct {
 	Content        *Content
 }
 
+// New return a new message
 func New() *Message {
 	msg := &Message{
 		Status: STATUS_NEW,
@@ -31,11 +35,13 @@ func New() *Message {
 	return msg
 }
 
+// Content of Message
 type Content struct {
 	Head *Head       `json:"head"`
 	Data interface{} `json:"data"`
 }
 
+// Head of Message
 type Head struct {
 	Type     string             `json:"type"`
 	Time     uint32             `json:"time"`
@@ -44,6 +50,7 @@ type Head struct {
 	Position *pipeline.Position `json:"position"`
 }
 
+// Json marshal message to json data
 func (msg *Message) Json() (string, error) {
 	b, err := json.Marshal(msg)
 	if err != nil {
@@ -52,6 +59,7 @@ func (msg *Message) Json() (string, error) {
 	return string(b), nil
 }
 
+// JsonContent only marshal message's content to josn data
 func (msg *Message) JsonContent() (string, error) {
 	if msg.Content == nil {
 		return "", nil
@@ -63,6 +71,7 @@ func (msg *Message) JsonContent() (string, error) {
 	return string(b), nil
 }
 
+// ToString returns message's string data
 func (msg *Message) ToString() string {
 	return fmt.Sprintf(
 		`

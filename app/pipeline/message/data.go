@@ -1,5 +1,6 @@
 package message
 
+// MessageType for pipeline handle
 type MessageType byte
 
 var (
@@ -11,6 +12,7 @@ var (
 	TYPE_ALTER_TABLE  MessageType = 5
 )
 
+// String returns MessageType's string
 func (mt MessageType) String() string {
 	switch mt {
 	case TYPE_INSERT:
@@ -41,21 +43,26 @@ func (mt MessageType) String() string {
 	return ""
 }
 
+// Insert for mysql insert
 type Insert struct {
 	New map[string]interface{} `json:"new"`
 }
 
+// Update for mysql update
 type Update struct {
 	Old map[string]interface{} `json:"old"`
 	New map[string]interface{} `json:"new"`
 }
 
+// Delete for mysql delete
 type Delete struct {
 	Old map[string]interface{} `json:"old"`
 }
 
+// CreateTable for mysql ddl
 type CreateTable struct {
 }
 
+// AlterTable for mysql ddl
 type AlterTable struct {
 }

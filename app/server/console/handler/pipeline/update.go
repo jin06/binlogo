@@ -4,7 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/jin06/binlogo/app/server/console/handler"
 	pipeline2 "github.com/jin06/binlogo/app/server/console/module/pipeline"
-	"github.com/jin06/binlogo/pkg/pipeline/pipe_tool"
+	"github.com/jin06/binlogo/pkg/pipeline/tool"
 	"github.com/jin06/binlogo/pkg/store/dao/dao_pipe"
 	"github.com/jin06/binlogo/pkg/store/model/pipeline"
 )
@@ -16,7 +16,7 @@ func Update(c *gin.Context) {
 		return
 	}
 	for _, v := range q.Filters {
-		if !pipe_tool.FilterVerifyStr(v.Rule) {
+		if !tool.FilterVerifyStr(v.Rule) {
 			c.JSON(200, handler.Fail("Filter rule error, only support the format like database.table or database "))
 			return
 		}
@@ -73,7 +73,7 @@ func UpdateMode(c *gin.Context) {
 		c.JSON(200, handler.Fail(err))
 		return
 	}
-	if q.Mode != pipeline.MODE_POISTION && q.Mode != pipeline.MODE_GTID {
+	if q.Mode != pipeline.MODE_POSITION && q.Mode != pipeline.MODE_GTID {
 		c.JSON(200, handler.Fail("Wrong param mode: "+q.Mode))
 		return
 	}

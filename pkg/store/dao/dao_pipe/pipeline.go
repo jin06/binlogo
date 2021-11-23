@@ -12,10 +12,12 @@ import (
 	"sort"
 )
 
+// PipelinePrefix returns etcd prefix of pipeline info
 func PipelinePrefix() string {
-	return etcd.Prefix() + "/pipeline/info"
+	return etcd_client.Prefix() + "/pipeline/info"
 }
 
+// GetPipeline get pipeline info from etcd
 func GetPipeline(name string) (p *pipeline.Pipeline, err error) {
 	key := PipelinePrefix() + "/" + name
 	res, err := etcd.E.Client.Get(context.TODO(), key)
@@ -32,6 +34,7 @@ func GetPipeline(name string) (p *pipeline.Pipeline, err error) {
 	return
 }
 
+// CreatePipeline write pipeline info to etcd
 func CreatePipeline(d *pipeline.Pipeline, opts ...clientv3.OpOption) (ok bool, err error) {
 	key := PipelinePrefix() + "/" + d.Name
 	txn := etcd.E.Client.Txn(context.TODO())
@@ -45,6 +48,7 @@ func CreatePipeline(d *pipeline.Pipeline, opts ...clientv3.OpOption) (ok bool, e
 	return
 }
 
+// UpdatePipeline update pipeline info in etcd
 func UpdatePipeline(pipeName string, opts ...pipeline.OptionPipeline) (ok bool, err error) {
 	if pipeName == "" {
 		return false, errors.New("empty pipeline name")
@@ -77,6 +81,7 @@ func UpdatePipeline(pipeName string, opts ...pipeline.OptionPipeline) (ok bool, 
 	return
 }
 
+// AllPipelines get all info of pipelines from etcd in array form
 func AllPipelines() (list []*pipeline.Pipeline, err error) {
 	list = []*pipeline.Pipeline{}
 	key := PipelinePrefix()
@@ -109,12 +114,14 @@ func (ps pipelineSlice) Less(i, j int) bool {
 	return ps[i].CreateTime.Before(ps[i].CreateTime)
 }
 
+// PagePipeline for pipeline pages
 type PagePipeline struct {
 	Page  int
 	Total int
 	Data  []*pipeline.Pipeline
 }
 
+// PagePipelines get a PagePipeline by page and size
 func PagePipelines(page int, size int) (res *PagePipeline, err error) {
 	if page < 1 {
 		page = 1
@@ -148,6 +155,7 @@ func PagePipelines(page int, size int) (res *PagePipeline, err error) {
 	return
 }
 
+// AllPipelinesMap returns all pipelines from etcd in map form
 func AllPipelinesMap() (mapping map[string]*pipeline.Pipeline, err error) {
 	list, err := AllPipelines()
 	if err != nil {
@@ -160,6 +168,7 @@ func AllPipelinesMap() (mapping map[string]*pipeline.Pipeline, err error) {
 	return
 }
 
+// DeletePipeline delete pipeline info by name
 func DeletePipeline(name string) (err error) {
 	if name == "" {
 		return errors.New("empty name")
@@ -172,6 +181,7 @@ func DeletePipeline(name string) (err error) {
 	return
 }
 
+// DeleteCompletePipeline delete pipeline, contains pipeline info, pipeline position
 func DeleteCompletePipeline(name string) (err error) {
 	if name == "" {
 		return errors.New("empty name")

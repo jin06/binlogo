@@ -14,6 +14,7 @@ import (
 
 var E *ETCD
 
+// DefaultETCD @Deprecated
 func DefaultETCD() {
 	//prefix := "binlogo/" + viper.GetString("cluster.name")
 	prefix := Prefix()
@@ -37,6 +38,7 @@ type ETCD struct {
 	options2.Options
 }
 
+// NewETCD @Deprecated
 func NewETCD(opt ...options2.Option) (etcd *ETCD, err error) {
 	ops := options2.Options{}
 	for _, o := range opt {
@@ -57,6 +59,7 @@ func NewETCD(opt ...options2.Option) (etcd *ETCD, err error) {
 	return
 }
 
+// Read Deprecated
 func (e *ETCD) Read(key string) (resp string, err error) {
 	timeout := time.Second * 10
 	ctx, cancel := context.WithTimeout(context.TODO(), timeout)
@@ -70,9 +73,13 @@ func (e *ETCD) Read(key string) (resp string, err error) {
 	}
 	return string(res.Kvs[0].Value), err
 }
+
+// Read deprecated
 func Read(key string) (resp string, err error) {
 	return E.Read(key)
 }
+
+// Write deprecated
 func (e *ETCD) Write(key string, val string) (err error) {
 	logrus.Debug("etcd start")
 	ctx, cancel := context.WithTimeout(context.TODO(), e.Timeout)
@@ -82,10 +89,12 @@ func (e *ETCD) Write(key string, val string) (err error) {
 	return
 }
 
+// Write deprecated
 func Write(key string, val string) (err error) {
 	return E.Write(key, val)
 }
 
+// Create deprecated
 func (e *ETCD) Create(m model2.Model, opts ...clientv3.OpOption) (ok bool, err error) {
 	ctx, cancel := context.WithTimeout(context.TODO(), e.Timeout)
 	defer cancel()
@@ -99,9 +108,12 @@ func (e *ETCD) Create(m model2.Model, opts ...clientv3.OpOption) (ok bool, err e
 	return
 }
 
+// Create will deprecated
 func Create(m model2.Model, opts ...clientv3.OpOption) (bool, error) {
 	return E.Create(m, opts...)
 }
+
+// Update deprecated
 func (e *ETCD) Update(m model2.Model) (ok bool, err error) {
 	ctx, cancel := context.WithTimeout(context.TODO(), e.Timeout)
 	defer cancel()
@@ -115,10 +127,12 @@ func (e *ETCD) Update(m model2.Model) (ok bool, err error) {
 	return
 }
 
+// Update will deprecated
 func Update(m model2.Model) (bool, error) {
 	return E.Update(m)
 }
 
+// Delete deprecated
 func (e *ETCD) Delete(m model2.Model) (ok bool, err error) {
 	ctx, cancel := context.WithTimeout(context.TODO(), e.Timeout)
 	defer cancel()
@@ -131,10 +145,12 @@ func (e *ETCD) Delete(m model2.Model) (ok bool, err error) {
 	return
 }
 
+// Delete will deprecated
 func Delete(m model2.Model) (bool, error) {
 	return E.Delete(m)
 }
 
+// Get deprecated
 func (e *ETCD) Get(m model2.Model) (ok bool, err error) {
 	ctx, cancel := context.WithTimeout(context.TODO(), e.Timeout)
 	defer cancel()
@@ -153,6 +169,7 @@ func (e *ETCD) Get(m model2.Model) (ok bool, err error) {
 	return
 }
 
+// GetH deprecated
 func (e *ETCD) GetH(m model2.ModelH) (ok bool, err error) {
 	ctx, cancel := context.WithTimeout(context.TODO(), e.Timeout)
 	defer cancel()
@@ -178,7 +195,7 @@ func (e *ETCD) GetH(m model2.ModelH) (ok bool, err error) {
 	return
 }
 
-// todo change list
+// List deprecated
 func (e *ETCD) List(key string) (list []model2.Model, err error) {
 	ctx, cancel := context.WithTimeout(context.TODO(), e.Timeout)
 	defer cancel()
@@ -203,6 +220,7 @@ func (e *ETCD) List(key string) (list []model2.Model, err error) {
 	return
 }
 
+// Get next version will deprecated
 func Get(m model2.Model) (bool, error) {
 	return E.Get(m)
 }

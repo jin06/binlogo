@@ -6,6 +6,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+// Memory show memory
 func Memory() (err error) {
 	v, err := mem.VirtualMemory()
 	if err != nil {

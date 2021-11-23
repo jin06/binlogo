@@ -3,12 +3,13 @@ package filter
 import (
 	"context"
 	message2 "github.com/jin06/binlogo/app/pipeline/message"
-	"github.com/jin06/binlogo/pkg/pipeline/pipe_tool"
+	"github.com/jin06/binlogo/pkg/pipeline/tool"
 	pipeline2 "github.com/jin06/binlogo/pkg/store/model/pipeline"
 	"github.com/sirupsen/logrus"
 	"strings"
 )
 
+// Filter filter message by rules
 type Filter struct {
 	InChan    chan *message2.Message
 	OutChan   chan *message2.Message
@@ -17,6 +18,7 @@ type Filter struct {
 	rulesTree tree
 }
 
+// New returns a new Filter
 func New(opts ...Option) (filter *Filter, err error) {
 	options := &Options{}
 	for _, v := range opts {
@@ -37,7 +39,7 @@ func (f *Filter) init() (err error) {
 	}
 	if f.Options.Pipe != nil {
 		for _, v := range f.Options.Pipe.Filters {
-			if !pipe_tool.FilterVerify(v) {
+			if !tool.FilterVerify(v) {
 				continue
 			}
 			arr := strings.Split(v.Rule, ".")
@@ -74,6 +76,7 @@ func (f *Filter) handle(msg *message2.Message) {
 	}
 }
 
+// Run Filter start working
 func (f *Filter) Run(ctx context.Context) (err error) {
 	err = f.init()
 	if err != nil {
@@ -102,6 +105,7 @@ func (f *Filter) Run(ctx context.Context) (err error) {
 	return
 }
 
+// Context return Filter's context for cancel goroutine
 func (f *Filter) Context() context.Context {
 	return f.ctx
 }

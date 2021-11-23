@@ -9,11 +9,13 @@ import (
 	"strings"
 )
 
+// Kafka send message to kafka
 type Kafka struct {
 	Kafka        *pipeline.Kafka
 	SyncProducer sarama.SyncProducer
 }
 
+// New returns a new Kafka
 func New(kafka *pipeline.Kafka) (kaf *Kafka, err error) {
 	kaf = &Kafka{Kafka: kafka}
 	err = kaf.init()
@@ -43,6 +45,7 @@ func (s *Kafka) init() (err error) {
 	return
 }
 
+// Send Logic and control
 func (s *Kafka) Send(msg *message2.Message) (ok bool, err error) {
 	return s.doSend(msg)
 }

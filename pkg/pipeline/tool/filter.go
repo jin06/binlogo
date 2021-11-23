@@ -1,4 +1,4 @@
-package pipe_tool
+package tool
 
 import (
 	"errors"
@@ -8,6 +8,7 @@ import (
 	"strings"
 )
 
+// NewFilter return a Filter object
 func NewFilter(filters []*pipeline.Filter) (f *Filter) {
 	f = &Filter{
 		DBBlack:    map[string]bool{},
@@ -37,6 +38,7 @@ func NewFilter(filters []*pipeline.Filter) (f *Filter) {
 	return
 }
 
+// Filter verify message, filter or pass message by blacklist and whitelist
 type Filter struct {
 	DBBlack    map[string]bool
 	TableBlack map[string]bool
@@ -44,6 +46,8 @@ type Filter struct {
 	TableWhite map[string]bool
 }
 
+// IsFilterWithName filter message by database name and table name.
+// return true if not pass
 func (t *Filter) IsFilterWithName(name string) (bool, error) {
 	res := strings.Split(name, ".")
 	lh := len(res)
@@ -81,6 +85,8 @@ func (t *Filter) IsFilterWithName(name string) (bool, error) {
 	return false, nil
 }
 
+// IsFilter filter message by message object
+// return true if not pass
 func (t *Filter) IsFilter(msg *message.Message) bool {
 	if _, ok := t.DBWhite[msg.Content.Head.Database]; ok {
 		return false
@@ -98,6 +104,8 @@ func (t *Filter) IsFilter(msg *message.Message) bool {
 	return false
 }
 
+// FilterVerifyStr verify sting correct
+// return false if illegal
 func FilterVerifyStr(s string) bool {
 	res := strings.Split(s, ".")
 	if len(res) > 2 {
@@ -109,8 +117,9 @@ func FilterVerifyStr(s string) bool {
 	return true
 }
 
+// FilterVerify verify filter's type
+// return false is illegal
 func FilterVerify(f *pipeline.Filter) bool {
-
 	if f.Type != pipeline.FILTER_BLACK && f.Type != pipeline.FILTER_WHITE {
 		return false
 	}

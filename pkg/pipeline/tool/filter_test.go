@@ -1,4 +1,4 @@
-package pipe_tool
+package tool
 
 import (
 	"github.com/jin06/binlogo/pkg/store/model/pipeline"
