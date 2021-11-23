@@ -1,4 +1,4 @@
 package configs
 
 // VERSITON version of binlogo
-const VERSITON = "1.0.11"
+const VERSITON = "1.0.13"
