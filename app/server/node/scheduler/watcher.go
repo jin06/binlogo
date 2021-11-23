@@ -12,6 +12,7 @@ import (
 	"time"
 )
 
+// Watcher watch changes
 type Watcher struct {
 	pipelineWatcher   *watcher.General
 	nodeWatcher       *watcher.General

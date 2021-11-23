@@ -10,6 +10,8 @@ import (
 	"sync"
 )
 
+// Scheduler schedule the pipeline.
+// allocate the pipeline to the appropriate node for operation
 type Scheduler struct {
 	options *Options
 	lock    sync.Mutex
@@ -24,6 +26,7 @@ const (
 	SCHEDULER_STOP = "stop"
 )
 
+// Run start working
 func (s *Scheduler) Run(ctx context.Context) (err error) {
 	s.runLock.Lock()
 	defer s.runLock.Unlock()
@@ -71,6 +74,7 @@ func (s *Scheduler) _schedule(ctx context.Context) {
 	}
 }
 
+// Stop stop working
 func (s *Scheduler) Stop() {
 	s.runLock.Lock()
 	defer s.runLock.Unlock()
@@ -109,6 +113,7 @@ func (s *Scheduler) watchPipeline(err error) {
 	return
 }
 
+// New returns a new Scheduler
 func New(opts ...Option) (s *Scheduler) {
 	options := &Options{}
 	s = &Scheduler{options: options}

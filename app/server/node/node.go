@@ -17,6 +17,9 @@ import (
 	"time"
 )
 
+// Node represents a node instance
+// Running pipeline, reporting status, etc.
+// if it becomes the master node, it will run tasks such as scheduling pipeline, monitoring, event management, etc
 type Node struct {
 	Mode           *NodeMode
 	Options        *Options
@@ -38,6 +41,7 @@ const (
 	MODE_SINGLE  NodeMode = 2
 )
 
+// NodeMode todo
 func (n NodeMode) String() string {
 	switch n {
 	case MODE_CLUSTER:
@@ -52,6 +56,7 @@ func (n NodeMode) String() string {
 	return ""
 }
 
+// New return a new node
 func New(opts ...Option) (node *Node, err error) {
 	options := &Options{}
 	node = &Node{
@@ -86,6 +91,7 @@ func (n *Node) init() (err error) {
 	return
 }
 
+// Run start working
 func (n *Node) Run(ctx context.Context) (err error) {
 	go func() {
 		var ok bool
@@ -132,6 +138,7 @@ func (n *Node) Run(ctx context.Context) (err error) {
 	return
 }
 
+// Role returns current role
 func (n *Node) Role() role.Role {
 	return n.election.Role()
 }

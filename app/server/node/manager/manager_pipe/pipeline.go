@@ -10,6 +10,9 @@ import (
 	"time"
 )
 
+// Manager is pipeline instance manager.
+// If there is a pipeline bound to the current node, run an instance
+// will also stop inbound instance on the current node
 type Manager struct {
 	mapping    map[string]bool
 	mappingIns map[string]*instance
@@ -17,6 +20,7 @@ type Manager struct {
 	mutex      sync.Mutex
 }
 
+// New returns a new Manager
 func New(n *node.Node) (m *Manager) {
 	m = &Manager{
 		mapping:    map[string]bool{},
@@ -29,6 +33,7 @@ func New(n *node.Node) (m *Manager) {
 	return
 }
 
+// Run start woking
 func (m *Manager) Run(ctx context.Context) {
 	go func() {
 		if err := m.scanPipelines(nil); err != nil {

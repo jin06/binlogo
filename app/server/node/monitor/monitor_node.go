@@ -6,27 +6,12 @@ import (
 	"github.com/jin06/binlogo/pkg/store/dao/dao_node"
 	"github.com/jin06/binlogo/pkg/store/dao/dao_sche"
 	nodeModel "github.com/jin06/binlogo/pkg/store/model/node"
+	"github.com/jin06/binlogo/pkg/watcher"
 	"github.com/sirupsen/logrus"
 	"time"
 )
 
 func (m *Monitor) monitorNode(ctx context.Context) (err error) {
-	//watcher, err := node.New(dao_node.NodePrefix())
-	//if err != nil {
-	//	return
-	//}
-	//ch, err := watcher.WatchEtcdList(ctx)
-	//if err != nil {
-	//	return
-	//}
-	//nodeRegWatcher, err := node.New(dao_node.NodeRegisterPrefix())
-	//if err != nil {
-	//	return
-	//}
-	//regCh, err := nodeRegWatcher.WatchEtcdList(ctx)
-	//if err != nil {
-	//	return
-	//}
 	ch, err := m.newNodeWatcherCh(ctx)
 	if err != nil {
 		return
@@ -55,19 +40,9 @@ func (m *Monitor) monitorNode(ctx context.Context) (err error) {
 				}
 			case e := <-regCh:
 				{
-					if val, ok := e.Data.(*nodeModel.Node); ok {
-						if e.Event.Type == mvccpb.DELETE {
-							_, err1 := dao_node.CreateOrUpdateStatus(val.Name, nodeModel.WithReady(false), nodeModel.WithNetworkUnavailable(true))
-							if err1 != nil {
-								logrus.Errorln(err1)
-							}
-						}
-						if e.Event.Type == mvccpb.PUT {
-							_, err1 := dao_node.CreateOrUpdateStatus(val.Name, nodeModel.WithReady(true), nodeModel.WithNetworkUnavailable(false))
-							if err1 != nil {
-								logrus.Errorln(err1)
-							}
-						}
+					er := handleEventRegNode(e)
+					if er != nil {
+						logrus.Errorln(er)
 					}
 				}
 			case <-time.Tick(time.Second * 120):
@@ -138,6 +113,20 @@ func (m *Monitor) checkAllNodeBind() (err error) {
 			if err != nil {
 				return
 			}
+		}
+	}
+	return
+}
+
+func handleEventRegNode(e *watcher.Event) (err error) {
+	if val, ok := e.Data.(*nodeModel.Node); ok {
+		if e.Event.Type == mvccpb.DELETE {
+			_, err = dao_node.CreateOrUpdateStatus(val.Name, nodeModel.WithReady(false), nodeModel.WithNetworkUnavailable(true))
+			return
+		}
+		if e.Event.Type == mvccpb.PUT {
+			_, err = dao_node.CreateOrUpdateStatus(val.Name, nodeModel.WithReady(true), nodeModel.WithNetworkUnavailable(false))
+			return
 		}
 	}
 	return

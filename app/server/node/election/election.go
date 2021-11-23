@@ -14,6 +14,7 @@ import (
 	"time"
 )
 
+// Election for leader node election
 type Election struct {
 	node        *node2.Node
 	election    *concurrency.Election
@@ -27,6 +28,7 @@ type Election struct {
 	RoleCh      chan role.Role
 }
 
+// New returns a new Election
 func New(opts ...Option) (e *Election, err error) {
 	e = &Election{
 		ttl:    5,
@@ -50,6 +52,7 @@ func (e *Election) init() (err error) {
 	return
 }
 
+// Run start election process
 func (e *Election) Run(ctx context.Context) {
 	e.campaign(ctx)
 }
@@ -133,6 +136,7 @@ func (e *Election) campaign(ctx context.Context) {
 	return
 }
 
+// SetRole sets node current role
 func (e *Election) SetRole(r role.Role) {
 	e.roleMutex.Lock()
 	defer e.roleMutex.Unlock()
@@ -140,6 +144,7 @@ func (e *Election) SetRole(r role.Role) {
 	e.RoleCh <- r
 }
 
+// Leader returns name of current leader node
 func (e *Election) Leader() (name string, err error) {
 	res, err := e.election.Leader(context.TODO())
 	if err != nil {
@@ -152,10 +157,12 @@ func (e *Election) Leader() (name string, err error) {
 	return
 }
 
+// Role returns role current node
 func (e *Election) Role() role.Role {
 	return e.role
 }
 
+// Resign resign election
 func (e *Election) Resign(ctx context.Context) (err error) {
 	if e.election == nil {
 		return

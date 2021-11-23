@@ -10,6 +10,7 @@ import (
 	"sync"
 )
 
+// Monitor monitor the operation of pipelines, nodes and other resources
 type Monitor struct {
 	status string
 	lock   sync.Mutex
@@ -22,6 +23,7 @@ type Monitor struct {
 const STATUS_RUN = "run"
 const STATUS_STOP = "stop"
 
+// NewMonitor returns a new Monitor
 func NewMonitor() (m *Monitor, err error) {
 	m = &Monitor{
 		status: STATUS_STOP,
@@ -48,6 +50,7 @@ func (m *Monitor) init() (err error) {
 	return
 }
 
+// Run start working
 func (m *Monitor) Run(ctx context.Context) (err error) {
 	m.lock.Lock()
 	defer m.lock.Unlock()

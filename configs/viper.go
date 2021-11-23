@@ -28,11 +28,11 @@ func InitViperFromFile(file string) {
 
 // InitConfigs sets some default values to viper from system environment
 func InitConfigs() {
-	node_name := os.Getenv("NODE_NAME")
-	if node_name == "" {
-		node_name, _ = os.Hostname()
+	nodeName := os.Getenv("NODE_NAME")
+	if nodeName == "" {
+		nodeName, _ = os.Hostname()
 	}
-	viper.SetDefault("node.name", node_name)
+	viper.SetDefault("node.name", nodeName)
 	viper.SetDefault("env", os.Getenv("BINLOGO_ENV"))
 	viper.SetDefault("cluster.name", os.Getenv("CLUSTER_NAME"))
 	consoleListen := os.Getenv("CONSOLE_LISTEN")

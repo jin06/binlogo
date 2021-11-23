@@ -5,6 +5,7 @@ import (
 	"time"
 )
 
+// Pipeline pipeline's definition
 type Pipeline struct {
 	Name       string    `json:"name"`
 	Status     Status    `json:"status"`
@@ -18,28 +19,35 @@ type Pipeline struct {
 	IsDelete   bool      `json:"is_delete"`
 }
 
+// Status of Pipeline
 type Status string
 
 const (
-	STATUS_RUN  Status = "run"
+	// STATUS_RUN run
+	STATUS_RUN Status = "run"
+	// STATUS_STOP stop
 	STATUS_STOP Status = "stop"
 )
 
+// Key generate etcd key
 func (s *Pipeline) Key() (key string) {
 	return "pipeline/" + s.Name
 }
 
+// Val generate json data
 func (s *Pipeline) Val() (val string) {
 	b, _ := json.Marshal(s)
 	val = string(b)
 	return
 }
 
+// Unmarshal generate from json data
 func (s *Pipeline) Unmarshal(val []byte) (err error) {
 	err = json.Unmarshal(val, s)
 	return
 }
 
+// ExpectRun determine whether the pipeline should run
 func (s *Pipeline) ExpectRun() bool {
 	if s.IsDelete {
 		return false
@@ -53,14 +61,17 @@ func (s *Pipeline) ExpectRun() bool {
 	return false
 }
 
+// OptionPipeline configure pipeline
 type OptionPipeline func(p *Pipeline)
 
+// WithPipeStatus sets pipeline status
 func WithPipeStatus(status Status) OptionPipeline {
 	return func(p *Pipeline) {
 		p.Status = status
 	}
 }
 
+// WithPipeSafe sets pipeline
 func WithPipeSafe(uPipe *Pipeline) OptionPipeline {
 	return func(p *Pipeline) {
 		p.Mysql = uPipe.Mysql

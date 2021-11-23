@@ -10,6 +10,7 @@ import (
 	"time"
 )
 
+// NodeStatus reporting work
 type NodeStatus struct {
 	NodeName    string
 	Node        *node.Node
@@ -18,6 +19,7 @@ type NodeStatus struct {
 	Conditions  *node.Condition
 }
 
+// NewNodeStatus returns a new NodeStatus
 func NewNodeStatus(nodeName string) *NodeStatus {
 	ns := &NodeStatus{}
 	ns.NodeName = nodeName

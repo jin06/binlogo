@@ -11,12 +11,14 @@ import (
 	"time"
 )
 
+// Manager report node status and resource usage
 type Manager struct {
 	Node      *node.Node
 	syncMutex sync.Mutex
 	nodeMutex sync.Mutex
 }
 
+// NewManager returns a new Manager
 func NewManager(n *node.Node) *Manager {
 	sm := &Manager{
 		Node:      n,
@@ -26,6 +28,7 @@ func NewManager(n *node.Node) *Manager {
 	return sm
 }
 
+// Run start working
 func (m *Manager) Run(ctx context.Context) (err error) {
 	if err = m.syncStatus(); err != nil {
 		logrus.Error("Sync status failed: ", err)

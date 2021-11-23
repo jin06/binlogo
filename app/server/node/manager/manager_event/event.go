@@ -11,11 +11,13 @@ import (
 	"time"
 )
 
+// Manager is event manager
 type Manager struct {
 	cancel context.CancelFunc
 	*manager.Base
 }
 
+// New returns a new Manager
 func New() (m *Manager) {
 	m = &Manager{
 		nil, &manager.Base{Status: manager.STOP},
@@ -23,6 +25,7 @@ func New() (m *Manager) {
 	return
 }
 
+// Run start working when become a leader
 func (m *Manager) Run(ctx context.Context) (err error) {
 	m.Lock()
 	defer m.Unlock()
@@ -92,6 +95,7 @@ func (m *Manager) cleanHistoryEvent() (err error) {
 	return
 }
 
+// Stop stop working when lost leader
 func (m *Manager) Stop() {
 	m.Lock()
 	defer m.Unlock()

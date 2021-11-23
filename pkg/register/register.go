@@ -94,11 +94,11 @@ func (r *Register) Run(ctx context.Context) {
 func (r *Register) reg() (err error) {
 	//r.client, _ = etcd_client.New()
 	r.lease = clientv3.NewLease(r.client)
-	if rep, err2 := r.lease.Grant(context.TODO(), r.ttl); err2 != nil {
-		return err2
-	} else {
-		r.leaseID = rep.ID
+	rep, err := r.lease.Grant(context.TODO(), r.ttl)
+	if err != nil {
+		return
 	}
+	r.leaseID = rep.ID
 	//err = dao_register.Reg(r.registerKey, r.registerData, r.leaseID)
 	b, err := json.Marshal(r.registerData)
 	if err != nil {
