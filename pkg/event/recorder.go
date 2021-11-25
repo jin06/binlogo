@@ -5,6 +5,7 @@ import (
 	"github.com/golang/groupcache/lru"
 	"github.com/jin06/binlogo/pkg/store/dao/dao_event"
 	"github.com/jin06/binlogo/pkg/store/model/event"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"strings"
 	"time"
@@ -75,7 +76,10 @@ func (r Recorder) _send(ctx context.Context) {
 func (r Recorder) flush(force bool) {
 	if force || len(r.flushMap) >= 100 {
 		for _, v := range r.flushMap {
-			dao_event.Update(v)
+			er := dao_event.Update(v)
+			if er != nil {
+				logrus.Errorln("Write event to etcd failed: ", er)
+			}
 		}
 		r.flushMap = map[string]*event.Event{}
 	}

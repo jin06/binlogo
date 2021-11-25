@@ -29,7 +29,7 @@ type Election struct {
 }
 
 // New returns a new Election
-func New(opts ...Option) (e *Election, err error) {
+func New(opts ...Option) (e *Election) {
 	e = &Election{
 		ttl:    5,
 		prefix: dao_cluster.ElectionPrefix(),
@@ -40,20 +40,21 @@ func New(opts ...Option) (e *Election, err error) {
 	for _, v := range opts {
 		v(e)
 	}
-	err = e.init()
+	e.campaignVal = viper.GetString("node.name")
+	e.lock = sync.Mutex{}
+	//err = e.init()
 	return
 }
 
-func (e *Election) init() (err error) {
-	e.campaignVal = viper.GetString("node.name")
+func (e *Election) init() {
 
-	e.lock = sync.Mutex{}
 	e.client = etcd_client.Default()
 	return
 }
 
 // Run start election process
 func (e *Election) Run(ctx context.Context) {
+	e.init()
 	e.campaign(ctx)
 }
 

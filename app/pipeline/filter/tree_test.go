@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestisFilter(t *testing.T) {
+func TestIsFilter(t *testing.T) {
 	tr := &tree{
 		DBBlack:    map[string]bool{"mysql": true},
 		TableBlack: map[string]bool{"mall.order": true},
@@ -20,20 +20,24 @@ func TestisFilter(t *testing.T) {
 			},
 		},
 	}
-	if !tr.isFilter(testMsg) {
+	if tr.isFilter(testMsg) == false {
+		t.Errorf("%s should be filtered. ", testMsg.Table())
 		t.Fail()
 	}
 	testMsg.Content.Head.Database = "mall"
-	if !tr.isFilter(testMsg) {
+	if tr.isFilter(testMsg) == true {
+		t.Errorf("%s should pass ", testMsg.Table())
 		t.Fail()
 	}
 	testMsg.Content.Head.Database = "pass"
-	if tr.isFilter(testMsg) {
+	if tr.isFilter(testMsg) == true {
+		t.Errorf("%s should pass. ", testMsg.Table())
 		t.Fail()
 	}
 	testMsg.Content.Head.Database = "mysql"
 	testMsg.Content.Head.Table = "pass"
-	if !tr.isFilter(testMsg) {
+	if tr.isFilter(testMsg) == true {
+		t.Errorf("%s should pass. ", testMsg.Table())
 		t.Fail()
 	}
 }

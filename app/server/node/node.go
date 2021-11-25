@@ -112,13 +112,10 @@ func (n *Node) Run(ctx context.Context) (err error) {
 
 		ctxElection, cancelElection := context.WithCancel(ctx)
 		defer cancelElection()
-		n.election, err = election.New(
+		n.election = election.New(
 			election.OptionNode(n.Options.Node),
 			election.OptionTTL(5),
 		)
-		if err != nil {
-			return
-		}
 		n.election.Run(ctxElection)
 
 		n.pipeManager.Run(ctx)

@@ -92,3 +92,7 @@ func (msg *Message) ToString() string {
 		msg.Content.Data,
 	)
 }
+
+func (msg *Message) Table() string {
+	return fmt.Sprintf("%s.%s", msg.Content.Head.Database, msg.Content.Head.Table)
+}

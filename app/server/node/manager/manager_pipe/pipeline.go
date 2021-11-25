@@ -62,6 +62,7 @@ func (m *Manager) Run(ctx context.Context) {
 	return
 }
 
+// scanPipelines scan pipeline bind, find pipelines that should run in this node
 func (m *Manager) scanPipelines(pb *scheduler.PipelineBind) (err error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
