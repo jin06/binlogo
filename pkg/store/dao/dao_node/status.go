@@ -25,6 +25,7 @@ func CreateOrUpdateStatus(nodeName string, opts ...node.StatusOption) (ok bool, 
 	}
 	revision := int64(0)
 	s := &node.Status{}
+	s.NodeName = nodeName
 	if len(res.Kvs) > 0 {
 		revision = res.Kvs[0].CreateRevision
 		err = json.Unmarshal(res.Kvs[0].Value, &s)
@@ -49,7 +50,7 @@ func CreateOrUpdateStatus(nodeName string, opts ...node.StatusOption) (ok bool, 
 
 // GetStatus get node status from etcd
 func GetStatus(nodeName string) (s *node.Status, err error) {
-	key := NodePrefix() + "/" + nodeName
+	key := StatusPrefix() + "/" + nodeName
 	res, err := etcd_client.Default().Get(context.TODO(), key)
 	if err != nil {
 		return
@@ -108,14 +109,18 @@ func StatusMap() (mapping map[string]*node.Status, err error) {
 }
 
 // DeleteStatus delete node status in etcd
-func DeleteStatus(name string) (err error) {
+func DeleteStatus(name string) (ok bool, err error) {
 	if name == "" {
-		return errors.New("empty name")
+		err = errors.New("empty name")
+		return
 	}
 	key := StatusPrefix() + "/" + name
-	_, err = etcd_client.Default().Delete(context.Background(), key)
+	res, err := etcd_client.Default().Delete(context.Background(), key)
 	if err != nil {
 		return
+	}
+	if res.Deleted > 0 {
+		ok = true
 	}
 	return
 }

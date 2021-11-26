@@ -85,7 +85,7 @@ func (m *Monitor) checkAllNode() (err error) {
 	}
 	for k := range statusMap {
 		if _, ok := nodesMap[k]; !ok {
-			err1 := dao_node.DeleteStatus(k)
+			_, err1 := dao_node.DeleteStatus(k)
 			if err1 != nil {
 				logrus.Errorln(err1)
 			}

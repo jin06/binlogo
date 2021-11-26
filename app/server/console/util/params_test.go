@@ -1,6 +1,7 @@
 package util
 
 import (
+	"github.com/gin-gonic/gin"
 	"testing"
 )
 
@@ -22,6 +23,11 @@ func TestStartEnd(t *testing.T) {
 		t.Fail()
 	}
 	if start2 >= end2 {
+		t.Fail()
+	}
+
+	s, e := StartEnd(&gin.Context{})
+	if s != 0 || e != 10 {
 		t.Fail()
 	}
 }

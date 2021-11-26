@@ -8,7 +8,6 @@ import (
 	"github.com/jin06/binlogo/pkg/etcd_client"
 	"github.com/jin06/binlogo/pkg/store/model/pipeline"
 	"github.com/sirupsen/logrus"
-	"sort"
 )
 
 // PipelinePrefix returns etcd prefix of pipeline info
@@ -103,56 +102,56 @@ func AllPipelines() (list []*pipeline.Pipeline, err error) {
 	return
 }
 
-type pipelineSlice []*pipeline.Pipeline
-
-func (ps pipelineSlice) Len() int { return len(ps) }
-
-func (ps pipelineSlice) Swap(i, j int) { ps[i], ps[j] = ps[j], ps[i] }
-
-func (ps pipelineSlice) Less(i, j int) bool {
-	return ps[i].CreateTime.Before(ps[i].CreateTime)
-}
+//type pipelineSlice []*pipeline.Pipeline
+//
+//func (ps pipelineSlice) Len() int { return len(ps) }
+//
+//func (ps pipelineSlice) Swap(i, j int) { ps[i], ps[j] = ps[j], ps[i] }
+//
+//func (ps pipelineSlice) Less(i, j int) bool {
+//	return ps[i].CreateTime.Before(ps[i].CreateTime)
+//}
 
 // PagePipeline for pipeline pages
-type PagePipeline struct {
-	Page  int
-	Total int
-	Data  []*pipeline.Pipeline
-}
+//type PagePipeline struct {
+//	Page  int
+//	Total int
+//	Data  []*pipeline.Pipeline
+//}
 
 // PagePipelines get a PagePipeline by page and size
-func PagePipelines(page int, size int) (res *PagePipeline, err error) {
-	if page < 1 {
-		page = 1
-	}
-	if size < 1 {
-		size = 10
-	}
-	all, err := AllPipelines()
-	if err != nil {
-		return
-	}
-	sort.Sort(pipelineSlice(all))
-
-	total := len(all)
-	totalPage := total / size
-	if page > totalPage {
-		page = totalPage
-	}
-	start := (page - 1) * size
-	end := start + size
-	if end > total {
-		end = total
-	}
-	resList := all[start:end]
-
-	res = &PagePipeline{
-		Page:  page,
-		Total: len(all),
-		Data:  resList,
-	}
-	return
-}
+//func PagePipelines(page int, size int) (res *PagePipeline, err error) {
+//	if page < 1 {
+//		page = 1
+//	}
+//	if size < 1 {
+//		size = 10
+//	}
+//	all, err := AllPipelines()
+//	if err != nil {
+//		return
+//	}
+//	sort.Sort(pipelineSlice(all))
+//
+//	total := len(all)
+//	totalPage := total / size
+//	if page > totalPage {
+//		page = totalPage
+//	}
+//	start := (page - 1) * size
+//	end := start + size
+//	if end > total {
+//		end = total
+//	}
+//	resList := all[start:end]
+//
+//	res = &PagePipeline{
+//		Page:  page,
+//		Total: len(all),
+//		Data:  resList,
+//	}
+//	return
+//}
 
 // AllPipelinesMap returns all pipelines from etcd in map form
 func AllPipelinesMap() (mapping map[string]*pipeline.Pipeline, err error) {
@@ -168,28 +167,33 @@ func AllPipelinesMap() (mapping map[string]*pipeline.Pipeline, err error) {
 }
 
 // DeletePipeline delete pipeline info by name
-func DeletePipeline(name string) (err error) {
+func DeletePipeline(name string) (ok bool, err error) {
 	if name == "" {
-		return errors.New("empty name")
+		err = errors.New("empty name")
+		return
 	}
 	key := PipelinePrefix() + "/" + name
-	_, err = etcd_client.Default().Delete(context.Background(), key)
+	res, err := etcd_client.Default().Delete(context.Background(), key)
 	if err != nil {
 		return
+	}
+	if res.Deleted > 0 {
+		ok = true
 	}
 	return
 }
 
 // DeleteCompletePipeline delete pipeline, contains pipeline info, pipeline position
-func DeleteCompletePipeline(name string) (err error) {
+func DeleteCompletePipeline(name string) (ok bool, err error) {
 	if name == "" {
-		return errors.New("empty name")
+		err = errors.New("empty name")
+		return
 	}
-	err = DeletePipeline(name)
+	ok, err = DeletePipeline(name)
 	if err != nil {
 		return
 	}
-	err = DeletePosition(name)
+	_, err = DeletePosition(name)
 	if err != nil {
 		return
 	}

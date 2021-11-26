@@ -1,7 +1,6 @@
 package input
 
 import (
-	"fmt"
 	"github.com/go-mysql-org/go-mysql/canal"
 	"github.com/go-mysql-org/go-mysql/mysql"
 	"github.com/go-mysql-org/go-mysql/replication"
@@ -42,7 +41,7 @@ func (h *canalHandler) OnPosSynced(pos mysql.Position, set mysql.GTIDSet, force 
 		h.ch <- h.msg
 		h.msg = nil
 	}
-	fmt.Println(pos)
+	//fmt.Println(pos)
 	return nil
 }
 

@@ -21,7 +21,7 @@ func UpdatePosition(p *pipeline.Position) (err error) {
 	if err != nil {
 		return
 	}
-	_, err = etcd_client.Default().Put(context.TODO(), key, string(b))
+	_, err = etcd_client.Default().Put(context.Background(), key, string(b))
 	return
 }
 
@@ -64,7 +64,7 @@ func UpdatePositionSafe(pipeName string, opts ...pipeline.OptionPosition) (ok bo
 // GetPosition get pipeline position from etcd
 func GetPosition(pipeName string) (p *pipeline.Position, err error) {
 	key := PositionPrefix() + "/" + pipeName
-	res, err := etcd_client.Default().Get(context.TODO(), key)
+	res, err := etcd_client.Default().Get(context.Background(), key)
 	if err != nil {
 		return
 	}
@@ -79,11 +79,18 @@ func GetPosition(pipeName string) (p *pipeline.Position, err error) {
 }
 
 // DeletePosition delete pipeline positon by pipeline name in etcd
-func DeletePosition(name string) (err error) {
+func DeletePosition(name string) (ok bool, err error) {
 	if name == "" {
-		return errors.New("empty name")
+		err = errors.New("empty name")
+		return
 	}
 	key := PositionPrefix() + "/" + name
-	_, err = etcd_client.Default().Delete(context.TODO(), key)
+	res, err := etcd_client.Default().Delete(context.Background(), key)
+	if err != nil {
+		return
+	}
+	if res.Deleted > 0 {
+		ok = true
+	}
 	return
 }

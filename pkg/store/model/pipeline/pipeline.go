@@ -114,7 +114,9 @@ func WithPipeDelete(d bool) OptionPipeline {
 
 func WithPipeMode(mode Mode) OptionPipeline {
 	return func(p *Pipeline) {
-		p.Mysql.Mode = mode
+		if p.Mysql != nil {
+			p.Mysql.Mode = mode
+		}
 	}
 }
 

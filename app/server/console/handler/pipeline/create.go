@@ -6,8 +6,8 @@ import (
 	"github.com/jin06/binlogo/pkg/pipeline/tool"
 	"github.com/jin06/binlogo/pkg/store/dao/dao_pipe"
 	"github.com/jin06/binlogo/pkg/store/model/pipeline"
+	"github.com/jin06/binlogo/pkg/util/random"
 	"github.com/sirupsen/logrus"
-	"math/rand"
 	"time"
 )
 
@@ -28,7 +28,8 @@ func Create(c *gin.Context) {
 
 	logrus.Debugf("%v \n", *q)
 	if q.Mysql.ServerId == 0 {
-		q.Mysql.ServerId = uint32(rand.New(rand.NewSource(time.Now().UnixNano())).Int31n(100000000))
+		//q.Mysql.ServerId = uint32(rand.New(rand.NewSource(time.Now().UnixNano())).Int31n(100000000))
+		q.Mysql.ServerId = random.Uint32()
 	}
 	q.Status = pipeline.STATUS_STOP
 

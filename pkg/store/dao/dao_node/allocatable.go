@@ -29,5 +29,21 @@ func UpdateAllocatable(al *node.Allocatable) (err error) {
 	}
 	_, err = etcd_client.Default().Put(context.Background(), key, string(b))
 	return
+}
 
+// DeleteAllocatable delete allocatable data in etcd
+func DeleteAllocatable(nodeName string) (ok bool, err error) {
+	if nodeName == "" {
+		err = errors.New("empty name")
+		return
+	}
+	key := AllocatablePrefix() + "/" + nodeName
+	res, err := etcd_client.Default().Delete(context.Background(), key)
+	if err != nil {
+		return
+	}
+	if res.Deleted > 0 {
+		ok = true
+	}
+	return
 }

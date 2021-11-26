@@ -6,14 +6,9 @@ import (
 	"testing"
 )
 
-func Init() {
-	configs.DefaultEnv()
-	configs.InitConfigs()
-	DefaultETCD()
-}
-
 func TestCreate(t *testing.T) {
-	Init()
+	configs.InitGoTest()
+	DefaultETCD()
 	testPipe := pipeline.NewPipeline("go_test_pipeline")
 	ok, err := Create(testPipe)
 	if err != nil {
@@ -25,7 +20,8 @@ func TestCreate(t *testing.T) {
 }
 
 func TestUpdate(t *testing.T) {
-	Init()
+	configs.InitGoTest()
+	DefaultETCD()
 	testPipe := pipeline.NewPipeline("go_test_pipeline")
 	testPipe.Remark = "update"
 	ok, err := Update(testPipe)
@@ -38,7 +34,8 @@ func TestUpdate(t *testing.T) {
 }
 
 func TestDelete(t *testing.T) {
-	Init()
+	configs.InitGoTest()
+	DefaultETCD()
 	testPipe := pipeline.NewPipeline("go_test_pipeline")
 	testPipe.Remark = "update"
 	ok , err := Delete(testPipe)

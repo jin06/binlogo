@@ -17,15 +17,15 @@ func TestRowsMessage(t *testing.T) {
 		Action: canal.InsertAction,
 		Table: &schema.Table{
 			Schema: "database1",
-			Name: "table1",
+			Name:   "table1",
 			Columns: []schema.TableColumn{
 				schema.TableColumn{
 					Name: "id",
 					Type: schema.TYPE_NUMBER,
 				},
 			},
-			Indexes: []*schema.Index{},
-			PKColumns: []int{},
+			Indexes:         []*schema.Index{},
+			PKColumns:       []int{},
 			UnsignedColumns: []int{},
 		},
 		Rows: [][]interface{}{
@@ -48,6 +48,16 @@ func TestRowsMessage(t *testing.T) {
 				t.Fail()
 			}
 		}
+	}
 
+	rowsEvent.Action = canal.UpdateAction
+	msg = rowsMessage(rowsEvent)
+	if _, ok := msg.Content.Data.(message2.Update); !ok {
+		t.Fail()
+	}
+	rowsEvent.Action = canal.DeleteAction
+	msg = rowsMessage(rowsEvent)
+	if _, ok := msg.Content.Data.(message2.Delete); !ok {
+		t.Fail()
 	}
 }

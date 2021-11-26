@@ -73,24 +73,18 @@ func (msg *Message) JsonContent() (string, error) {
 
 // ToString returns message's string data
 func (msg *Message) ToString() string {
-	return fmt.Sprintf(
-		`
-	Status: %v
-	Filter: %v
-	BingloPosition.File: %v
-	BingloPosition.Pos: %v
-	BingloPosition.GTID: %v
-	Content.Head: %+v
-	Content.Data: %+v
-			`,
-		msg.Status,
-		msg.Filter,
-		msg.BinlogPosition.BinlogFile,
-		msg.BinlogPosition.BinlogPosition,
-		msg.BinlogPosition.GTIDSet,
-		*msg.Content.Head,
-		msg.Content.Data,
-	)
+	res := "Status: " + fmt.Sprintf("%v\n", msg.Status)
+	res += "Filter: " + fmt.Sprintf("%v\n", msg.Filter)
+	if msg.BinlogPosition != nil {
+		res += "BinlogPosition.File: " + fmt.Sprintf("%v\n", msg.BinlogPosition.BinlogFile)
+		res += "BinlogPosition.Pos: " + fmt.Sprintf("%v\n", msg.BinlogPosition.BinlogPosition)
+		res += "BinlogPosition.GTID: " + fmt.Sprintf("%v\n", msg.BinlogPosition.GTIDSet)
+	}
+	if msg.Content != nil {
+		res += "Content.Head: " + fmt.Sprintf("%v\n", msg.Content.Head)
+		res += "Content.Data: " + fmt.Sprintf("%v\n", msg.Content.Data)
+	}
+	return res
 }
 
 func (msg *Message) Table() string {

@@ -2,15 +2,43 @@ package instance
 
 import (
 	"github.com/jin06/binlogo/configs"
+	"github.com/jin06/binlogo/pkg/store/dao/dao_pipe"
+	"github.com/jin06/binlogo/pkg/store/model/pipeline"
+	"github.com/jin06/binlogo/pkg/util/random"
 	"testing"
+	"time"
 )
 
-func TestGetInstanceByName(t *testing.T)  {
+func TestGetInstanceByName(t *testing.T) {
 	configs.DefaultEnv()
 	configs.InitConfigs()
-	i, err := GetInstanceByName("go_test_pipeline")
+	pipeName := "go_test_pipeline" + random.String()
+	_, err := GetInstanceByName(pipeName)
 	if err != nil {
 		t.Fail()
 	}
-	t.Log(i)
+	_, err = dao_pipe.CreatePipeline(&pipeline.Pipeline{
+		Name:       pipeName,
+		Status:     "",
+		AliasName:  "",
+		Mysql:      nil,
+		Filters:    nil,
+		Output:     nil,
+		Replicas:   0,
+		CreateTime: time.Time{},
+		Remark:     "",
+		IsDelete:   false,
+	})
+	if err != nil {
+		t.Error(err)
+	}
+	_, err = GetInstanceByName(pipeName)
+	if err != nil {
+		t.Error(err)
+	}
+	_, err = GetInstanceByName("")
+	if err == nil {
+		t.Fail()
+	}
+
 }

@@ -164,11 +164,11 @@ func (m *Monitor) deletePipeline(p *pipeline.Pipeline) (err error) {
 	if ins != nil {
 		return
 	}
-	err = dao_pipe.DeletePosition(p.Name)
+	_, err = dao_pipe.DeletePosition(p.Name)
 	if err != nil {
 		return
 	}
-	err = dao_pipe.DeleteCompletePipeline(p.Name)
+	_, err = dao_pipe.DeleteCompletePipeline(p.Name)
 	if err != nil {
 		return
 	}

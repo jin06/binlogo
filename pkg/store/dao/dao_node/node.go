@@ -6,7 +6,6 @@ import (
 	"errors"
 	"github.com/coreos/etcd/clientv3"
 	"github.com/jin06/binlogo/pkg/etcd_client"
-	"github.com/jin06/binlogo/pkg/store/etcd"
 	"github.com/jin06/binlogo/pkg/store/model/node"
 	"github.com/sirupsen/logrus"
 )
@@ -24,25 +23,22 @@ func NodeRegisterPrefix() string {
 // CreateNode create a node in etcd
 func CreateNode(n *node.Node) (err error) {
 	key := NodePrefix() + "/" + n.Name
-	ctx, cancel := context.WithTimeout(context.TODO(), etcd.E.Timeout)
-	defer cancel()
 	v, err := json.Marshal(n)
 	if err != nil {
 		return
 	}
-	_, err = etcd_client.Default().Put(ctx, key, string(v))
+	_, err = etcd_client.Default().Put(context.Background(), key, string(v))
 	return
 }
 
 // CreateNodeIfNotExist create a node in etcd if that not exist
 func CreateNodeIfNotExist(n *node.Node) (err error) {
 	key := NodePrefix() + "/" + n.Name
-	ctx, cancel := context.WithTimeout(context.TODO(), etcd.E.Timeout)
-	defer cancel()
 	b, err := json.Marshal(n)
 	if err != nil {
 		return
 	}
+	ctx := context.Background()
 	txn := etcd_client.Default().Txn(ctx).If(clientv3.Compare(clientv3.CreateRevision(key), "=", 0))
 	txn = txn.Then(clientv3.OpPut(key, string(b)))
 	resp, err := txn.Commit()
@@ -92,10 +88,8 @@ func UpdateNode(nodeName string, opts ...node.NodeOption) (ok bool, err error) {
 
 // GetNode get node data from etcd
 func GetNode(name string) (n *node.Node, err error) {
-	ctx, cancel := context.WithTimeout(context.TODO(), etcd.E.Timeout)
-	defer cancel()
 	key := NodePrefix() + "/" + name
-	res, err := etcd_client.Default().Get(ctx, key)
+	res, err := etcd_client.Default().Get(context.Background(), key)
 	if err != nil {
 		return
 	}
@@ -180,6 +174,23 @@ func AllWorkNodesMap() (res map[string]*node.Node, err error) {
 		if _, ok := regMap[k]; !ok {
 			delete(res, k)
 		}
+	}
+	return
+}
+
+// DeleteNode delete a node by node name
+func DeleteNode(name string) (ok bool, err error) {
+	if name == "" {
+		err = errors.New("empty name")
+		return
+	}
+	key := NodePrefix() + "/" + name
+	res, err := etcd_client.Default().Delete(context.Background(), key)
+	if err != nil {
+		return
+	}
+	if res.Deleted > 0 {
+		ok = true
 	}
 	return
 }

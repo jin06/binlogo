@@ -2,20 +2,38 @@ package message
 
 import "testing"
 
-func TestJson(t *testing.T) {
+func TestMessage(t *testing.T) {
 	msg := New()
-	js, err := msg.Json()
-	if err != nil {
+	if _, err := msg.Json(); err != nil {
 		t.Error(err)
 	}
-	t.Log(js)
+
+	if _, err := msg.JsonContent(); err != nil {
+		t.Error(err)
+	}
+
+	msg.Content = &Content{
+		Head: &Head{
+			Type:     "",
+			Time:     0,
+			Database: "",
+			Table:    "",
+			Position: nil,
+		},
+		Data: map[string]string{},
+	}
+
+	if _, err := msg.Json(); err != nil {
+		t.Error(err)
+	}
+	if _, err := msg.JsonContent(); err != nil {
+		t.Error(err)
+	}
 }
 
-func TestJsonContent(t *testing.T) {
+func TestString(t *testing.T) {
 	msg := New()
-	js, err := msg.JsonContent()
-	if err != nil {
-		t.Error(err)
+	if msg.ToString() == "" {
+		t.Fail()
 	}
-	t.Log(js)
 }

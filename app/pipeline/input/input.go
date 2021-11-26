@@ -69,7 +69,7 @@ func New(opts ...Option) (input *Input, err error) {
 		v(options)
 	}
 	input = &Input{
-		Options: options,
+		Options:    options,
 	}
 	return
 }
@@ -130,7 +130,7 @@ func (r *Input) runCanal() (err error) {
 			startErr := r.canal.StartFromGTID(canGTID)
 			if startErr != nil {
 				fmt.Println("123", startErr)
-				event.Event(event2.NewErrorPipeline(r.pipe.Name, "Start mysql replication error: "+startErr.Error()))
+				event.Event(event2.NewErrorPipeline(r.Options.PipeName, "Start mysql replication error: "+startErr.Error()))
 			}
 		}()
 		return
@@ -163,7 +163,7 @@ func (r *Input) runCanal() (err error) {
 			startErr := r.canal.RunFrom(canPos)
 			if startErr != nil {
 				fmt.Println(startErr)
-				event.Event(event2.NewErrorPipeline(r.pipe.Name, "Start mysql replication error: "+startErr.Error()))
+				event.Event(event2.NewErrorPipeline(r.Options.PipeName, "Start mysql replication error: "+startErr.Error()))
 			}
 		}()
 		return

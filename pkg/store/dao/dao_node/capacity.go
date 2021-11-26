@@ -62,3 +62,20 @@ func CapacityMap() (mapping map[string]*node.Capacity, err error) {
 
 	return
 }
+
+// DeleteCapacity delete capacity in etcd
+func DeleteCapacity(nodeName string) (ok bool, err error) {
+	if nodeName == "" {
+		err = errors.New("empty name")
+		return
+	}
+	key := CapacityPrefix() + "/" + nodeName
+	res, err := etcd_client.Default().Delete(context.Background(), key)
+	if err != nil {
+		return
+	}
+	if res.Deleted > 0 {
+		ok = true
+	}
+	return
+}
