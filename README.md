@@ -22,7 +22,7 @@ the user's configuration. This is some advantages:
 
 * Install binlogo. Binlogo's download address: [Download Address](https://github.com/jin06/binlogo/releases)
 
-* Message Format： [Data format of binlogo output](/docs/message-format.md)
+* Message Format： [Data format of binlogo output](/docs/1.0.*/message-format.md)
 
 * Start binlogo.
   * Edit config. ${binlogo-path}/configs/binlogo.yaml

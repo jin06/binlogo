@@ -14,7 +14,7 @@ Binlogo是一个基于MySQL的binlog开发的数据同步中间件。同步binlo
 
 * 安装Binlogo. Binlogo的下载地址: [Download Address](https://github.com/jin06/binlogo/releases)
 
-* 数据格式： [Binlogo输出的数据格式](/docs/message-format.md)
+* 数据格式： [Binlogo输出的数据格式](/docs/1.0.*/message-format.md)
 
 * 启动Binlogo
   * 配置文件：解压下载的程序，在程序目录configs中有配置文件： ${binlogo-path}/configs/binlogo.yaml
@@ -91,7 +91,7 @@ Binlogo是一个基于MySQL的binlog开发的数据同步中间件。同步binlo
 
 ### 其他输出端
 
-* [HTTP](/docs/zh/配置http输出.md)
+* [HTTP](/docs/1.0.*/zh/configure-http-output.md)
 
 ### 文档
 

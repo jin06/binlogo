@@ -1,1 +1,5 @@
 package rabbitmq
+
+func New() {
+
+}

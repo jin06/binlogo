@@ -61,14 +61,13 @@ func recordPosition(msg *message2.Message) (err error) {
 }
 
 func (o *Output) handle(msg *message2.Message) {
-	//logrus.Debug("Wait send message")
-	//logrus.Debugf("Output read message: %v \n", *msg)
 	defer func() {
 		err2 := recordPosition(msg)
 		if err2 != nil {
 			logrus.Error("Record position error, ", err2)
 		}
 	}()
+
 	if !msg.Filter {
 		ok, err := o.Sender.Send(msg)
 		if err != nil {
@@ -80,9 +79,7 @@ func (o *Output) handle(msg *message2.Message) {
 			return
 		}
 	}
-	//if err := recordPosition(msg); err != nil {
-	//	logrus.Error(err)
-	//}
+
 }
 
 // Run start Output to send message
@@ -103,7 +100,7 @@ func (o *Output) Run(ctx context.Context) (err error) {
 				{
 					return
 				}
-			case msg := <-o.InChan:
+			case msg := <- o.InChan:
 				{
 					o.handle(msg)
 				}
