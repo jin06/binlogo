@@ -5,6 +5,7 @@ import (
 	"github.com/coreos/etcd/clientv3"
 	"github.com/jin06/binlogo/configs"
 	"github.com/spf13/viper"
+	"sync"
 	"time"
 )
 
@@ -27,7 +28,11 @@ func New() (cli *clientv3.Client, err error) {
 var client *clientv3.Client
 
 // Default global default clientv3.Client
+var mutex sync.Mutex
+
 func Default() *clientv3.Client {
+	mutex.Lock()
+	defer mutex.Unlock()
 	if client == nil {
 		var err error
 		client, err = New()

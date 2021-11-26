@@ -13,6 +13,8 @@ for d in $(go list ./... | grep -v vendor); do
     fi
 done
 
+export CODECOV_TOKEN=$(cat ./scripts/codecov-token)
+
 bash <(curl -s https://codecov.io/bash)
 
 rm coverage.txt

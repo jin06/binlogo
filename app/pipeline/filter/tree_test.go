@@ -2,6 +2,7 @@ package filter
 
 import (
 	message2 "github.com/jin06/binlogo/app/pipeline/message"
+	"github.com/jin06/binlogo/pkg/store/model/pipeline"
 	"testing"
 )
 
@@ -38,6 +39,28 @@ func TestIsFilter(t *testing.T) {
 	testMsg.Content.Head.Table = "pass"
 	if tr.isFilter(testMsg) == true {
 		t.Errorf("%s should pass. ", testMsg.Table())
+		t.Fail()
+	}
+}
+
+func TestNewTree(t *testing.T) {
+	filters := []*pipeline.Filter{
+		&pipeline.Filter{
+			Type: pipeline.FILTER_BLACK,
+			Rule: "mysql.user",
+		},
+	}
+	tr := newTree(filters)
+	if len(tr.DBBlack) != 0 {
+		t.Fail()
+	}
+	if len(tr.DBWhite) != 0 {
+		t.Fail()
+	}
+	if len(tr.TableBlack) != 1 {
+		t.Fail()
+	}
+	if len(tr.TableWhite) != 0 {
 		t.Fail()
 	}
 }

@@ -9,3 +9,4 @@ bin/
 scripts/codecov-token
 profile.out
 coverage.txt
+codecov.yml

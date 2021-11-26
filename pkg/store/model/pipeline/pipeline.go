@@ -19,6 +19,30 @@ type Pipeline struct {
 	IsDelete   bool      `json:"is_delete"`
 }
 
+func NewPipeline(name string) (pipe *Pipeline) {
+	pipe = &Pipeline{
+		Name:      name,
+		Status:    STATUS_STOP,
+		AliasName: name,
+		Mysql: &Mysql{
+
+		},
+		Filters: []*Filter{},
+		Output: &Output{
+			Sender: &Sender{
+				Kafka:  nil,
+				Stdout: nil,
+				Http:   nil,
+			},
+		},
+		Replicas:   0,
+		CreateTime: time.Now(),
+		Remark:     name,
+		IsDelete:   false,
+	}
+	return
+}
+
 // Status of Pipeline
 type Status string
 

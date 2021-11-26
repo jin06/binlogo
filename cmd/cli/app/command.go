@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/jin06/binlogo/configs"
 	"github.com/jin06/binlogo/pkg/blog"
-	"github.com/jin06/binlogo/pkg/ps"
 	store2 "github.com/jin06/binlogo/pkg/store"
 	etcd2 "github.com/jin06/binlogo/pkg/store/etcd"
 	"github.com/jin06/binlogo/pkg/store/model/pipeline"
@@ -37,7 +36,6 @@ func cmdMemory() (cmd *cobra.Command) {
 		Short: "Show server memory usage",
 		Long:  "Show server memory usage",
 		Run: func(cmd *cobra.Command, args []string) {
-			ps.Memory()
 		},
 	}
 

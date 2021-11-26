@@ -1,9 +1,13 @@
 package manager_pipe
 
 import (
+	"context"
+	"github.com/jin06/binlogo/configs"
+	"github.com/jin06/binlogo/pkg/store/dao/dao_sche"
 	"github.com/jin06/binlogo/pkg/store/model/node"
 	"github.com/jin06/binlogo/pkg/store/model/scheduler"
 	"testing"
+	"time"
 )
 
 func TestScanPipelines(t *testing.T) {
@@ -33,4 +37,18 @@ func TestScanPipelines(t *testing.T) {
 	if m.mapping["tomato"] == true {
 		t.Fail()
 	}
+}
+
+func TestRun(t *testing.T) {
+	configs.DefaultEnv()
+	configs.InitConfigs()
+	_, err := dao_sche.UpdatePipelineBind("go_test_pipeline", "go_test_node")
+	if err != nil {
+		t.Error(err)
+	}
+	m := New(&node.Node{
+		Name: "go_test_node",
+	})
+	m.Run(context.Background())
+	time.Sleep(time.Millisecond*200)
 }

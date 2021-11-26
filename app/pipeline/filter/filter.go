@@ -3,10 +3,7 @@ package filter
 import (
 	"context"
 	message2 "github.com/jin06/binlogo/app/pipeline/message"
-	"github.com/jin06/binlogo/pkg/pipeline/tool"
-	pipeline2 "github.com/jin06/binlogo/pkg/store/model/pipeline"
 	"github.com/sirupsen/logrus"
-	"strings"
 )
 
 // Filter filter message by rules
@@ -31,35 +28,10 @@ func New(opts ...Option) (filter *Filter, err error) {
 }
 
 func (f *Filter) init() (err error) {
-	f.rulesTree = tree{
-		DBBlack:    map[string]bool{},
-		TableBlack: map[string]bool{},
-		DBWhite:    map[string]bool{},
-		TableWhite: map[string]bool{},
+	if f.Options.Pipe == nil {
+		f.rulesTree = newTree(nil)
 	}
-	if f.Options.Pipe != nil {
-		for _, v := range f.Options.Pipe.Filters {
-			if !tool.FilterVerify(v) {
-				continue
-			}
-			arr := strings.Split(v.Rule, ".")
-			if len(arr) == 1 {
-				if v.Type == pipeline2.FILTER_BLACK {
-					f.rulesTree.DBBlack[v.Rule] = true
-				} else {
-					f.rulesTree.DBWhite[v.Rule] = true
-				}
-			} else {
-				if v.Type == pipeline2.FILTER_BLACK {
-					f.rulesTree.TableBlack[v.Rule] = true
-				} else {
-					f.rulesTree.TableWhite[v.Rule] = true
-				}
-			}
-
-		}
-	}
-
+	f.rulesTree = newTree(f.Options.Pipe.Filters)
 	return
 }
 

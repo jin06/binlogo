@@ -30,7 +30,7 @@ func CreateNode(n *node.Node) (err error) {
 	if err != nil {
 		return
 	}
-	_, err = etcd.E.Client.Put(ctx, key, string(v))
+	_, err = etcd_client.Default().Put(ctx, key, string(v))
 	return
 }
 
@@ -43,7 +43,7 @@ func CreateNodeIfNotExist(n *node.Node) (err error) {
 	if err != nil {
 		return
 	}
-	txn := etcd.E.Client.Txn(ctx).If(clientv3.Compare(clientv3.CreateRevision(key), "=", 0))
+	txn := etcd_client.Default().Txn(ctx).If(clientv3.Compare(clientv3.CreateRevision(key), "=", 0))
 	txn = txn.Then(clientv3.OpPut(key, string(b)))
 	resp, err := txn.Commit()
 
@@ -95,7 +95,7 @@ func GetNode(name string) (n *node.Node, err error) {
 	ctx, cancel := context.WithTimeout(context.TODO(), etcd.E.Timeout)
 	defer cancel()
 	key := NodePrefix() + "/" + name
-	res, err := etcd.E.Client.Get(ctx, key)
+	res, err := etcd_client.Default().Get(ctx, key)
 	if err != nil {
 		return
 	}
@@ -115,7 +115,7 @@ func AllNodes() (list []*node.Node, err error) {
 func _allNodes(key string) (list []*node.Node, err error) {
 	list = []*node.Node{}
 	//key := NodePrefix() + "/"
-	res, err := etcd.E.Client.Get(context.TODO(), key, clientv3.WithPrefix())
+	res, err := etcd_client.Default().Get(context.TODO(), key, clientv3.WithPrefix())
 	if err != nil {
 		return
 	}

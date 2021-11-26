@@ -8,6 +8,9 @@ func GetAllCount() (count int, err error) {
 	if err != nil {
 		return
 	}
+	if res == nil {
+		return 0, nil
+	}
 	count = len(res)
 	return
 }

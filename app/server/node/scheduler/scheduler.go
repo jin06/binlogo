@@ -89,7 +89,7 @@ func (s *Scheduler) Stop() {
 func (s *Scheduler) scheduleOne(p *pipeline.Pipeline) (err error) {
 	logrus.Debugf("schedule one: %v", p)
 	//p := s.queue.getOne()
-	a := newAlgorithm(p)
+	a := newAlgorithm(withAlgPipe(p))
 	defer func() {
 		if err != nil {
 			event.Event(event2.NewErrorPipeline(p.Name, "Scheduling error, "+err.Error()))

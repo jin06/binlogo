@@ -7,10 +7,6 @@ import (
 	"os"
 )
 
-//func init() {
-//	InitViperFromFile()
-//}
-
 // InitViperFromFile read config file and write to viper
 func InitViperFromFile(file string) {
 	if file == "" {
@@ -42,11 +38,28 @@ func InitConfigs() {
 	if consolePort == "" {
 		consolePort = CONSOLE_PORT
 	}
+	viper.SetDefault("console.port", consolePort)
 	viper.SetDefault("etcd.endpoints", os.Getenv("ETCD_ENDPOINTS"))
 	viper.SetDefault("etcd.password", os.Getenv("ETCD_PASSWORD"))
-	viper.SetDefault("console.port", consolePort)
-
 	ENV = Env(viper.GetString("env"))
 	NodeName = viper.GetString("node.name")
 	NodeIP, _ = ip.LocalIp()
 }
+
+// InitEnv sets some default values to environment for testing
+func DefaultEnv() {
+	_ = os.Setenv("NODE_NAME", "go_test_node")
+	_ = os.Setenv("BINLOGO_ENV", "dev")
+	_ = os.Setenv("CLUSTER_NAME", "go_test_cluster")
+	_ = os.Setenv("CONSOLE_LISTEN", "0.0.0.0")
+	_ = os.Setenv("CONSOLE_PORT", "19999")
+	_ = os.Setenv("ETCD_ENDPOINTS", "localhost:12379")
+	_ = os.Setenv("ETCD_PASSWORD", "")
+}
+
+// InitGoTest init environment for testing
+func InitGoTest() {
+	DefaultEnv()
+	InitConfigs()
+}
+

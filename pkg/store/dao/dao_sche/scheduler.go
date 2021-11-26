@@ -4,7 +4,6 @@ import (
 	"context"
 	"github.com/coreos/etcd/clientv3"
 	"github.com/jin06/binlogo/pkg/etcd_client"
-	"github.com/jin06/binlogo/pkg/store/etcd"
 	"github.com/jin06/binlogo/pkg/store/model/scheduler"
 )
 
@@ -15,7 +14,7 @@ func PipeBindPrefix() string {
 
 // GetPipelineBind get pipeline bind from etcd
 func GetPipelineBind() (pb *scheduler.PipelineBind, err error) {
-	res, err := etcd.E.Client.Get(context.TODO(), PipeBindPrefix())
+	res, err := etcd_client.Default().Get(context.TODO(), PipeBindPrefix())
 	if err != nil {
 		return
 	}

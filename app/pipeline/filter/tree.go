@@ -3,6 +3,9 @@ package filter
 import (
 	"fmt"
 	message2 "github.com/jin06/binlogo/app/pipeline/message"
+	"github.com/jin06/binlogo/pkg/pipeline/tool"
+	"github.com/jin06/binlogo/pkg/store/model/pipeline"
+	"strings"
 )
 
 type tree struct {
@@ -28,4 +31,37 @@ func (t *tree) isFilter(msg *message2.Message) bool {
 	}
 
 	return false
+}
+
+func newTree(filters []*pipeline.Filter) (res tree) {
+	res = tree{
+		DBBlack:    map[string]bool{},
+		TableBlack: map[string]bool{},
+		DBWhite:    map[string]bool{},
+		TableWhite: map[string]bool{},
+	}
+	if filters == nil {
+		return
+	}
+	for _, v := range filters {
+		if !tool.FilterVerify(v) {
+			continue
+		}
+		arr := strings.Split(v.Rule, ".")
+		if len(arr) == 1 {
+			if v.Type == pipeline.FILTER_BLACK {
+				res.DBBlack[v.Rule] = true
+			} else {
+				res.DBWhite[v.Rule] = true
+			}
+		} else {
+			if v.Type == pipeline.FILTER_BLACK {
+				res.TableBlack[v.Rule] = true
+			} else {
+				res.TableWhite[v.Rule] = true
+			}
+		}
+
+	}
+	return
 }

@@ -35,6 +35,12 @@ func CompleteInfo(i *Item) (err error) {
 }
 
 func completePipelineRun(i *Item, pMap map[string]*pipeline.Instance) (err error) {
+	if i == nil {
+		return
+	}
+	if i.Pipeline == nil {
+		return
+	}
 	i.Info.Instance = &pipeline.Instance{}
 	if pMap != nil {
 		if _, ok := pMap[i.Pipeline.Name]; ok {
@@ -42,6 +48,7 @@ func completePipelineRun(i *Item, pMap map[string]*pipeline.Instance) (err error
 		}
 		return
 	}
+
 	ins, err := dao_pipe.GetInstance(i.Pipeline.Name)
 	if err != nil {
 		return

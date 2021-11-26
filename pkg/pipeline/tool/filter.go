@@ -107,6 +107,9 @@ func (t *Filter) IsFilter(msg *message.Message) bool {
 // FilterVerifyStr verify sting correct
 // return false if illegal
 func FilterVerifyStr(s string) bool {
+	if s == "" {
+		return false
+	}
 	res := strings.Split(s, ".")
 	if len(res) > 2 {
 		return false
@@ -121,6 +124,9 @@ func FilterVerifyStr(s string) bool {
 // return false is illegal
 func FilterVerify(f *pipeline.Filter) bool {
 	if f.Type != pipeline.FILTER_BLACK && f.Type != pipeline.FILTER_WHITE {
+		return false
+	}
+	if f.Rule == "" {
 		return false
 	}
 	res := strings.Split(f.Rule, ".")

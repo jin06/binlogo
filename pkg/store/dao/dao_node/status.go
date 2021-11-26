@@ -6,7 +6,6 @@ import (
 	"errors"
 	"github.com/coreos/etcd/clientv3"
 	"github.com/jin06/binlogo/pkg/etcd_client"
-	"github.com/jin06/binlogo/pkg/store/etcd"
 	"github.com/jin06/binlogo/pkg/store/model/node"
 	"github.com/sirupsen/logrus"
 )
@@ -20,7 +19,7 @@ func StatusPrefix() string {
 // create if not exist
 func CreateOrUpdateStatus(nodeName string, opts ...node.StatusOption) (ok bool, err error) {
 	key := StatusPrefix() + "/" + nodeName
-	res, err := etcd.E.Client.Get(context.TODO(), key)
+	res, err := etcd_client.Default().Get(context.TODO(), key)
 	if err != nil {
 		return
 	}
@@ -37,7 +36,7 @@ func CreateOrUpdateStatus(nodeName string, opts ...node.StatusOption) (ok bool, 
 		v(s)
 	}
 
-	txn := etcd.E.Client.Txn(context.TODO()).If(clientv3.Compare(clientv3.CreateRevision(key), "=", revision))
+	txn := etcd_client.Default().Txn(context.TODO()).If(clientv3.Compare(clientv3.CreateRevision(key), "=", revision))
 	b, _ := json.Marshal(s)
 	txn = txn.Then(clientv3.OpPut(key, string(b)))
 	resp, err := txn.Commit()
@@ -51,7 +50,7 @@ func CreateOrUpdateStatus(nodeName string, opts ...node.StatusOption) (ok bool, 
 // GetStatus get node status from etcd
 func GetStatus(nodeName string) (s *node.Status, err error) {
 	key := NodePrefix() + "/" + nodeName
-	res, err := etcd.E.Client.Get(context.TODO(), key)
+	res, err := etcd_client.Default().Get(context.TODO(), key)
 	if err != nil {
 		return
 	}
@@ -73,7 +72,7 @@ func CreateStatusIfNotExist(n *node.Status) (err error) {
 	if err != nil {
 		return
 	}
-	txn := etcd.E.Client.Txn(context.TODO()).If(clientv3.Compare(clientv3.CreateRevision(key), "=", 0))
+	txn := etcd_client.Default().Txn(context.TODO()).If(clientv3.Compare(clientv3.CreateRevision(key), "=", 0))
 	txn = txn.Then(clientv3.OpPut(key, string(b)))
 	resp, err := txn.Commit()
 
@@ -87,7 +86,7 @@ func CreateStatusIfNotExist(n *node.Status) (err error) {
 // StatusMap returns all node status in map form
 func StatusMap() (mapping map[string]*node.Status, err error) {
 	key := StatusPrefix()
-	res, err := etcd.E.Client.Get(context.TODO(), key, clientv3.WithPrefix())
+	res, err := etcd_client.Default().Get(context.TODO(), key, clientv3.WithPrefix())
 	if err != nil {
 		return
 	}

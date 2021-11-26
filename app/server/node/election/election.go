@@ -4,12 +4,12 @@ import (
 	"context"
 	"github.com/coreos/etcd/clientv3"
 	"github.com/coreos/etcd/clientv3/concurrency"
+	"github.com/jin06/binlogo/configs"
 	"github.com/jin06/binlogo/pkg/etcd_client"
 	"github.com/jin06/binlogo/pkg/node/role"
 	"github.com/jin06/binlogo/pkg/store/dao/dao_cluster"
 	node2 "github.com/jin06/binlogo/pkg/store/model/node"
 	"github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
 	"sync"
 	"time"
 )
@@ -23,7 +23,7 @@ type Election struct {
 	ttl         int
 	prefix      string
 	role        role.Role
-	lock        sync.Mutex
+	eleLock     sync.Mutex
 	roleMutex   sync.Mutex
 	RoleCh      chan role.Role
 }
@@ -31,23 +31,25 @@ type Election struct {
 // New returns a new Election
 func New(opts ...Option) (e *Election) {
 	e = &Election{
-		ttl:    5,
-		prefix: dao_cluster.ElectionPrefix(),
-		role:   role.FOLLOWER,
-		RoleCh: make(chan role.Role, 1000),
-		lock:   sync.Mutex{},
+		ttl:     5,
+		prefix:  dao_cluster.ElectionPrefix(),
+		role:    role.FOLLOWER,
+		RoleCh:  make(chan role.Role, 1000),
+		eleLock: sync.Mutex{},
 	}
 	for _, v := range opts {
 		v(e)
 	}
-	e.campaignVal = viper.GetString("node.name")
-	e.lock = sync.Mutex{}
+	if e.node == nil {
+		e.campaignVal = configs.NodeName
+	} else {
+		e.campaignVal = e.node.Name
+	}
 	//err = e.init()
 	return
 }
 
 func (e *Election) init() {
-
 	e.client = etcd_client.Default()
 	return
 }
@@ -66,13 +68,7 @@ func (e *Election) campaign(ctx context.Context) {
 		}()
 		for {
 			e.SetRole(role.FOLLOWER)
-			time.Sleep(time.Second)
-			//sen, err := concurrency.NewSession(e.client, concurrency.WithTTL(e.ttl))
-			//cli, err := etcd_client.New()
-			//if err != nil {
-			//	logrus.Error("campaign", err)
-			//	continue
-			//}
+			//time.Sleep(time.Second)
 
 			sen, errSe := concurrency.NewSession(e.client, concurrency.WithTTL(e.ttl))
 			if errSe != nil {
@@ -84,7 +80,7 @@ func (e *Election) campaign(ctx context.Context) {
 				sen,
 				e.prefix,
 			)
-			e.election = ele
+			e.setElection(ele)
 
 			logrus.Info("Run for election")
 			ctx1, _ := context.WithCancel(ctx)
@@ -145,9 +141,23 @@ func (e *Election) SetRole(r role.Role) {
 	e.RoleCh <- r
 }
 
+// getElection get etcd election client
+func (e *Election) getElection() *concurrency.Election {
+	e.eleLock.Lock()
+	defer e.eleLock.Unlock()
+	return e.election
+}
+
+// setElection sets etcd election client
+func (e *Election) setElection(ele *concurrency.Election) {
+	e.eleLock.Lock()
+	defer e.eleLock.Unlock()
+	e.election = ele
+}
+
 // Leader returns name of current leader node
 func (e *Election) Leader() (name string, err error) {
-	res, err := e.election.Leader(context.TODO())
+	res, err := e.getElection().Leader(context.TODO())
 	if err != nil {
 		return
 	}
@@ -169,5 +179,8 @@ func (e *Election) Resign(ctx context.Context) (err error) {
 		return
 	}
 	err = e.election.Resign(ctx)
+	if err == nil {
+		e.SetRole(role.FOLLOWER)
+	}
 	return
 }

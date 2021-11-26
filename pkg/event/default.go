@@ -17,5 +17,7 @@ func Init() {
 // Event client call this function to record a event
 func Event(e *event.Event) {
 	//fmt.Println(e)
-	go DefaultRecorder.Event(e)
+	if DefaultRecorder != nil {
+		go DefaultRecorder.Event(e)
+	}
 }

@@ -2,6 +2,7 @@ package node
 
 import (
 	"encoding/json"
+	"github.com/jin06/binlogo/configs"
 	"net"
 	"time"
 )
@@ -13,6 +14,15 @@ type Node struct {
 	IP         net.IP    `json:"ip"`
 	Version    string    `json:"version"`
 	CreateTime time.Time `json:"create_time"`
+}
+
+// NewNode returns a new node
+func NewNode(name string) *Node {
+	return &Node{
+		Name:       name,
+		Version:    configs.VERSITON,
+		CreateTime: time.Now(),
+	}
 }
 
 // Key generate etcd key

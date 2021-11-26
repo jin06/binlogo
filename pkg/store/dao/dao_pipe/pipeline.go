@@ -6,7 +6,6 @@ import (
 	"errors"
 	"github.com/coreos/etcd/clientv3"
 	"github.com/jin06/binlogo/pkg/etcd_client"
-	"github.com/jin06/binlogo/pkg/store/etcd"
 	"github.com/jin06/binlogo/pkg/store/model/pipeline"
 	"github.com/sirupsen/logrus"
 	"sort"
@@ -20,7 +19,7 @@ func PipelinePrefix() string {
 // GetPipeline get pipeline info from etcd
 func GetPipeline(name string) (p *pipeline.Pipeline, err error) {
 	key := PipelinePrefix() + "/" + name
-	res, err := etcd.E.Client.Get(context.TODO(), key)
+	res, err := etcd_client.Default().Get(context.TODO(), key)
 	if err != nil {
 		return
 	}
@@ -37,7 +36,7 @@ func GetPipeline(name string) (p *pipeline.Pipeline, err error) {
 // CreatePipeline write pipeline info to etcd
 func CreatePipeline(d *pipeline.Pipeline, opts ...clientv3.OpOption) (ok bool, err error) {
 	key := PipelinePrefix() + "/" + d.Name
-	txn := etcd.E.Client.Txn(context.TODO())
+	txn := etcd_client.Default().Txn(context.TODO())
 	txn = txn.If(clientv3.Compare(clientv3.CreateRevision(key), "=", int64(0)))
 	txn = txn.Then(clientv3.OpPut(key, d.Val(), opts...))
 	resp, err := txn.Commit()
@@ -85,7 +84,7 @@ func UpdatePipeline(pipeName string, opts ...pipeline.OptionPipeline) (ok bool, 
 func AllPipelines() (list []*pipeline.Pipeline, err error) {
 	list = []*pipeline.Pipeline{}
 	key := PipelinePrefix()
-	res, err := etcd.E.Client.Get(context.TODO(), key, clientv3.WithPrefix())
+	res, err := etcd_client.Default().Get(context.TODO(), key, clientv3.WithPrefix())
 	if err != nil {
 		return
 	}

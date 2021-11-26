@@ -51,6 +51,11 @@ const (
 // MessageType todo
 type MessageType string
 
+const (
+	// MSG_EMPTY default type
+	MSG_EMPTY MessageType = ""
+)
+
 func baseEvent() (e *Event) {
 	e = &Event{
 		Key:      key.GetKey(),

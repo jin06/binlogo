@@ -19,10 +19,12 @@ type algorithm struct {
 	capacityMap    map[string]*node.Capacity
 }
 
-func newAlgorithm(p *pipeline.Pipeline) *algorithm {
+func newAlgorithm(opts ...optionAlgorithm) *algorithm {
 	a := &algorithm{}
-	a.pipeline = p
-	a.allNodes = map[string]*node.Node{}
+	for _, v := range opts {
+		v(a)
+	}
+	//a.allNodes = map[string]*node.Node{}
 	a.potentialNodes = map[string]*node.Node{}
 	a.nodesScores = map[string]int{}
 	a.bestNode = &node.Node{}
@@ -30,9 +32,23 @@ func newAlgorithm(p *pipeline.Pipeline) *algorithm {
 }
 
 func (a *algorithm) cal() (err error) {
-	a.allNodes, err = dao_node.AllWorkNodesMap()
-	if err != nil {
-		return
+	if a.allNodes == nil {
+		a.allNodes, err = dao_node.AllWorkNodesMap()
+		if err != nil {
+			return
+		}
+	}
+	if a.pb == nil {
+		a.pb, err = dao_sche.GetPipelineBind()
+		if err != nil {
+			return
+		}
+	}
+	if a.capacityMap == nil {
+		a.capacityMap, err = dao_node.CapacityMap()
+		if err != nil {
+			return
+		}
 	}
 	err = a.calPotentialNodes()
 	if err != nil {
@@ -71,14 +87,7 @@ func (a *algorithm) calBestNode() (err error) {
 }
 
 func (a *algorithm) calScore() (err error) {
-	a.pb, err = dao_sche.GetPipelineBind()
-	if err != nil {
-		return
-	}
-	a.capacityMap, err = dao_node.CapacityMap()
-	if err != nil {
-		return
-	}
+
 	a.nodesScores = map[string]int{}
 	for _, v := range a.potentialNodes {
 		a.nodesScores[v.Name] = 0
@@ -191,4 +200,30 @@ func (a *algorithm) _scoreResources() (scores map[string]int, err error) {
 		scores[k] = scores[k] * weight
 	}
 	return
+}
+
+type optionAlgorithm func(alg *algorithm)
+
+func withAlgPipe(p *pipeline.Pipeline) optionAlgorithm {
+	return func(alg *algorithm) {
+		alg.pipeline = p
+	}
+}
+
+func withAlgAllNodes(allNodes map[string]*node.Node) optionAlgorithm {
+	return func(alg *algorithm) {
+		alg.allNodes = allNodes
+	}
+}
+
+func withAlgPipeBind(pb *scheduler.PipelineBind) optionAlgorithm {
+	return func(alg *algorithm) {
+		alg.pb = pb
+	}
+}
+
+func withAlgCapMap(cm map[string]*node.Capacity) optionAlgorithm {
+	return func(alg *algorithm) {
+		alg.capacityMap = cm
+	}
 }
