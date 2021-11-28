@@ -2,7 +2,6 @@ module github.com/jin06/binlogo
 
 go 1.16
 
-
 replace google.golang.org/grpc v1.42.0 => google.golang.org/grpc v1.26.0
 
 require (
@@ -29,9 +28,11 @@ require (
 	github.com/soheilhy/cmux v0.1.5 // indirect
 	github.com/spf13/cobra v1.2.1
 	github.com/spf13/viper v1.9.0
+	github.com/streadway/amqp v1.0.0
 	github.com/tmc/grpc-websocket-proxy v0.0.0-20201229170055-e5319fda7802 // indirect
 	github.com/xiang90/probing v0.0.0-20190116061207-43a291ad63a2 // indirect
 	google.golang.org/grpc v1.42.0 // indirect
 	sigs.k8s.io/yaml v1.3.0 // indirect
 )
+
 replace github.com/coreos/bbolt v1.3.6 => go.etcd.io/bbolt v1.3.6

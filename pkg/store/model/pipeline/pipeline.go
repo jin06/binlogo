@@ -19,6 +19,7 @@ type Pipeline struct {
 	IsDelete   bool      `json:"is_delete"`
 }
 
+// NewPipeline returns a new pipeline with default values
 func NewPipeline(name string) (pipe *Pipeline) {
 	pipe = &Pipeline{
 		Name:      name,
@@ -30,9 +31,10 @@ func NewPipeline(name string) (pipe *Pipeline) {
 		Filters: []*Filter{},
 		Output: &Output{
 			Sender: &Sender{
-				Kafka:  nil,
-				Stdout: nil,
-				Http:   nil,
+				Kafka:    nil,
+				Stdout:   nil,
+				Http:     nil,
+				RabbitMQ: nil,
 			},
 		},
 		Replicas:   0,

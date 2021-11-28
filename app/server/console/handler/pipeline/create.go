@@ -32,10 +32,21 @@ func Create(c *gin.Context) {
 		q.Mysql.ServerId = random.Uint32()
 	}
 	q.Status = pipeline.STATUS_STOP
-
+	pipelineDefault(q)
 	if _, err := dao_pipe.CreatePipeline(q); err != nil {
 		c.JSON(200, handler.Fail(err))
 		return
 	}
 	c.JSON(200, handler.Success("ok"))
+}
+
+func pipelineDefault(p *pipeline.Pipeline) {
+	switch p.Output.Sender.Type {
+	case pipeline.SNEDER_TYPE_RABBITMQ:
+		{
+			if p.Output.Sender.RabbitMQ.ExchangeName == "" {
+				p.Output.Sender.RabbitMQ.ExchangeName = p.Name
+			}
+		}
+	}
 }

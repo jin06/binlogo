@@ -92,6 +92,8 @@ Binlogo是一个基于MySQL的binlog开发的数据同步中间件。同步binlo
 ### 其他输出端
 
 * [HTTP](/docs/1.0.*/zh/configure-http-output.md)
+* [RabbitMQ](/docs/1.0.*/zh/configure-rabbitmq-outupt.md)
+* [Kafka](/docs/1.0.*/zh/configure-kafka-output.md)
 
 ### 文档
 

@@ -9,6 +9,7 @@ import (
 	"github.com/jin06/binlogo/pkg/store/model/pipeline"
 )
 
+// Update handler, update pipline
 func Update(c *gin.Context) {
 	q := &pipeline.Pipeline{}
 	if err := c.BindJSON(q); err != nil {
@@ -31,6 +32,7 @@ func Update(c *gin.Context) {
 		c.JSON(200, handler.Fail("Only stopped pipeline can be updated"))
 		return
 	}
+	pipelineDefault(q)
 	ok, err := dao_pipe.UpdatePipeline(q.Name, pipeline.WithPipeSafe(q))
 	if err != nil || !ok {
 		c.JSON(200, "update failed")

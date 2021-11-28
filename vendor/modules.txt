@@ -236,7 +236,6 @@ github.com/satori/go.uuid
 # github.com/shirou/gopsutil/v3 v3.21.10
 ## explicit
 github.com/shirou/gopsutil/v3/cpu
-github.com/shirou/gopsutil/v3/disk
 github.com/shirou/gopsutil/v3/internal/common
 github.com/shirou/gopsutil/v3/mem
 # github.com/shopspring/decimal v0.0.0-20180709203117-cd690d0c9e24
@@ -272,6 +271,9 @@ github.com/spf13/viper/internal/encoding/hcl
 github.com/spf13/viper/internal/encoding/json
 github.com/spf13/viper/internal/encoding/toml
 github.com/spf13/viper/internal/encoding/yaml
+# github.com/streadway/amqp v1.0.0
+## explicit
+github.com/streadway/amqp
 # github.com/subosito/gotenv v1.2.0
 github.com/subosito/gotenv
 # github.com/tklauser/go-sysconf v0.3.9
