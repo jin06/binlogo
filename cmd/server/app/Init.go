@@ -3,7 +3,6 @@ package app
 import (
 	"github.com/jin06/binlogo/configs"
 	"github.com/jin06/binlogo/pkg/blog"
-	etcd2 "github.com/jin06/binlogo/pkg/store/etcd"
 	"github.com/sirupsen/logrus"
 	"net/http"
 )
@@ -12,7 +11,7 @@ import (
 func Init(file string) {
 	configs.InitConfigs()
 	configs.InitViperFromFile(file)
-	etcd2.DefaultETCD()
+	//etcd2.DefaultETCD()
 	blog.Env(configs.ENV)
 	logrus.Infoln("init configs finish")
 	if configs.ENV == configs.ENV_DEV {

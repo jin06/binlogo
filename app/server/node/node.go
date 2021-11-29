@@ -2,6 +2,7 @@ package node
 
 import (
 	"context"
+	"errors"
 	"github.com/jin06/binlogo/app/server/node/election"
 	"github.com/jin06/binlogo/app/server/node/manager/manager_event"
 	"github.com/jin06/binlogo/app/server/node/manager/manager_pipe"
@@ -10,8 +11,8 @@ import (
 	"github.com/jin06/binlogo/app/server/node/scheduler"
 	"github.com/jin06/binlogo/pkg/node/role"
 	"github.com/jin06/binlogo/pkg/register"
-	store2 "github.com/jin06/binlogo/pkg/store"
 	"github.com/jin06/binlogo/pkg/store/dao/dao_node"
+	"github.com/jin06/binlogo/pkg/store/model/node"
 	"github.com/sirupsen/logrus"
 	"sync"
 	"time"
@@ -95,9 +96,17 @@ func (n *Node) init() (err error) {
 func (n *Node) Run(ctx context.Context) (err error) {
 	go func() {
 		var ok bool
-		if ok, err = store2.Get(n.Options.Node); err != nil {
+		var newest *node.Node
+		newest, err = dao_node.GetNode(n.Options.Node.Name)
+		if err != nil {
 			return
 		}
+		if newest == nil {
+			err = errors.New("unexpected, node is null")
+			return
+		}
+		n.Options.Node = newest
+
 		if ok {
 			//todo
 			//panic("exist node")

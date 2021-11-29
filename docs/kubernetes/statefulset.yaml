@@ -28,6 +28,8 @@ spec:
           env:
             - name: ETCD_ENDPOINTS
               value: '127.0.0.1:2379'
+            - name: ETCD_USERNAME
+              value: ''
             - name: ETCD_PASSWORD
               value: ''
             - name: BINLOGO_ENV
@@ -38,9 +40,9 @@ spec:
               value: '9999'
             - name: CLUSTER_NAME
               value: 'cluster'
-      affinity: {}
-      initContainers: []
-      volumes: []
+      affinity: { }
+      initContainers: [ ]
+      volumes: [ ]
   updateStrategy:
     type: RollingUpdate
     rollingUpdate:
