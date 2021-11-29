@@ -20,6 +20,7 @@ func New() (cli *clientv3.Client, err error) {
 		Endpoints:   viper.GetStringSlice("etcd.endpoints"),
 		DialTimeout: 5 * time.Second,
 		Password:    viper.GetString("etcd.password"),
+		Username: viper.GetString("etcd.username"),
 	}
 	cli, err = clientv3.New(cfg)
 	return
@@ -27,9 +28,9 @@ func New() (cli *clientv3.Client, err error) {
 
 var client *clientv3.Client
 
-// Default global default clientv3.Client
 var mutex sync.Mutex
 
+// Default global default clientv3.Client
 func Default() *clientv3.Client {
 	mutex.Lock()
 	defer mutex.Unlock()

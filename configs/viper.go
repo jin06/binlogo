@@ -41,6 +41,7 @@ func InitConfigs() {
 	viper.SetDefault("console.port", consolePort)
 	viper.SetDefault("etcd.endpoints", os.Getenv("ETCD_ENDPOINTS"))
 	viper.SetDefault("etcd.password", os.Getenv("ETCD_PASSWORD"))
+	viper.SetDefault("etcd.username", os.Getenv("ETCD_USERNAME"))
 	ENV = Env(viper.GetString("env"))
 	NodeName = viper.GetString("node.name")
 	NodeIP, _ = ip.LocalIp()
@@ -62,4 +63,3 @@ func InitGoTest() {
 	DefaultEnv()
 	InitConfigs()
 }
-

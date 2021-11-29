@@ -9,4 +9,6 @@ console:
 etcd:
   endpoints:
 #    - "localhost:2379"
+  password:
+  username:
 
