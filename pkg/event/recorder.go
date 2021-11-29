@@ -96,7 +96,7 @@ func (r Recorder) dispatch(new *event.Event) {
 	oldInter, ok := r.cache.Get(aggKey)
 	if ok {
 		if old, is := oldInter.(*event.Event); is {
-			if time.Now().Unix()-old.FirstTime.Unix() < int64(60 * 5) {
+			if isExceedTime(time.Now(), old.FirstTime) {
 				old.Count = old.Count + 1
 				old.LastTime = time.Now()
 				r.cache.Add(aggKey, old)
@@ -130,4 +130,9 @@ func aggregatorKey(e *event.Event) string {
 	},
 		".",
 	)
+}
+
+func isExceedTime(newTime time.Time, oldTime time.Time) bool {
+	exceedTime := time.Minute * 5
+	return oldTime.Add(exceedTime).Before(newTime)
 }
