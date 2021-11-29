@@ -32,11 +32,11 @@ spec:
               containerPort: 9999
           env:
             - name: ETCD_ENDPOINTS
-              value: '127.0.0.1:2379'
+              value: 'etcd-apple-headless.default.svc.cluster.local:2379'
             - name: ETCD_USERNAME
-              value: ''
+              value: 'root'
             - name: ETCD_PASSWORD
-              value: ''
+              value: 'password'
             - name: BINLOGO_ENV
               value: production
             - name: CONSOLE_LISTEN

@@ -3,6 +3,7 @@ package rabbitmq
 import (
 	message2 "github.com/jin06/binlogo/app/pipeline/message"
 	"github.com/jin06/binlogo/pkg/store/model/pipeline"
+	"github.com/sirupsen/logrus"
 	"github.com/streadway/amqp"
 )
 
@@ -40,6 +41,7 @@ func (r *RabbitMQ) resetConnection() (err error) {
 	if r.Channel != nil {
 		_ = r.Channel.Close()
 	}
+	logrus.Info("connect to rabbitmq url: ", r.RabbitMQ.Url)
 	r.Connection, err = amqp.Dial(r.RabbitMQ.Url)
 	if err != nil {
 		return

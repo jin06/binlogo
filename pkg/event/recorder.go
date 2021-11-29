@@ -96,7 +96,7 @@ func (r Recorder) dispatch(new *event.Event) {
 	oldInter, ok := r.cache.Get(aggKey)
 	if ok {
 		if old, is := oldInter.(*event.Event); is {
-			if time.Now().Unix()-old.FirstTime.Unix() < int64(time.Minute*5) {
+			if time.Now().Unix()-old.FirstTime.Unix() < int64(60 * 5) {
 				old.Count = old.Count + 1
 				old.LastTime = time.Now()
 				r.cache.Add(aggKey, old)
