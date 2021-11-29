@@ -93,6 +93,11 @@ configuration. This is some advantages:
 
 ![avatar](/docs/assets/pic/docker_step1.en.png)
 
+### Kubernetes
+
+- [doc](/docs/1.0.*/en/install-kubernetes.md)
+
+
 ### Other outputs
 
 * [HTTP](/docs/1.0.*/en/configure-http-output.md)

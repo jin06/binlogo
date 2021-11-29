@@ -17,6 +17,11 @@ spec:
       annotations:
         kubesphere.io/containerSecrets: ''
     spec:
+      volumes:
+        - name: host-time
+          hostPath:
+            path: /etc/localtime
+            type: ''
       containers:
         - name: binlogo
           imagePullPolicy: IfNotPresent
@@ -42,7 +47,6 @@ spec:
               value: 'cluster'
       affinity: { }
       initContainers: [ ]
-      volumes: [ ]
   updateStrategy:
     type: RollingUpdate
     rollingUpdate:
