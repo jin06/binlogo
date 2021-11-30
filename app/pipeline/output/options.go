@@ -6,7 +6,8 @@ import (
 
 // Options for configure output
 type Options struct {
-	Output *pipeline.Output
+	Output       *pipeline.Output
+	PipelineName string
 }
 
 // Option is a function for configure Options
@@ -16,5 +17,12 @@ type Option func(options *Options)
 func OptionOutput(val *pipeline.Output) Option {
 	return func(options *Options) {
 		options.Output = val
+	}
+}
+
+// OptionPipeName sets pipeline name
+func OptionPipeName(name string) Option {
+	return func(options *Options) {
+		options.PipelineName = name
 	}
 }

@@ -33,6 +33,9 @@ func (r *Input) Run(ctx context.Context) (err error) {
 	r.ctx = myCtx
 	go func() {
 		defer func() {
+			if err != nil {
+				event.Event(event2.NewErrorPipeline(r.Options.PipeName, err.Error()))
+			}
 			if r.canal != nil {
 				r.canal.Close()
 			}
@@ -69,7 +72,7 @@ func New(opts ...Option) (input *Input, err error) {
 		v(options)
 	}
 	input = &Input{
-		Options:    options,
+		Options: options,
 	}
 	return
 }
@@ -129,7 +132,6 @@ func (r *Input) runCanal() (err error) {
 		go func() {
 			startErr := r.canal.StartFromGTID(canGTID)
 			if startErr != nil {
-				fmt.Println("123", startErr)
 				event.Event(event2.NewErrorPipeline(r.Options.PipeName, "Start mysql replication error: "+startErr.Error()))
 			}
 		}()

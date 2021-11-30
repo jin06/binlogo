@@ -9,7 +9,9 @@ import (
 	"github.com/jin06/binlogo/app/pipeline/output/sender/rabbitmq"
 	"github.com/jin06/binlogo/app/pipeline/output/sender/redis"
 	stdout2 "github.com/jin06/binlogo/app/pipeline/output/sender/stdout"
+	"github.com/jin06/binlogo/pkg/event"
 	"github.com/jin06/binlogo/pkg/store/dao/dao_pipe"
+	event2 "github.com/jin06/binlogo/pkg/store/model/event"
 	"github.com/jin06/binlogo/pkg/store/model/pipeline"
 	"github.com/sirupsen/logrus"
 )
@@ -65,21 +67,24 @@ func recordPosition(msg *message2.Message) (err error) {
 }
 
 func (o *Output) handle(msg *message2.Message) {
+	var err error
 	defer func() {
 		err2 := recordPosition(msg)
 		if err2 != nil {
 			logrus.Error("Record position error, ", err2)
 		}
+		if err != nil {
+			event.Event(event2.NewErrorPipeline(o.Options.PipelineName, "send message error: " + err.Error()))
+		}
 	}()
 
 	if !msg.Filter {
-		ok, err := o.Sender.Send(msg)
+		var ok bool
+		ok, err = o.Sender.Send(msg)
 		if err != nil {
-			logrus.Error("Send message error: ", err)
 			return
 		}
 		if !ok {
-			logrus.Error("Send message failed")
 			return
 		}
 	}

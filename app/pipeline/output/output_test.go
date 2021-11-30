@@ -16,7 +16,7 @@ func TestOutput(t *testing.T) {
 			Stdout: &pipeline.Stdout{},
 		},
 	}
-	out1, err := New(OptionOutput(outModel))
+	out1, err := New(OptionOutput(outModel), OptionPipeName("go_test_pipe"))
 	if err != nil {
 		t.Error(err)
 	}

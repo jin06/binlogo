@@ -13,7 +13,6 @@ import (
 // Scheduler schedule the pipeline.
 // allocate the pipeline to the appropriate node for operation
 type Scheduler struct {
-	options *Options
 	lock    sync.Mutex
 	watcher *Watcher
 	status  string
@@ -114,12 +113,8 @@ func (s *Scheduler) watchPipeline(err error) {
 }
 
 // New returns a new Scheduler
-func New(opts ...Option) (s *Scheduler) {
-	options := &Options{}
-	s = &Scheduler{options: options}
-	for _, v := range opts {
-		v(options)
-	}
+func New() (s *Scheduler) {
+	s = &Scheduler{}
 	s.runLock = sync.Mutex{}
 	s.status = SCHEDULER_STOP
 	return
