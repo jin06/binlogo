@@ -37,3 +37,18 @@ func TestString(t *testing.T) {
 		t.Fail()
 	}
 }
+
+func TestMessageType(t *testing.T) {
+	typ := TYPE_EMPTY
+	t.Log(typ.String())
+	typ = TYPE_INSERT
+	t.Log(typ.String())
+	typ = TYPE_ALTER_TABLE
+	t.Log(typ.String())
+	typ = TYPE_DELETE
+	t.Log(typ.String())
+	typ = TYPE_UPDATE
+	t.Log(typ.String())
+	typ = TYPE_CREATE_TABLE
+	t.Log(typ.String())
+}

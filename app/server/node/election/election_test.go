@@ -41,7 +41,7 @@ func TestRun(t *testing.T) {
 	configs.InitConfigs()
 	n := New(OptionNode(node.NewNode("go_test_node")), OptionTTL(5))
 	n.Run(context.Background())
-	time.Sleep(time.Millisecond * 1000)
+	time.Sleep(time.Millisecond * 200)
 	l, err := n.Leader()
 	if err != nil {
 		t.Error(err)

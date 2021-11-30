@@ -5,19 +5,19 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/coreos/etcd/clientv3"
-	"github.com/jin06/binlogo/pkg/etcd_client"
+	"github.com/jin06/binlogo/pkg/etcdclient"
 	"github.com/jin06/binlogo/pkg/store/model/node"
 	"github.com/sirupsen/logrus"
 )
 
 // NodePrefix returns etcd prefix of node
 func NodePrefix() string {
-	return etcd_client.Prefix() + "/node/info"
+	return etcdclient.Prefix() + "/node/info"
 }
 
 // NodeRegisterPrefix returns etcd prefix of register node
 func NodeRegisterPrefix() string {
-	return etcd_client.Prefix() + "/cluster/register"
+	return etcdclient.Prefix() + "/cluster/register"
 }
 
 // CreateNode create a node in etcd
@@ -27,7 +27,7 @@ func CreateNode(n *node.Node) (err error) {
 	if err != nil {
 		return
 	}
-	_, err = etcd_client.Default().Put(context.Background(), key, string(v))
+	_, err = etcdclient.Default().Put(context.Background(), key, string(v))
 	return
 }
 
@@ -39,7 +39,7 @@ func CreateNodeIfNotExist(n *node.Node) (err error) {
 		return
 	}
 	ctx := context.Background()
-	txn := etcd_client.Default().Txn(ctx).If(clientv3.Compare(clientv3.CreateRevision(key), "=", 0))
+	txn := etcdclient.Default().Txn(ctx).If(clientv3.Compare(clientv3.CreateRevision(key), "=", 0))
 	txn = txn.Then(clientv3.OpPut(key, string(b)))
 	resp, err := txn.Commit()
 
@@ -57,7 +57,7 @@ func UpdateNode(nodeName string, opts ...node.NodeOption) (ok bool, err error) {
 		return
 	}
 	key := NodePrefix() + "/" + nodeName
-	res, err := etcd_client.Default().Get(context.TODO(), key)
+	res, err := etcdclient.Default().Get(context.TODO(), key)
 	if err != nil {
 		return
 	}
@@ -76,7 +76,7 @@ func UpdateNode(nodeName string, opts ...node.NodeOption) (ok bool, err error) {
 		v(n)
 	}
 
-	txn := etcd_client.Default().Txn(context.TODO()).If(clientv3.Compare(clientv3.CreateRevision(key), "=", revision))
+	txn := etcdclient.Default().Txn(context.TODO()).If(clientv3.Compare(clientv3.CreateRevision(key), "=", revision))
 	txn = txn.Then(clientv3.OpPut(key, n.Val()))
 	resp, err := txn.Commit()
 	if err != nil {
@@ -89,7 +89,7 @@ func UpdateNode(nodeName string, opts ...node.NodeOption) (ok bool, err error) {
 // GetNode get node data from etcd
 func GetNode(name string) (n *node.Node, err error) {
 	key := NodePrefix() + "/" + name
-	res, err := etcd_client.Default().Get(context.Background(), key)
+	res, err := etcdclient.Default().Get(context.Background(), key)
 	if err != nil {
 		return
 	}
@@ -109,7 +109,7 @@ func AllNodes() (list []*node.Node, err error) {
 func _allNodes(key string) (list []*node.Node, err error) {
 	list = []*node.Node{}
 	//key := NodePrefix() + "/"
-	res, err := etcd_client.Default().Get(context.TODO(), key, clientv3.WithPrefix())
+	res, err := etcdclient.Default().Get(context.TODO(), key, clientv3.WithPrefix())
 	if err != nil {
 		return
 	}
@@ -185,7 +185,7 @@ func DeleteNode(name string) (ok bool, err error) {
 		return
 	}
 	key := NodePrefix() + "/" + name
-	res, err := etcd_client.Default().Delete(context.Background(), key)
+	res, err := etcdclient.Default().Delete(context.Background(), key)
 	if err != nil {
 		return
 	}

@@ -11,6 +11,7 @@ import (
 )
 
 func TestScanPipelines(t *testing.T) {
+	configs.InitGoTest()
 	pb := &scheduler.PipelineBind{
 		Bindings: map[string]string{
 			"apple":  "test",
@@ -37,6 +38,13 @@ func TestScanPipelines(t *testing.T) {
 	if m.mapping["tomato"] == true {
 		t.Fail()
 	}
+	m.dispatch()
+	time.Sleep(time.Millisecond * 100)
+	for _, v := range m.mappingIns {
+		if v != nil {
+			v.stop()
+		}
+	}
 }
 
 func TestRun(t *testing.T) {
@@ -49,6 +57,9 @@ func TestRun(t *testing.T) {
 	m := New(&node.Node{
 		Name: "go_test_node",
 	})
-	m.Run(context.Background())
-	time.Sleep(time.Millisecond*200)
+	ctx, cancel := context.WithCancel(context.Background())
+	m.Run(ctx)
+	time.Sleep(time.Millisecond * 1100)
+	cancel()
+	time.Sleep(time.Millisecond * 20)
 }

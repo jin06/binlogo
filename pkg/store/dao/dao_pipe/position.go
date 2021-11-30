@@ -5,13 +5,13 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/coreos/etcd/clientv3"
-	"github.com/jin06/binlogo/pkg/etcd_client"
+	"github.com/jin06/binlogo/pkg/etcdclient"
 	"github.com/jin06/binlogo/pkg/store/model/pipeline"
 )
 
 // PositionPrefix returns etcd prefix of pipeline position
 func PositionPrefix() string {
-	return etcd_client.Prefix() + "/pipeline/position"
+	return etcdclient.Prefix() + "/pipeline/position"
 }
 
 // UpdatePosition update pipeline position in etcd
@@ -21,7 +21,7 @@ func UpdatePosition(p *pipeline.Position) (err error) {
 	if err != nil {
 		return
 	}
-	_, err = etcd_client.Default().Put(context.Background(), key, string(b))
+	_, err = etcdclient.Default().Put(context.Background(), key, string(b))
 	return
 }
 
@@ -33,7 +33,7 @@ func UpdatePositionSafe(pipeName string, opts ...pipeline.OptionPosition) (ok bo
 		return
 	}
 	key := PositionPrefix() + "/" + pipeName
-	res, err := etcd_client.Default().Get(context.Background(), key)
+	res, err := etcdclient.Default().Get(context.Background(), key)
 	if err != nil {
 		return
 	}
@@ -50,7 +50,7 @@ func UpdatePositionSafe(pipeName string, opts ...pipeline.OptionPosition) (ok bo
 	for _, v := range opts {
 		v(pos)
 	}
-	txn := etcd_client.Default().Txn(context.Background()).
+	txn := etcdclient.Default().Txn(context.Background()).
 		If(clientv3.Compare(clientv3.CreateRevision(key), "=", revision)).
 		Then(clientv3.OpPut(key, pos.Val()))
 	resp, err := txn.Commit()
@@ -64,7 +64,7 @@ func UpdatePositionSafe(pipeName string, opts ...pipeline.OptionPosition) (ok bo
 // GetPosition get pipeline position from etcd
 func GetPosition(pipeName string) (p *pipeline.Position, err error) {
 	key := PositionPrefix() + "/" + pipeName
-	res, err := etcd_client.Default().Get(context.Background(), key)
+	res, err := etcdclient.Default().Get(context.Background(), key)
 	if err != nil {
 		return
 	}
@@ -85,7 +85,7 @@ func DeletePosition(name string) (ok bool, err error) {
 		return
 	}
 	key := PositionPrefix() + "/" + name
-	res, err := etcd_client.Default().Delete(context.Background(), key)
+	res, err := etcdclient.Default().Delete(context.Background(), key)
 	if err != nil {
 		return
 	}

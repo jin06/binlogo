@@ -3,7 +3,7 @@ package watcher
 import (
 	"context"
 	"github.com/coreos/etcd/clientv3"
-	"github.com/jin06/binlogo/pkg/etcd_client"
+	"github.com/jin06/binlogo/pkg/etcdclient"
 	"github.com/sirupsen/logrus"
 )
 
@@ -42,7 +42,7 @@ func (w *General) WatchEtcd(ctx context.Context, opts ...clientv3.OpOption) (ch 
 		}
 	}()
 	go func() {
-		watchCh := etcd_client.Default().Watch(ctx, w.key, opts...)
+		watchCh := etcdclient.Default().Watch(ctx, w.key, opts...)
 	LOOP:
 		for {
 			select {

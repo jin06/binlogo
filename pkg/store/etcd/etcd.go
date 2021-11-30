@@ -169,32 +169,6 @@ func (e *ETCD) Get(m model2.Model) (ok bool, err error) {
 	return
 }
 
-// GetH deprecated
-func (e *ETCD) GetH(m model2.ModelH) (ok bool, err error) {
-	ctx, cancel := context.WithTimeout(context.TODO(), e.Timeout)
-	defer cancel()
-	key := e.Prefix + "/" + m.Key()
-	res, err := e.Client.Get(ctx, key)
-	if err != nil {
-		return
-	}
-	if len(res.Kvs) == 0 {
-		return
-	}
-	if err = m.Unmarshal(res.Kvs[0].Value); err != nil {
-		return
-	}
-	h := &model2.Header{
-		Revision: res.Kvs[0].CreateRevision,
-	}
-	fmt.Println(res.Kvs[0].Version)
-	fmt.Println(res.Kvs[0].ModRevision)
-	m.SetHeader(h)
-
-	ok = true
-	return
-}
-
 // List deprecated
 func (e *ETCD) List(key string) (list []model2.Model, err error) {
 	ctx, cancel := context.WithTimeout(context.TODO(), e.Timeout)

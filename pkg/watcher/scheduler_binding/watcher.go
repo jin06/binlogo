@@ -15,8 +15,7 @@ func withHandler() watcher.Handler {
 		m := &scheduler.PipelineBind{}
 		ev.Event = e
 		ev.Data = m
-		if e.Type == mvccpb.DELETE {
-		} else {
+		if e.Type != mvccpb.DELETE {
 			err = m.Unmarshal(e.Kv.Value)
 			if err != nil {
 				logrus.Error(err)

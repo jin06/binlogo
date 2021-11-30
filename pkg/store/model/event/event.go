@@ -3,6 +3,7 @@ package event
 import (
 	"github.com/jin06/binlogo/configs"
 	"github.com/jin06/binlogo/pkg/util/key"
+	"github.com/spf13/viper"
 	"net"
 	"time"
 )
@@ -73,13 +74,6 @@ func newNode(msg string) (e *Event) {
 	return
 }
 
-// NewInfoNode returns a new node event of info level
-func NewInfoNode(msg string) (e *Event) {
-	e = newNode(msg)
-	e.Type = INFO
-	return
-}
-
 func newPipeline(name string, msg string) (e *Event) {
 	e = baseEvent()
 	e.ResourceType = PIPELINE
@@ -88,9 +82,31 @@ func newPipeline(name string, msg string) (e *Event) {
 	return
 }
 
+func newCluster(msg string) (e *Event) {
+	e = baseEvent()
+	e.ResourceType = CLUSTER
+	e.ResourceName = viper.GetString("cluster.name")
+	e.Message = msg
+	return
+}
+
+// NewInfoNode returns a new node event of info level
+func NewInfoNode(msg string) (e *Event) {
+	e = newNode(msg)
+	e.Type = INFO
+	return
+}
+
 // NewInfoPipeline returns a new pipeline info event
 func NewInfoPipeline(name string, msg string) (e *Event) {
 	e = newPipeline(name, msg)
+	e.Type = INFO
+	return
+}
+
+// NewInfoCluster returns a new cluster info event
+func NewInfoCluster(msg string) (e *Event) {
+	e = newCluster(msg)
 	e.Type = INFO
 	return
 }
@@ -102,9 +118,37 @@ func NewWarnPipeline(name string, msg string) (e *Event) {
 	return
 }
 
+// NewWarnNode returns a new node warn event
+func NewWarnNode(msg string) (e *Event) {
+	e = newNode(msg)
+	e.Type = WARN
+	return
+}
+
+// NewWarnCluster returns a new cluster warn event
+func NewWarnCluster(msg string) (e *Event) {
+	e = newCluster(msg)
+	e.Type = WARN
+	return
+}
+
 // NewErrorPipeline returns a new pipeline error event
 func NewErrorPipeline(name string, msg string) (e *Event) {
 	e = newPipeline(name, msg)
+	e.Type = ERROR
+	return
+}
+
+// NewErrorNode returns a new node error event
+func NewErrorNode(msg string) (e *Event) {
+	e = newNode(msg)
+	e.Type = ERROR
+	return
+}
+
+// NewErrorCluster returns a new cluster error event
+func NewErrorCluster(msg string) (e *Event) {
+	e = newCluster(msg)
 	e.Type = ERROR
 	return
 }

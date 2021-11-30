@@ -18,4 +18,13 @@ func TestNewInfoNode(t *testing.T) {
 	if e.NodeName != nodeName {
 		t.Fail()
 	}
+	t.Log(NewInfoPipeline("go_test_pipeline", "test message"))
+	t.Log(NewInfoCluster("test message"))
+	t.Log(NewErrorPipeline("go_test_pipeline", "test message"))
+	t.Log(NewErrorNode("test message"))
+	t.Log(NewErrorCluster("test message"))
+	t.Log(NewWarnPipeline("go_test_pipeline", "test message"))
+	t.Log(NewWarnNode("test message"))
+	t.Log(NewWarnCluster("test message"))
+
 }

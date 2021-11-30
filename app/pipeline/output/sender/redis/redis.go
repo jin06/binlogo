@@ -42,5 +42,8 @@ func (r *Redis) Send(msg *message2.Message) (ok bool, err error) {
 		return
 	}
 	err = r.Client.RPush(context.Background(), r.Redis.List, body).Err()
+	if err == nil {
+		ok = true
+	}
 	return
 }

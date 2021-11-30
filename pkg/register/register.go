@@ -3,10 +3,9 @@ package register
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"github.com/coreos/etcd/clientv3"
 	"github.com/coreos/etcd/etcdserver/api/v3rpc/rpctypes"
-	"github.com/jin06/binlogo/pkg/etcd_client"
+	"github.com/jin06/binlogo/pkg/etcdclient"
 	"github.com/sirupsen/logrus"
 	"time"
 )
@@ -16,8 +15,8 @@ func New(opts ...Option) (r *Register, err error) {
 	r = &Register{
 		ttl: 5,
 	}
-	//r.client, err = etcd_client.New()
-	r.client = etcd_client.Default()
+	//r.client, err = etcdclient.New()
+	r.client = etcdclient.Default()
 	//if err != nil {
 	//	return
 	//}
@@ -92,7 +91,7 @@ func (r *Register) Run(ctx context.Context) {
 }
 
 func (r *Register) reg() (err error) {
-	//r.client, _ = etcd_client.New()
+	//r.client, _ = etcdclient.New()
 	r.lease = clientv3.NewLease(r.client)
 	rep, err := r.lease.Grant(context.TODO(), r.ttl)
 	if err != nil {
@@ -109,34 +108,6 @@ func (r *Register) reg() (err error) {
 		r.registerCreateRevision = res.Header.Revision
 	}
 	return
-}
-
-func (r *Register) check() (ch chan error) {
-	ch = make(chan error)
-	go func() {
-		defer close(ch)
-		for {
-			select {
-			case <-time.Tick(time.Second):
-				{
-					err := r.keepOnce()
-					if err == rpctypes.ErrLeaseNotFound {
-						ch <- err
-						return
-					}
-					wOK, wErr := r.watch()
-					if wErr != nil {
-
-					}
-					if !wOK {
-						ch <- errors.New("error")
-					}
-				}
-			}
-
-		}
-	}()
-	return ch
 }
 
 func (r *Register) keepOnce() (err error) {

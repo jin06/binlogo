@@ -31,5 +31,5 @@ func TestInitConfigs(t *testing.T) {
 		t.Error("env get cluster.name fail")
 		t.Fail()
 	}
-
+	DefaultEnv()
 }

@@ -6,14 +6,14 @@ import (
 	"errors"
 	"fmt"
 	"github.com/coreos/etcd/clientv3"
-	"github.com/jin06/binlogo/pkg/etcd_client"
+	"github.com/jin06/binlogo/pkg/etcdclient"
 	"github.com/jin06/binlogo/pkg/store/model/node"
 	"github.com/sirupsen/logrus"
 )
 
 // CapacityPrefix returns prefix key of etcd for capacity
 func CapacityPrefix() string {
-	return etcd_client.Prefix() + "/node/capacity"
+	return etcdclient.Prefix() + "/node/capacity"
 }
 
 // UpdateCapacity update capacity data to etcd
@@ -27,14 +27,14 @@ func UpdateCapacity(cap *node.Capacity) (err error) {
 	if err != nil {
 		return
 	}
-	_, err = etcd_client.Default().Put(context.TODO(), key, string(b))
+	_, err = etcdclient.Default().Put(context.TODO(), key, string(b))
 	return
 }
 
 // CapacityMap returns capacity data in map form
 func CapacityMap() (mapping map[string]*node.Capacity, err error) {
 	key := CapacityPrefix()
-	res, err := etcd_client.Default().Get(context.TODO(), key, clientv3.WithPrefix())
+	res, err := etcdclient.Default().Get(context.TODO(), key, clientv3.WithPrefix())
 	if err != nil {
 		return
 	}
@@ -70,7 +70,7 @@ func DeleteCapacity(nodeName string) (ok bool, err error) {
 		return
 	}
 	key := CapacityPrefix() + "/" + nodeName
-	res, err := etcd_client.Default().Delete(context.Background(), key)
+	res, err := etcdclient.Default().Delete(context.Background(), key)
 	if err != nil {
 		return
 	}

@@ -1,6 +1,8 @@
 package event
 
 import (
+	"github.com/jin06/binlogo/configs"
+	"github.com/jin06/binlogo/pkg/store/model/event"
 	"testing"
 	"time"
 )
@@ -23,4 +25,11 @@ func TestIsExceedTime(t *testing.T) {
 	if isExceedTime(newTime, oldTime) {
 		t.Fail()
 	}
+}
+
+func TestRecorder(t *testing.T) {
+	configs.InitGoTest()
+	Init()
+	Event(event.NewInfoCluster("test message"))
+	time.Sleep(time.Millisecond * 100)
 }

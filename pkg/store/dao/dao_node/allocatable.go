@@ -4,13 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"github.com/jin06/binlogo/pkg/etcd_client"
+	"github.com/jin06/binlogo/pkg/etcdclient"
 	"github.com/jin06/binlogo/pkg/store/model/node"
 )
 
 // AllocatablePrefix returns prefix key of etcd for allocatable
 func AllocatablePrefix() string {
-	return etcd_client.Prefix() + "/node/allocatable"
+	return etcdclient.Prefix() + "/node/allocatable"
 }
 
 // UpdateAllocatable update allocatable data to etcd
@@ -27,7 +27,7 @@ func UpdateAllocatable(al *node.Allocatable) (err error) {
 	if err != nil {
 		return
 	}
-	_, err = etcd_client.Default().Put(context.Background(), key, string(b))
+	_, err = etcdclient.Default().Put(context.Background(), key, string(b))
 	return
 }
 
@@ -38,7 +38,7 @@ func DeleteAllocatable(nodeName string) (ok bool, err error) {
 		return
 	}
 	key := AllocatablePrefix() + "/" + nodeName
-	res, err := etcd_client.Default().Delete(context.Background(), key)
+	res, err := etcdclient.Default().Delete(context.Background(), key)
 	if err != nil {
 		return
 	}

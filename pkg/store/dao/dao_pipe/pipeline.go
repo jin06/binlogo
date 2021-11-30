@@ -5,20 +5,20 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/coreos/etcd/clientv3"
-	"github.com/jin06/binlogo/pkg/etcd_client"
+	"github.com/jin06/binlogo/pkg/etcdclient"
 	"github.com/jin06/binlogo/pkg/store/model/pipeline"
 	"github.com/sirupsen/logrus"
 )
 
 // PipelinePrefix returns etcd prefix of pipeline info
 func PipelinePrefix() string {
-	return etcd_client.Prefix() + "/pipeline/info"
+	return etcdclient.Prefix() + "/pipeline/info"
 }
 
 // GetPipeline get pipeline info from etcd
 func GetPipeline(name string) (p *pipeline.Pipeline, err error) {
 	key := PipelinePrefix() + "/" + name
-	res, err := etcd_client.Default().Get(context.TODO(), key)
+	res, err := etcdclient.Default().Get(context.TODO(), key)
 	if err != nil {
 		return
 	}
@@ -35,7 +35,7 @@ func GetPipeline(name string) (p *pipeline.Pipeline, err error) {
 // CreatePipeline write pipeline info to etcd
 func CreatePipeline(d *pipeline.Pipeline, opts ...clientv3.OpOption) (ok bool, err error) {
 	key := PipelinePrefix() + "/" + d.Name
-	txn := etcd_client.Default().Txn(context.TODO())
+	txn := etcdclient.Default().Txn(context.TODO())
 	txn = txn.If(clientv3.Compare(clientv3.CreateRevision(key), "=", int64(0)))
 	txn = txn.Then(clientv3.OpPut(key, d.Val(), opts...))
 	resp, err := txn.Commit()
@@ -52,7 +52,7 @@ func UpdatePipeline(pipeName string, opts ...pipeline.OptionPipeline) (ok bool, 
 		return false, errors.New("empty pipeline name")
 	}
 	key := PipelinePrefix() + "/" + pipeName
-	res, err := etcd_client.Default().Get(context.Background(), key)
+	res, err := etcdclient.Default().Get(context.Background(), key)
 	if err != nil {
 		return
 	}
@@ -68,7 +68,7 @@ func UpdatePipeline(pipeName string, opts ...pipeline.OptionPipeline) (ok bool, 
 	for _, v := range opts {
 		v(pipe)
 	}
-	txn := etcd_client.Default().Txn(context.Background()).
+	txn := etcdclient.Default().Txn(context.Background()).
 		If(clientv3.Compare(clientv3.CreateRevision(key), "=", revision)).
 		Then(clientv3.OpPut(key, pipe.Val()))
 	resp, err := txn.Commit()
@@ -83,7 +83,7 @@ func UpdatePipeline(pipeName string, opts ...pipeline.OptionPipeline) (ok bool, 
 func AllPipelines() (list []*pipeline.Pipeline, err error) {
 	list = []*pipeline.Pipeline{}
 	key := PipelinePrefix()
-	res, err := etcd_client.Default().Get(context.TODO(), key, clientv3.WithPrefix())
+	res, err := etcdclient.Default().Get(context.TODO(), key, clientv3.WithPrefix())
 	if err != nil {
 		return
 	}
@@ -173,7 +173,7 @@ func DeletePipeline(name string) (ok bool, err error) {
 		return
 	}
 	key := PipelinePrefix() + "/" + name
-	res, err := etcd_client.Default().Delete(context.Background(), key)
+	res, err := etcdclient.Default().Delete(context.Background(), key)
 	if err != nil {
 		return
 	}

@@ -5,21 +5,21 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/coreos/etcd/clientv3"
-	"github.com/jin06/binlogo/pkg/etcd_client"
+	"github.com/jin06/binlogo/pkg/etcdclient"
 	"github.com/jin06/binlogo/pkg/store/model/node"
 	"github.com/sirupsen/logrus"
 )
 
 // StatusPrefix returns etcd prefix of node status
 func StatusPrefix() string {
-	return etcd_client.Prefix() + "/node/status"
+	return etcdclient.Prefix() + "/node/status"
 }
 
 // CreateOrUpdateStatus crate of update status in etcd
 // create if not exist
 func CreateOrUpdateStatus(nodeName string, opts ...node.StatusOption) (ok bool, err error) {
 	key := StatusPrefix() + "/" + nodeName
-	res, err := etcd_client.Default().Get(context.TODO(), key)
+	res, err := etcdclient.Default().Get(context.TODO(), key)
 	if err != nil {
 		return
 	}
@@ -37,7 +37,7 @@ func CreateOrUpdateStatus(nodeName string, opts ...node.StatusOption) (ok bool, 
 		v(s)
 	}
 
-	txn := etcd_client.Default().Txn(context.TODO()).If(clientv3.Compare(clientv3.CreateRevision(key), "=", revision))
+	txn := etcdclient.Default().Txn(context.TODO()).If(clientv3.Compare(clientv3.CreateRevision(key), "=", revision))
 	b, _ := json.Marshal(s)
 	txn = txn.Then(clientv3.OpPut(key, string(b)))
 	resp, err := txn.Commit()
@@ -51,7 +51,7 @@ func CreateOrUpdateStatus(nodeName string, opts ...node.StatusOption) (ok bool, 
 // GetStatus get node status from etcd
 func GetStatus(nodeName string) (s *node.Status, err error) {
 	key := StatusPrefix() + "/" + nodeName
-	res, err := etcd_client.Default().Get(context.TODO(), key)
+	res, err := etcdclient.Default().Get(context.TODO(), key)
 	if err != nil {
 		return
 	}
@@ -73,7 +73,7 @@ func CreateStatusIfNotExist(n *node.Status) (err error) {
 	if err != nil {
 		return
 	}
-	txn := etcd_client.Default().Txn(context.TODO()).If(clientv3.Compare(clientv3.CreateRevision(key), "=", 0))
+	txn := etcdclient.Default().Txn(context.TODO()).If(clientv3.Compare(clientv3.CreateRevision(key), "=", 0))
 	txn = txn.Then(clientv3.OpPut(key, string(b)))
 	resp, err := txn.Commit()
 
@@ -87,7 +87,7 @@ func CreateStatusIfNotExist(n *node.Status) (err error) {
 // StatusMap returns all node status in map form
 func StatusMap() (mapping map[string]*node.Status, err error) {
 	key := StatusPrefix()
-	res, err := etcd_client.Default().Get(context.TODO(), key, clientv3.WithPrefix())
+	res, err := etcdclient.Default().Get(context.TODO(), key, clientv3.WithPrefix())
 	if err != nil {
 		return
 	}
@@ -115,7 +115,7 @@ func DeleteStatus(name string) (ok bool, err error) {
 		return
 	}
 	key := StatusPrefix() + "/" + name
-	res, err := etcd_client.Default().Delete(context.Background(), key)
+	res, err := etcdclient.Default().Delete(context.Background(), key)
 	if err != nil {
 		return
 	}

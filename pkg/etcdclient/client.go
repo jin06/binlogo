@@ -1,4 +1,4 @@
-package etcd_client
+package etcdclient
 
 import (
 	"fmt"

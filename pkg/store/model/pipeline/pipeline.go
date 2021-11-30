@@ -31,6 +31,7 @@ func NewPipeline(name string) (pipe *Pipeline) {
 		Filters: []*Filter{},
 		Output: &Output{
 			Sender: &Sender{
+				Type: SNEDER_TYPE_STDOUT,
 				Kafka:    nil,
 				Stdout:   nil,
 				Http:     nil,

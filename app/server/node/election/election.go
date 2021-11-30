@@ -5,7 +5,7 @@ import (
 	"github.com/coreos/etcd/clientv3"
 	"github.com/coreos/etcd/clientv3/concurrency"
 	"github.com/jin06/binlogo/configs"
-	"github.com/jin06/binlogo/pkg/etcd_client"
+	"github.com/jin06/binlogo/pkg/etcdclient"
 	"github.com/jin06/binlogo/pkg/node/role"
 	"github.com/jin06/binlogo/pkg/store/dao/dao_cluster"
 	node2 "github.com/jin06/binlogo/pkg/store/model/node"
@@ -50,7 +50,7 @@ func New(opts ...Option) (e *Election) {
 }
 
 func (e *Election) init() {
-	e.client = etcd_client.Default()
+	e.client = etcdclient.Default()
 	return
 }
 

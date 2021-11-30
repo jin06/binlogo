@@ -59,6 +59,7 @@ func TestRun(t *testing.T) {
 		t.Error(err)
 	}
 	pipe.Run(context.Background())
+	time.Sleep(time.Millisecond*200)
 	_, err = dao_pipe.DeletePipeline(pipeName)
 	if err != nil {
 		t.Error(err)
@@ -115,6 +116,7 @@ func TestRunCommon(t *testing.T) {
 	}
 	ctx, cancel := context.WithCancel(context.Background())
 	pipe.Run(ctx)
+	time.Sleep(time.Millisecond*200)
 	_, err = dao_pipe.DeletePipeline(pipeName)
 	if err != nil {
 		t.Error(err)

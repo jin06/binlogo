@@ -20,10 +20,3 @@ func OptionTTL(ttl int) Option {
 		e.ttl = ttl
 	}
 }
-
-// OptionPrefix sets election prefix
-func OptionPrefix(prefix string) Option {
-	return func(e *Election) {
-		e.prefix = prefix
-	}
-}

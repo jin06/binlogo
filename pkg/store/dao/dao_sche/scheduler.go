@@ -3,18 +3,18 @@ package dao_sche
 import (
 	"context"
 	"github.com/coreos/etcd/clientv3"
-	"github.com/jin06/binlogo/pkg/etcd_client"
+	"github.com/jin06/binlogo/pkg/etcdclient"
 	"github.com/jin06/binlogo/pkg/store/model/scheduler"
 )
 
 // PipeBindPrefix returns etcd prefix of pipeline bind
 func PipeBindPrefix() string {
-	return etcd_client.Prefix() + "/scheduler/pipeline_bind"
+	return etcdclient.Prefix() + "/scheduler/pipeline_bind"
 }
 
 // GetPipelineBind get pipeline bind from etcd
 func GetPipelineBind() (pb *scheduler.PipelineBind, err error) {
-	res, err := etcd_client.Default().Get(context.TODO(), PipeBindPrefix())
+	res, err := etcdclient.Default().Get(context.TODO(), PipeBindPrefix())
 	if err != nil {
 		return
 	}
@@ -28,7 +28,7 @@ func GetPipelineBind() (pb *scheduler.PipelineBind, err error) {
 
 // UpdatePipelineBindIfNotExist update pipeline bind if the pipeline not exist in pipeline bind
 func UpdatePipelineBindIfNotExist(pName string, nName string) (err error) {
-	res, err := etcd_client.Default().Get(context.TODO(), PipeBindPrefix())
+	res, err := etcdclient.Default().Get(context.TODO(), PipeBindPrefix())
 	if err != nil {
 		return
 	}
@@ -42,7 +42,7 @@ func UpdatePipelineBindIfNotExist(pName string, nName string) (err error) {
 		return
 	}
 	pb.Bindings[pName] = nName
-	txn := etcd_client.Default().Txn(context.TODO()).
+	txn := etcdclient.Default().Txn(context.TODO()).
 		If(clientv3.Compare(clientv3.CreateRevision(PipeBindPrefix()), "=", revision)).
 		Then(clientv3.OpPut(PipeBindPrefix(), pb.Val()))
 	_, err = txn.Commit()
@@ -54,7 +54,7 @@ func UpdatePipelineBindIfNotExist(pName string, nName string) (err error) {
 
 // UpdatePipelineBind update pipeline bind ignore exists
 func UpdatePipelineBind(pName string, nName string) (ok bool, err error) {
-	res, err := etcd_client.Default().Get(context.TODO(), PipeBindPrefix())
+	res, err := etcdclient.Default().Get(context.TODO(), PipeBindPrefix())
 	if err != nil {
 		return
 	}
@@ -65,7 +65,7 @@ func UpdatePipelineBind(pName string, nName string) (ok bool, err error) {
 		err = pb.Unmarshal(res.Kvs[0].Value)
 	}
 	pb.Bindings[pName] = nName
-	txn := etcd_client.Default().Txn(context.TODO()).
+	txn := etcdclient.Default().Txn(context.TODO()).
 		If(clientv3.Compare(clientv3.CreateRevision(PipeBindPrefix()), "=", revision)).
 		Then(clientv3.OpPut(PipeBindPrefix(), pb.Val()))
 	resp, err := txn.Commit()
@@ -78,7 +78,7 @@ func UpdatePipelineBind(pName string, nName string) (ok bool, err error) {
 
 // DeletePipelineBind delete pipeline bind in etcd
 func DeletePipelineBind(pName string) (ok bool, err error) {
-	res, err := etcd_client.Default().Get(context.TODO(), PipeBindPrefix())
+	res, err := etcdclient.Default().Get(context.TODO(), PipeBindPrefix())
 	if err != nil {
 		return
 	}
@@ -92,7 +92,7 @@ func DeletePipelineBind(pName string) (ok bool, err error) {
 		}
 	}
 	delete(pb.Bindings, pName)
-	txn := etcd_client.Default().Txn(context.TODO()).
+	txn := etcdclient.Default().Txn(context.TODO()).
 		If(clientv3.Compare(clientv3.CreateRevision(PipeBindPrefix()), "=", revision)).
 		Then(clientv3.OpPut(PipeBindPrefix(), pb.Val()))
 	resp, err := txn.Commit()

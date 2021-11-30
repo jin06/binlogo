@@ -2,7 +2,7 @@ package mutex
 
 import (
 	"context"
-	"github.com/jin06/binlogo/pkg/etcd_client"
+	"github.com/jin06/binlogo/pkg/etcdclient"
 
 	//"github.com/jin06/binlogo/pkg/store/etcd"
 	"github.com/coreos/etcd/clientv3/concurrency"
@@ -22,7 +22,7 @@ func New(key string, opts ...Option) (m *Mutex, err error) {
 		timeout: time.Second * 5,
 	}
 	m.initOptions(opts...)
-	cli, err := etcd_client.New()
+	cli, err := etcdclient.New()
 	if err != nil {
 		return
 	}

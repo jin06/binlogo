@@ -4,21 +4,21 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/coreos/etcd/clientv3"
-	"github.com/jin06/binlogo/pkg/etcd_client"
+	"github.com/jin06/binlogo/pkg/etcdclient"
 	"github.com/jin06/binlogo/pkg/store/model/pipeline"
 	"github.com/sirupsen/logrus"
 )
 
 // InstancePrefix returns etcd prefix of pipeline instance
 func InstancePrefix() string {
-	return etcd_client.Prefix() + "/pipeline/instance"
+	return etcdclient.Prefix() + "/pipeline/instance"
 }
 
 // GetInstance get a pipeline instance from etcd
 // get by pipeline name pipeName
 func GetInstance(pipeName string) (ins *pipeline.Instance, err error) {
 	key := InstancePrefix() + "/" + pipeName
-	res, err := etcd_client.Default().Get(context.Background(), key)
+	res, err := etcdclient.Default().Get(context.Background(), key)
 	if err != nil {
 		return
 	}
@@ -37,7 +37,7 @@ func GetInstance(pipeName string) (ins *pipeline.Instance, err error) {
 func AllInstance() (all []*pipeline.Instance, err error) {
 	all = []*pipeline.Instance{}
 	key := InstancePrefix() + "/"
-	res, err := etcd_client.Default().Get(context.Background(), key, clientv3.WithPrefix())
+	res, err := etcdclient.Default().Get(context.Background(), key, clientv3.WithPrefix())
 	if err != nil {
 		return
 	}
@@ -60,7 +60,7 @@ func AllInstance() (all []*pipeline.Instance, err error) {
 func AllInstanceMap() (all map[string]*pipeline.Instance, err error) {
 	all = map[string]*pipeline.Instance{}
 	key := InstancePrefix() + "/"
-	res, err := etcd_client.Default().Get(context.Background(), key, clientv3.WithPrefix())
+	res, err := etcdclient.Default().Get(context.Background(), key, clientv3.WithPrefix())
 	if err != nil {
 		return
 	}

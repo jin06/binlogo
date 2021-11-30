@@ -14,5 +14,9 @@ func TestRun(t *testing.T) {
 	if err != nil {
 		t.Fail()
 	}
+	err = m.cleanHistoryEvent()
+	if err != nil {
+		t.Error(err)
+	}
 	m.Stop()
 }

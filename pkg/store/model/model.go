@@ -7,9 +7,3 @@ type Model interface {
 	Unmarshal([]byte) error
 }
 
-// ModelH will deprecated
-type ModelH interface {
-	Model
-	GetHeader() *Header
-	SetHeader(*Header)
-}
