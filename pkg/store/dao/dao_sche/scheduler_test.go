@@ -33,5 +33,4 @@ func TestScheduler(t *testing.T) {
 	if !ok {
 		t.Error("delete not ok")
 	}
-
 }

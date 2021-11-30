@@ -7,6 +7,7 @@ import (
 	"github.com/jin06/binlogo/app/pipeline/output/sender/http"
 	kafka2 "github.com/jin06/binlogo/app/pipeline/output/sender/kafka"
 	"github.com/jin06/binlogo/app/pipeline/output/sender/rabbitmq"
+	"github.com/jin06/binlogo/app/pipeline/output/sender/redis"
 	stdout2 "github.com/jin06/binlogo/app/pipeline/output/sender/stdout"
 	"github.com/jin06/binlogo/pkg/store/dao/dao_pipe"
 	"github.com/jin06/binlogo/pkg/store/model/pipeline"
@@ -42,12 +43,12 @@ func (o *Output) init() (err error) {
 		o.Sender, err = http.New(o.Options.Output.Sender.Http)
 	case pipeline.SNEDER_TYPE_RABBITMQ:
 		o.Sender, err = rabbitmq.New(o.Options.Output.Sender.RabbitMQ)
+	case pipeline.SENDER_TYPE_REDIS:
+		o.Sender, err = redis.New(o.Options.Output.Sender.Redis)
 	case pipeline.SENDER_TYPE_KAFKA:
-		fallthrough
+		o.Sender, err = kafka2.New(o.Options.Output.Sender.Kafka)
 	default:
-		o.Sender, err = kafka2.New(
-			o.Options.Output.Sender.Kafka,
-		)
+		o.Sender, err = stdout2.New()
 	}
 
 	return

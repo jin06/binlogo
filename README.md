@@ -65,14 +65,12 @@ configuration. This is some advantages:
 * Configuration output to Kafka
 
 > * High performance, possible data loss.
-    >
-* acks=1
+>   * acks=1
 >   * enable.idempotence=false
 >   * compression.type=snappy
 >   * retries=0
 > * For reliability performance:
-    >
-* acks=-1
+>   * acks=-1
 >   * enable.idempotence=true
 >   * retries=3 or larger one
 
@@ -81,6 +79,8 @@ configuration. This is some advantages:
 ![avatar](/docs/assets/pic/output_kafka_step2.en.png)
 
 ### Docker
+
+- [Docker Hub](https://hub.docker.com/r/jin06/binlogo)
 
 > $ docker pull jin06/binlogo
 > </br>
@@ -103,6 +103,7 @@ configuration. This is some advantages:
 * [HTTP](/docs/1.0.*/en/configure-http-output.md)
 * [RabbitMQ](/docs/1.0.*/en/configure-rabbitmq-outupt.md)
 * [Kafka](/docs/1.0.*/en/configure-kafka-output.md)
+* [Redis](/docs/1.0.*/en/configure-redis-outupt.md)
 
 ### Docs
 

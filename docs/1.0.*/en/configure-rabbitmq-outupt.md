@@ -3,7 +3,7 @@
 > - RabbitMQ message queues can be created on the rabbitmq console or on the console
 > - Reference [RabbitMQ Topic Pattern](https://www.rabbitmq.com/tutorials/tutorial-five-go.html)
 
-- Configure pipeline to rabbitmq
+- Configure pipeline to RabbitMQ
 
 ![avatar](/docs/assets/pic/config_output_rabbit.en.png)
 

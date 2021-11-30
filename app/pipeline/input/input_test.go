@@ -6,7 +6,6 @@ import (
 	"github.com/jin06/binlogo/pkg/store/dao/dao_pipe"
 	"github.com/jin06/binlogo/pkg/store/model/pipeline"
 	"github.com/jin06/binlogo/pkg/util/random"
-	"strconv"
 	"testing"
 	"time"
 )
@@ -14,7 +13,7 @@ import (
 func TestRun(t *testing.T) {
 	configs.InitGoTest()
 	serverId := random.Uint32()
-	pipeName := "go_test_pipeline" + strconv.Itoa(int(serverId))
+	pipeName := "go_test_pipeline" + random.String()
 	pipeModel := &pipeline.Pipeline{
 		Name:      pipeName,
 		Status:    pipeline.STATUS_RUN,
@@ -61,13 +60,14 @@ func TestRun(t *testing.T) {
 	if err != nil {
 		t.Fail()
 	}
+	time.Sleep(time.Millisecond*200)
 	dao_pipe.DeletePipeline(pipeName)
 }
 
 func TestRunCommon(t *testing.T) {
 	configs.InitGoTest()
 	serverId := random.Uint32()
-	pipeName := "go_test_pipeline" + strconv.Itoa(int(serverId))
+	pipeName := "go_test_pipeline" + random.String()
 	pipeModel := &pipeline.Pipeline{
 		Name:      pipeName,
 		Status:    pipeline.STATUS_RUN,
@@ -114,5 +114,6 @@ func TestRunCommon(t *testing.T) {
 	if err != nil {
 		t.Fail()
 	}
+	time.Sleep(time.Millisecond*200)
 	dao_pipe.DeletePipeline(pipeName)
 }

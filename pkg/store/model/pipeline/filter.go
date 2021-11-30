@@ -15,3 +15,21 @@ const (
 	// FILTER_BLACK black list
 	FILTER_BLACK FilterType = "black"
 )
+
+// BlackFilter returns a black filter
+func BlackFilter(rule string) (f *Filter) {
+	f = &Filter{
+		Type: FILTER_BLACK,
+		Rule: rule,
+	}
+	return
+}
+
+// WhiteFilter returns a white filter
+func WhiteFilter(rule string) (f *Filter) {
+	f = &Filter{
+		Type: FILTER_WHITE,
+		Rule: rule,
+	}
+	return
+}

@@ -7,6 +7,8 @@ github.com/Shopify/sarama
 github.com/StackExchange/wmi
 # github.com/armon/go-metrics v0.0.0-20180917152333-f0300d1749da
 github.com/armon/go-metrics
+# github.com/cespare/xxhash/v2 v2.1.2
+github.com/cespare/xxhash/v2
 # github.com/coreos/bbolt v1.3.6 => go.etcd.io/bbolt v1.3.6
 ## explicit
 # github.com/coreos/etcd v3.3.27+incompatible
@@ -40,6 +42,8 @@ github.com/coreos/pkg/capnslog
 github.com/davecgh/go-spew/spew
 # github.com/dgrijalva/jwt-go v3.2.0+incompatible
 ## explicit
+# github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f
+github.com/dgryski/go-rendezvous
 # github.com/dustin/go-humanize v1.0.0
 ## explicit
 # github.com/eapache/go-resiliency v1.2.0
@@ -81,6 +85,16 @@ github.com/go-playground/locales/currency
 github.com/go-playground/universal-translator
 # github.com/go-playground/validator/v10 v10.4.1
 github.com/go-playground/validator/v10
+# github.com/go-redis/redis/v8 v8.11.4
+## explicit
+github.com/go-redis/redis/v8
+github.com/go-redis/redis/v8/internal
+github.com/go-redis/redis/v8/internal/hashtag
+github.com/go-redis/redis/v8/internal/hscan
+github.com/go-redis/redis/v8/internal/pool
+github.com/go-redis/redis/v8/internal/proto
+github.com/go-redis/redis/v8/internal/rand
+github.com/go-redis/redis/v8/internal/util
 # github.com/go-resty/resty/v2 v2.7.0
 ## explicit
 github.com/go-resty/resty/v2

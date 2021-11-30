@@ -6,7 +6,7 @@ import (
 )
 
 func main() {
-	pipelineName := "pipe-rabbitmq"
+	pipelineName := "test-rabbitmq"
 	queueName := pipelineName + "-q"
 	conn, err := amqp.Dial("amqp://guest:guest@localhost:5672/")
 	if err != nil {
@@ -48,7 +48,10 @@ func main() {
 			true,
 		)
 	}()
-	msgs, err := ch.Consume(
+
+	fmt.Println("Wait messages: ")
+
+	msgs, errCon := ch.Consume(
 		queueName, // queue
 		"",        // consumer
 		true,      // auto ack
@@ -57,10 +60,13 @@ func main() {
 		false,     // no wait
 		nil,       // args
 	)
-
-	fmt.Println("Wait messages: ")
-
-	for d := range msgs {
-		fmt.Printf(" [x] %s", d.Body)
+	if errCon != nil {
+		fmt.Println(errCon)
 	}
+	go func() {
+		for msg := range msgs {
+			fmt.Printf(" [x] %s", msg.Body)
+		}
+	}()
+	select {}
 }

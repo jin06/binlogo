@@ -35,6 +35,7 @@ func NewPipeline(name string) (pipe *Pipeline) {
 				Stdout:   nil,
 				Http:     nil,
 				RabbitMQ: nil,
+				Redis:    nil,
 			},
 		},
 		Replicas:   0,

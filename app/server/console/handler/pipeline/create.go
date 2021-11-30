@@ -48,5 +48,11 @@ func pipelineDefault(p *pipeline.Pipeline) {
 				p.Output.Sender.RabbitMQ.ExchangeName = p.Name
 			}
 		}
+	case pipeline.SENDER_TYPE_REDIS:
+		{
+			if p.Output.Sender.Redis.List == "" {
+				p.Output.Sender.Redis.List = p.Name
+			}
+		}
 	}
 }

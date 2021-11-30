@@ -8,7 +8,9 @@ const SENDER_TYPE_KAFKA = "kafka"
 const SNEDER_TYPE_STDOUT = "stdout"
 const SNEDER_TYPE_HTTP = "http"
 const SNEDER_TYPE_RABBITMQ = "rabbitMQ"
+const SENDER_TYPE_REDIS = "redis"
 
+// Sender output configuration
 type Sender struct {
 	Name     string    `json:"name"`
 	Type     string    `json:"type"`
@@ -16,8 +18,10 @@ type Sender struct {
 	Stdout   *Stdout   `json:"stdout"`
 	Http     *Http     `json:"http"`
 	RabbitMQ *RabbitMQ `json:"rabbitMQ"`
+	Redis    *Redis    `json:"redis"`
 }
 
+// Kafka output configuration
 type Kafka struct {
 	Brokers      string                   `json:"brokers"`
 	Topic        string                   `json:"topic"`
@@ -27,10 +31,28 @@ type Kafka struct {
 	Idepotent    *bool                    `json:"idepotent"`
 }
 
+// Stdout output configuration
 type Stdout struct {
 }
 
+// Http output configuration
 type Http struct {
 	API     string `json:"api"`
 	Retries int    `json:"retries"`
+}
+
+// RabbitMQ basic model for pipeline config
+type RabbitMQ struct {
+	// rabbitMQ url
+	Url          string `json:"url"`
+	ExchangeName string `json:"exchange_name"`
+}
+
+// Redis output configuration
+type Redis struct {
+	Addr     string `json:"address"`
+	UserName string `json:"username"`
+	Password string `json:"password"`
+	DB       int    `json:"db"`
+	List     string `json:"list"`
 }

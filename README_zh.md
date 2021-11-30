@@ -63,12 +63,12 @@ Binlogo是一个基于MySQL的binlog开发的数据同步中间件。同步binlo
 * 配置输出到kafka，下面一些kafka的建议配置
 
 > * 为了更好的性能表现，可以配置如下。这种模式下有数据丢失风险。 
-    >   *  acks=1
+>   *  acks=1
 >   *  enable.idempotence=false
 >   *  compression.type=snappy
 >   *  retries=0
 > * 为了更好的可靠性，可以配置如下。其中如果enable.idempotence配置为true，会保证发送到kafka的数据是幂等。
-    >   * acks=-1
+>   * acks=-1
 >   * enable.idempotence=true
 >   * retries=3 or larger one
 
@@ -77,6 +77,8 @@ Binlogo是一个基于MySQL的binlog开发的数据同步中间件。同步binlo
 ![avatar](/docs/assets/pic/output_kafka_step2.en.png)
 
 ### Docker
+
+- [Docker Hub](https://hub.docker.com/r/jin06/binlogo)
 
 > $ docker pull jin06/binlogo
 > </br>
@@ -91,13 +93,14 @@ Binlogo是一个基于MySQL的binlog开发的数据同步中间件。同步binlo
 
 ### Kubernetes
 
-- [doc](/docs/1.0.*/zh/instanll-kubernetes.md)
+- [文档](/docs/1.0.*/zh/instanll-kubernetes.md)
 
 ### 其他输出端
 
 * [HTTP](/docs/1.0.*/zh/configure-http-output.md)
 * [RabbitMQ](/docs/1.0.*/zh/configure-rabbitmq-outupt.md)
 * [Kafka](/docs/1.0.*/zh/configure-kafka-output.md)
+* [Redis](/docs/1.0.*/zh/configure-redis-outupt.md)
 
 ### 文档
 
