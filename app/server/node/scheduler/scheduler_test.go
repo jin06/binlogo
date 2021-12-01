@@ -27,7 +27,7 @@ func TestRun(t *testing.T) {
 	dao_node.CreateNode(node.NewNode(nName))
 	defer dao_pipe.DeletePipeline(pName)
 	defer dao_node.DeleteNode(nName)
-	err = s.scheduleOne(pModel)
+	err = scheduleOne(pModel)
 	if err != nil {
 		t.Error(err)
 	}

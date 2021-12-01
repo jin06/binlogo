@@ -31,5 +31,7 @@ func TestRecorder(t *testing.T) {
 	configs.InitGoTest()
 	Init()
 	Event(event.NewInfoCluster("test message"))
+	EventErrorPipeline("go_test_pipeline", "test message")
+	EventInfoPipeline("go_test_pipeline", "test message")
 	time.Sleep(time.Millisecond * 100)
 }

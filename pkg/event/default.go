@@ -21,3 +21,15 @@ func Event(e *event.Event) {
 		go DefaultRecorder.Event(e)
 	}
 }
+
+// EventErrorPipeline record a pipeline error event
+func EventErrorPipeline(name string, msg string) {
+	e := event.NewErrorPipeline(name, msg)
+	Event(e)
+}
+
+// EventInfoPipeline record a pipeline info event
+func EventInfoPipeline(name string, msg string) {
+	e := event.NewInfoPipeline(name, msg)
+	Event(e)
+}

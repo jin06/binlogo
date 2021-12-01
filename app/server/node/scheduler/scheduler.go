@@ -2,19 +2,21 @@ package scheduler
 
 import (
 	"context"
+	"github.com/coreos/etcd/mvcc/mvccpb"
 	"github.com/jin06/binlogo/pkg/event"
 	"github.com/jin06/binlogo/pkg/store/dao/dao_sche"
-	event2 "github.com/jin06/binlogo/pkg/store/model/event"
 	"github.com/jin06/binlogo/pkg/store/model/pipeline"
+	"github.com/jin06/binlogo/pkg/store/model/scheduler"
+	"github.com/jin06/binlogo/pkg/watcher/scheduler_binding"
 	"github.com/sirupsen/logrus"
 	"sync"
+	"time"
 )
 
 // Scheduler schedule the pipeline.
 // allocate the pipeline to the appropriate node for operation
 type Scheduler struct {
 	lock    sync.Mutex
-	watcher *Watcher
 	status  string
 	runLock sync.Mutex
 	cancel  context.CancelFunc
@@ -40,14 +42,6 @@ func (s *Scheduler) Run(ctx context.Context) (err error) {
 			s.status = SCHEDULER_RUN
 		}
 	}()
-	s.watcher, err = newWatcher()
-	if err != nil {
-		return
-	}
-	err = s.watcher.run(myCtx)
-	if err != nil {
-		return
-	}
 	s.cancel = cancel
 	go s._schedule(myCtx)
 	logrus.Debug("scheduler.run")
@@ -55,19 +49,33 @@ func (s *Scheduler) Run(ctx context.Context) (err error) {
 }
 
 func (s *Scheduler) _schedule(ctx context.Context) {
+	defer s.Stop()
+	wa, err := scheduler_binding.New()
+	if err != nil {
+		return
+	}
+	waCh, err := wa.WatchEtcd(ctx)
+	if err != nil {
+		return
+	}
+	schedulePipes(nil)
 	for {
 		select {
 		case <-ctx.Done():
 			{
 				return
 			}
-		case p := <-s.watcher.notBindPipelineCh:
+		case ev := <-waCh:
 			{
-				logrus.Infof("%s not bind node, bind one ", p.Name)
-				err := s.scheduleOne(p)
-				if err != nil {
-					logrus.Error(err)
+				if ev.Event.Type == mvccpb.PUT {
+					if val, ok := ev.Data.(*scheduler.PipelineBind); ok {
+						schedulePipes(val)
+					}
 				}
+			}
+		case <-time.Tick(time.Second * 60):
+			{
+				schedulePipes(nil)
 			}
 		}
 	}
@@ -78,37 +86,22 @@ func (s *Scheduler) Stop() {
 	s.runLock.Lock()
 	defer s.runLock.Unlock()
 	if s.status == SCHEDULER_STOP {
-		//logrus.Debug("Stopped, do nothing")
 		return
 	}
 	s.cancel()
 	return
 }
 
-func (s *Scheduler) scheduleOne(p *pipeline.Pipeline) (err error) {
-	logrus.Debugf("schedule one: %v", p)
-	//p := s.queue.getOne()
+func scheduleOne(p *pipeline.Pipeline) (err error) {
 	a := newAlgorithm(withAlgPipe(p))
-	defer func() {
-		if err != nil {
-			event.Event(event2.NewErrorPipeline(p.Name, "Scheduling error, "+err.Error()))
-		} else {
-			event.Event(event2.NewInfoPipeline(p.Name, p.Name+" is scheduled to node "+a.bestNode.Name))
-		}
-	}()
 	err = a.cal()
 	if err != nil {
 		return
 	}
-	logrus.Debugf("best node for %s is %s \n", p.Name, a.bestNode.Name)
 	_, err = dao_sche.UpdatePipelineBind(p.Name, a.bestNode.Name)
 	if err != nil {
-		logrus.Error(err)
+		return
 	}
-	return
-}
-
-func (s *Scheduler) watchPipeline(err error) {
 	return
 }
 
@@ -117,5 +110,38 @@ func New() (s *Scheduler) {
 	s = &Scheduler{}
 	s.runLock = sync.Mutex{}
 	s.status = SCHEDULER_STOP
+	s.cancel = func() {}
 	return
+}
+
+// noScheduledPipelines find pipelines that not be scheduled
+func noScheduledPipelines(pb *scheduler.PipelineBind) (pipes []*pipeline.Pipeline, err error) {
+	if pb == nil {
+		pb, err = dao_sche.GetPipelineBind()
+		if err != nil {
+			return
+		}
+	}
+	pipes = []*pipeline.Pipeline{}
+	for k, v := range pb.Bindings {
+		if v == "" {
+			pipes = append(pipes, &pipeline.Pipeline{Name: k})
+		}
+	}
+	return
+}
+
+func schedulePipes(pb *scheduler.PipelineBind) {
+	pipes, err := noScheduledPipelines(pb)
+	if err != nil {
+		return
+	}
+	for _, v := range pipes {
+		er := scheduleOne(v)
+		if er != nil {
+			event.EventErrorPipeline(v.Name, "SCHEDULING: "+er.Error())
+		} else {
+			event.EventInfoPipeline(v.Name, "SCHEDULING SUCCESS")
+		}
+	}
 }
