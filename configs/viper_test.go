@@ -8,7 +8,7 @@ import (
 
 func TestInitViperFromFile(t *testing.T) {
 	file := "./binlogo.yaml"
-	InitViperFromFile(file)
+	Init(file)
 	if viper.GetString("env") != "production" {
 		t.Fail()
 	}

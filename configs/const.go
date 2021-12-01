@@ -22,4 +22,6 @@ const (
 	CONSOLE_LISTEN = "0.0.0.0"
 	// CONSOLE_PORT default value of console listen port
 	CONSOLE_PORT = "9999"
+	// CLUSTER_NAME default value of cluster name
+	CLUSTER_NAME = "cluster"
 )

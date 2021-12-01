@@ -5,10 +5,19 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"os"
+	"syscall"
 )
 
-// InitViperFromFile read config file and write to viper
-func InitViperFromFile(file string) {
+// Init init configs
+func Init(file string) {
+	initViperDefault()
+	initViperFromFile(file)
+	initViperFromEnv()
+	initConst()
+}
+
+// initViperFromFile read config file and write to viper
+func initViperFromFile(file string) {
 	if file == "" {
 		file = "./configs/binlogo.yaml"
 	}
@@ -16,39 +25,57 @@ func InitViperFromFile(file string) {
 	viper.SetConfigFile(file)
 	if err := viper.ReadInConfig(); err != nil {
 		logrus.Error(err.Error())
-		os.Exit(1)
+		//os.Exit(1)
 	}
 }
 
-// InitConfigs sets some default values to viper from system environment
-func InitConfigs() {
-	nodeName := os.Getenv("NODE_NAME")
-	if nodeName == "" {
-		nodeName, _ = os.Hostname()
+// initViperDefault set default configs
+func initViperDefault() {
+	hostName, _ := os.Hostname()
+	viper.SetDefault("node.name", hostName)
+	viper.SetDefault("env", ENV_PRO)
+	viper.SetDefault("cluster.name", CLUSTER_NAME)
+	viper.SetDefault("console.listen", CONSOLE_LISTEN)
+	viper.SetDefault("console.port", CONSOLE_PORT)
+}
+
+// initViperFromEnv read config from env then whrite to viper
+func initViperFromEnv() {
+	if val, found := syscall.Getenv("NODE_NAME"); found {
+		viper.Set("node.name", val)
 	}
-	viper.SetDefault("node.name", nodeName)
-	viper.SetDefault("env", os.Getenv("BINLOGO_ENV"))
-	viper.SetDefault("cluster.name", os.Getenv("CLUSTER_NAME"))
-	consoleListen := os.Getenv("CONSOLE_LISTEN")
-	if consoleListen == "" {
-		consoleListen = CONSOLE_LISTEN
+	if val, found := syscall.Getenv("BINLOGO_ENV"); found {
+		viper.Set("env", val)
 	}
-	viper.SetDefault("console.listen", consoleListen)
-	consolePort := os.Getenv("CONSOLE_PORT")
-	if consolePort == "" {
-		consolePort = CONSOLE_PORT
+	if val, found := syscall.Getenv("CLUSTER_NAME"); found {
+		viper.Set("cluster.name", val)
 	}
-	viper.SetDefault("console.port", consolePort)
-	viper.SetDefault("etcd.endpoints", os.Getenv("ETCD_ENDPOINTS"))
-	viper.SetDefault("etcd.password", os.Getenv("ETCD_PASSWORD"))
-	viper.SetDefault("etcd.username", os.Getenv("ETCD_USERNAME"))
+	if val, found := syscall.Getenv("CONSOLE_LISTEN"); found {
+		viper.Set("console.listen", val)
+	}
+	if val, found := syscall.Getenv("CONSOLE_PORT"); found {
+		viper.Set("console.port", val)
+	}
+	if val, found := syscall.Getenv("ETCD_ENDPOINTS"); found {
+		viper.Set("etcd.endpoints", val)
+	}
+	if val, found := syscall.Getenv("ETCD_PASSWORD"); found {
+		viper.Set("etcd.password", val)
+	}
+	if val, found := syscall.Getenv("ETCD_USERNAME"); found {
+		viper.Set("etcd.username", val)
+	}
+}
+
+// initConst set global config
+func initConst() {
 	ENV = Env(viper.GetString("env"))
 	NodeName = viper.GetString("node.name")
 	NodeIP, _ = ip.LocalIp()
 }
 
-// InitEnv sets some default values to environment for testing
-func DefaultEnv() {
+// InitGoTest init environment for testing
+func InitGoTest() {
 	_ = os.Setenv("NODE_NAME", "go_test_node")
 	_ = os.Setenv("BINLOGO_ENV", "dev")
 	_ = os.Setenv("CLUSTER_NAME", "go_test_cluster")
@@ -56,10 +83,6 @@ func DefaultEnv() {
 	_ = os.Setenv("CONSOLE_PORT", "19999")
 	_ = os.Setenv("ETCD_ENDPOINTS", "localhost:12379")
 	_ = os.Setenv("ETCD_PASSWORD", "")
-}
-
-// InitGoTest init environment for testing
-func InitGoTest() {
-	DefaultEnv()
-	InitConfigs()
+	_ = os.Setenv("ETCD_USERNAME", "")
+	Init("")
 }
