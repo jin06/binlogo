@@ -45,3 +45,17 @@ func ClearOrDeleteBind(name string) (err error) {
 	}
 	return
 }
+
+// DeleteCluster delete whole cluster
+func DeleteCluster(clusterName string) (deleted int64, err error) {
+	if clusterName == "" {
+		err = errors.New("empty cluster name")
+	}
+	key := etcdclient.Prefix()
+	res, err := etcdclient.Default().Delete(context.Background(), key)
+	if err != nil {
+		return
+	}
+	deleted = res.Deleted
+	return
+}

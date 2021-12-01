@@ -2,6 +2,7 @@
 
 # https://app.codecov.io/gh/jin06/binlogo
 #
+rm coverage.txt
 set -e
 echo "" > coverage.txt
 
