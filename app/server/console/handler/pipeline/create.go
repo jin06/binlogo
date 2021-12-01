@@ -54,5 +54,11 @@ func pipelineDefault(p *pipeline.Pipeline) {
 				p.Output.Sender.Redis.List = p.Name
 			}
 		}
+	case pipeline.SENDER_TYPE_KAFKA:
+		{
+			if p.Output.Sender.Kafka.Topic == "" {
+				p.Output.Sender.Kafka.Topic = p.Name
+			}
+		}
 	}
 }
