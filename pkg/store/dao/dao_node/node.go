@@ -33,6 +33,14 @@ func CreateNode(n *node.Node) (err error) {
 
 // CreateNodeIfNotExist create a node in etcd if that not exist
 func CreateNodeIfNotExist(n *node.Node) (err error) {
+	if n == nil {
+		errors.New("empty node")
+		return
+	}
+	if n.Name == "" {
+		errors.New("empty node name")
+		return
+	}
 	key := NodePrefix() + "/" + n.Name
 	b, err := json.Marshal(n)
 	if err != nil {
@@ -181,7 +189,7 @@ func AllWorkNodesMap() (res map[string]*node.Node, err error) {
 // DeleteNode delete a node by node name
 func DeleteNode(name string) (ok bool, err error) {
 	if name == "" {
-		err = errors.New("empty name")
+		err = errors.New("empty node name")
 		return
 	}
 	key := NodePrefix() + "/" + name

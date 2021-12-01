@@ -8,6 +8,7 @@ import (
 	"github.com/jin06/binlogo/pkg/node/role"
 	"github.com/jin06/binlogo/pkg/store/dao/dao_cluster"
 	"github.com/jin06/binlogo/pkg/store/dao/dao_node"
+	node2 "github.com/jin06/binlogo/pkg/store/model/node"
 	"github.com/sirupsen/logrus"
 	"sort"
 	"strings"
@@ -45,9 +46,13 @@ func List(c *gin.Context) {
 		}
 		if _, ok := capacityMap[v.Name]; ok {
 			i.Capacity = capacityMap[v.Name]
+		} else {
+			i.Capacity = node2.NewCapacity(v.Name)
 		}
 		if _, ok := statusMap[v.Name]; ok {
 			i.Status = statusMap[v.Name]
+		} else {
+			i.Status = node2.New(v.Name)
 		}
 		if i.Node.Name == leaderNode {
 			i.Info.Role = role.LEADER

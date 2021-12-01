@@ -18,6 +18,10 @@ func StatusPrefix() string {
 // CreateOrUpdateStatus crate of update status in etcd
 // create if not exist
 func CreateOrUpdateStatus(nodeName string, opts ...node.StatusOption) (ok bool, err error) {
+	if nodeName == "" {
+		err = errors.New("empty node name")
+		return
+	}
 	key := StatusPrefix() + "/" + nodeName
 	res, err := etcdclient.Default().Get(context.TODO(), key)
 	if err != nil {

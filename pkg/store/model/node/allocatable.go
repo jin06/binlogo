@@ -13,3 +13,15 @@ type Allocatable struct {
 
 // AllocatableOption Allocatable's options
 type AllocatableOption func(a *Allocatable)
+
+// NewAllocatable returns a new *Allocatable
+func NewAllocatable(nodeName string) *Allocatable {
+	a := &Allocatable{
+		NodeName:   nodeName,
+		Cpu:        0,
+		Disk:       0,
+		Memory:     0,
+		UpdateTime: time.Time{},
+	}
+	return a
+}
