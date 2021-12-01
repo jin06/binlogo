@@ -23,7 +23,7 @@ func main() {
 			{
 				str, err := rdb.LPop(context.Background(), list).Result()
 				if err == redis.Nil {
-					fmt.Printf("%v, no message", time.Now().Format("2006-01-02 15:04:05.000"))
+					fmt.Printf("%v, no message \n", time.Now().Format("2006-01-02 15:04:05.000"))
 					duration = Increase(duration)
 					continue
 				}
