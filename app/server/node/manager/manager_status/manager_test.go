@@ -11,8 +11,7 @@ import (
 )
 
 func TestRun(t *testing.T) {
-	configs.DefaultEnv()
-	configs.InitConfigs()
+	configs.InitGoTest()
 	nodeName := "go_test_node" + random.String()
 	nModel := node.NewNode(nodeName)
 	dao_node.CreateNode(nModel)

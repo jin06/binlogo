@@ -48,8 +48,7 @@ func TestScanPipelines(t *testing.T) {
 }
 
 func TestRun(t *testing.T) {
-	configs.DefaultEnv()
-	configs.InitConfigs()
+	configs.InitGoTest()
 	_, err := dao_sche.UpdatePipelineBind("go_test_pipeline", "go_test_node")
 	if err != nil {
 		t.Error(err)

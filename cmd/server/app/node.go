@@ -42,7 +42,11 @@ func RunNode() (err error) {
 		return
 	}
 	ctx := context.TODO()
-	err = _node.Run(ctx)
+	go func() {
+		for {
+			err = _node.Run(ctx)
+		}
+	}()
 
 	return
 }

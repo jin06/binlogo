@@ -94,54 +94,41 @@ func (n *Node) init() (err error) {
 
 // Run start working
 func (n *Node) Run(ctx context.Context) (err error) {
-	go func() {
-		var ok bool
-		var newest *node.Node
-		newest, err = dao_node.GetNode(n.Options.Node.Name)
-		if err != nil {
+	myCtx, cancel := context.WithCancel(ctx)
+	defer cancel()
+	var newest *node.Node
+	newest, err = dao_node.GetNode(n.Options.Node.Name)
+	if err != nil {
+		return
+	}
+	if newest == nil {
+		err = errors.New("unexpected, node is null")
+		return
+	}
+	n.Options.Node = newest
+	n.Register.Run(myCtx)
+	err = n.StatusManager.Run(myCtx)
+	n.election = election.New(
+		election.OptionNode(n.Options.Node),
+		election.OptionTTL(5),
+	)
+	n.election.Run(myCtx)
+	n.pipeManager.Run(myCtx)
+	n._leaderRun(myCtx)
+	select {
+	case <-ctx.Done():
+		{
 			return
 		}
-		if newest == nil {
-			err = errors.New("unexpected, node is null")
+	case <-n.Register.Context().Done():
+		{
 			return
 		}
-		n.Options.Node = newest
-
-		if ok {
-			//todo
-			//panic("exist node")
+	case <-n.election.Context().Done():
+		{
+			return
 		}
-		ctxReg, cancelReg := context.WithCancel(ctx)
-		defer cancelReg()
-		n.Register.Run(ctxReg)
-
-		ctxStatus, cancelStatus := context.WithCancel(ctx)
-		defer cancelStatus()
-		err = n.StatusManager.Run(ctxStatus)
-
-		ctxElection, cancelElection := context.WithCancel(ctx)
-		defer cancelElection()
-		n.election = election.New(
-			election.OptionNode(n.Options.Node),
-			election.OptionTTL(5),
-		)
-		n.election.Run(ctxElection)
-
-		n.pipeManager.Run(ctx)
-
-		ctxLeader, cancelLeader := context.WithCancel(ctx)
-		n._leaderRun(ctxLeader)
-		defer cancelLeader()
-
-		select {
-		case <-ctx.Done():
-			{
-				panic(ctx.Err())
-				return
-			}
-		}
-	}()
-	return
+	}
 }
 
 // Role returns current role

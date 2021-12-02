@@ -2,7 +2,6 @@ package election
 
 import (
 	"context"
-	"github.com/coreos/etcd/clientv3"
 	"github.com/coreos/etcd/clientv3/concurrency"
 	"github.com/jin06/binlogo/configs"
 	"github.com/jin06/binlogo/pkg/etcdclient"
@@ -18,7 +17,6 @@ import (
 type Election struct {
 	node        *node2.Node
 	election    *concurrency.Election
-	client      *clientv3.Client
 	campaignVal string
 	ttl         int
 	prefix      string
@@ -26,6 +24,7 @@ type Election struct {
 	eleLock     sync.Mutex
 	roleMutex   sync.Mutex
 	RoleCh      chan role.Role
+	ctx         context.Context
 }
 
 // New returns a new Election
@@ -49,31 +48,43 @@ func New(opts ...Option) (e *Election) {
 	return
 }
 
-func (e *Election) init() {
-	e.client = etcdclient.Default()
-	return
-}
-
 // Run start election process
 func (e *Election) Run(ctx context.Context) {
-	e.init()
 	e.campaign(ctx)
 }
 
 func (e *Election) campaign(ctx context.Context) {
+	myCtx, cancel := context.WithCancel(ctx)
+	e.ctx = myCtx
 	go func() {
 		defer func() {
 			e.SetRole(role.FOLLOWER)
-			e.Resign(ctx)
+			e.Resign(myCtx)
+			cancel()
 		}()
+		d := time.Millisecond
 		for {
 			e.SetRole(role.FOLLOWER)
 			//time.Sleep(time.Second)
+			select {
+			case <-ctx.Done():
+				{
+					return
+				}
+			case <-time.Tick(d):
+				{
+					d = time.Second * 2
+				}
+			}
 
-			sen, errSe := concurrency.NewSession(e.client, concurrency.WithTTL(e.ttl))
+			client, err := etcdclient.New()
+			if err != nil {
+				logrus.Errorln("Election new client error: ", err)
+				continue
+			}
+			sen, errSe := concurrency.NewSession(client, concurrency.WithTTL(e.ttl))
 			if errSe != nil {
 				logrus.Error("Election error")
-				time.Sleep(time.Second * 5)
 				continue
 			}
 			ele := concurrency.NewElection(
@@ -83,12 +94,10 @@ func (e *Election) campaign(ctx context.Context) {
 			e.setElection(ele)
 
 			logrus.Info("Run for election")
-			ctx1, _ := context.WithCancel(ctx)
-			errC := ele.Campaign(ctx1, e.campaignVal)
+			errC := ele.Campaign(myCtx, e.campaignVal)
 			if errC != nil {
 				//_ = sen.Close()
 				logrus.Error("campaign error", errC)
-				time.Sleep(time.Second * 5)
 				continue
 			}
 
@@ -97,7 +106,7 @@ func (e *Election) campaign(ctx context.Context) {
 
 			logrus.Info("Election Watch ")
 
-			obsCh := e.election.Observe(ctx)
+			obsCh := e.election.Observe(myCtx)
 		LOOP:
 			for {
 				select {
@@ -123,11 +132,10 @@ func (e *Election) campaign(ctx context.Context) {
 					}
 				}
 			}
-			if errResign := e.election.Resign(ctx); errResign != nil {
+			if errResign := e.election.Resign(myCtx); errResign != nil {
 				logrus.Errorln("Election failed, start new election.", errResign)
 			}
 			logrus.Errorln("Lost leader... ")
-			time.Sleep(time.Second)
 		}
 	}()
 	return
@@ -183,4 +191,9 @@ func (e *Election) Resign(ctx context.Context) (err error) {
 		e.SetRole(role.FOLLOWER)
 	}
 	return
+}
+
+// Context returns Election context
+func (e *Election) Context() context.Context {
+	return e.ctx
 }

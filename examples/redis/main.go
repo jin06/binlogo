@@ -10,8 +10,7 @@ import (
 func main() {
 	list := "test-redis"
 	rdb := redis.NewClient(&redis.Options{
-		//Addr:     "localhost:16379",
-		Addr:     "redis-apple-master.shan-dev.svc.cluster.local:6379",
+		Addr:     "localhost:16379",
 		Password: "",
 		DB:       0,
 	})

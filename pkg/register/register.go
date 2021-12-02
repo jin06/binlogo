@@ -15,11 +15,7 @@ func New(opts ...Option) (r *Register, err error) {
 	r = &Register{
 		ttl: 5,
 	}
-	//r.client, err = etcdclient.New()
-	r.client = etcdclient.Default()
-	//if err != nil {
-	//	return
-	//}
+	//r.client = etcdclient.Default()
 	for _, v := range opts {
 		v(r)
 	}
@@ -38,6 +34,17 @@ type Register struct {
 	ctx                    context.Context
 }
 
+func (r *Register) initClient() (err error) {
+	if r.client != nil {
+		er := r.client.Close()
+		if er != nil {
+			logrus.Errorln(er)
+		}
+	}
+	r.client, err = etcdclient.New()
+	return
+}
+
 // Run start register
 func (r *Register) Run(ctx context.Context) {
 	myCtx, cancel := context.WithCancel(ctx)
@@ -47,53 +54,56 @@ func (r *Register) Run(ctx context.Context) {
 			cancel()
 		}()
 		var err error
+		err = r.initClient()
+		if err != nil {
+			logrus.Errorln(err)
+			return
+		}
+		err = r.reg()
+		if err != nil {
+			logrus.Errorln(err)
+			return
+		}
+	LOOP:
 		for {
-			err = r.reg()
-			if err != nil {
-				logrus.Errorln(err)
-				continue
-			}
-		LOOP:
-			for {
-				select {
-				case <-ctx.Done():
-					{
-						err = r.revoke()
-						if err != nil {
-							logrus.Errorln(err)
-						}
-						return
+			select {
+			case <-ctx.Done():
+				{
+					err = r.revoke()
+					if err != nil {
+						logrus.Errorln(err)
 					}
-				case <-time.Tick(time.Second):
-					{
-						err = r.keepOnce()
-						if err == rpctypes.ErrLeaseNotFound {
-							break LOOP
-						}
-						wOk, wErr := r.watch()
-						if wErr != nil {
-							logrus.Errorln(wErr)
-						}
-						if !wOk {
-							break LOOP
-						}
+					return
+				}
+			case <-time.Tick(time.Second):
+				{
+					err = r.keepOnce()
+					if err == rpctypes.ErrLeaseNotFound {
+						break LOOP
+					}
+					wOk, wErr := r.watch()
+					if wErr != nil {
+						logrus.Errorln(wErr)
+					}
+					if !wOk {
+						break LOOP
 					}
 				}
 			}
-			errR := r.revoke()
-			if errR != nil {
-				logrus.Errorln(errR)
-			}
-			logrus.Errorln("Register failed, start a new Register")
-			time.Sleep(time.Second)
 		}
+		errR := r.revoke()
+		if errR != nil {
+			logrus.Errorln(errR)
+		}
+		logrus.Errorln("Register end: ", r.registerKey)
+		//time.Sleep(time.Second)
 	}()
 }
 
 func (r *Register) reg() (err error) {
 	//r.client, _ = etcdclient.New()
 	r.lease = clientv3.NewLease(r.client)
-	rep, err := r.lease.Grant(context.TODO(), r.ttl)
+	rep, err := r.lease.Grant(r.ctx, r.ttl)
 	if err != nil {
 		return
 	}
@@ -103,7 +113,7 @@ func (r *Register) reg() (err error) {
 	if err != nil {
 		return
 	}
-	res, err := r.client.Put(context.TODO(), r.registerKey, string(b), clientv3.WithLease(r.leaseID))
+	res, err := r.client.Put(r.ctx, r.registerKey, string(b), clientv3.WithLease(r.leaseID))
 	if res != nil {
 		r.registerCreateRevision = res.Header.Revision
 	}
@@ -111,7 +121,7 @@ func (r *Register) reg() (err error) {
 }
 
 func (r *Register) keepOnce() (err error) {
-	_, err = r.lease.KeepAliveOnce(context.TODO(), r.leaseID)
+	_, err = r.lease.KeepAliveOnce(r.ctx, r.leaseID)
 
 	if err != nil {
 		return
@@ -121,13 +131,13 @@ func (r *Register) keepOnce() (err error) {
 }
 
 func (r *Register) revoke() (err error) {
-	_, err = r.client.Revoke(context.TODO(), r.leaseID)
+	_, err = r.client.Revoke(r.ctx, r.leaseID)
 	return
 }
 
 func (r *Register) watch() (ok bool, err error) {
 	var res *clientv3.GetResponse
-	res, err = r.client.Get(context.TODO(), r.registerKey)
+	res, err = r.client.Get(r.ctx, r.registerKey)
 	if err != nil {
 		logrus.Errorln(err)
 		return
