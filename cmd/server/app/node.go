@@ -44,7 +44,9 @@ func RunNode() (err error) {
 	ctx := context.TODO()
 	go func() {
 		for {
+			logrus.WithField("node name", configs.NodeName).Info("Running node")
 			err = _node.Run(ctx)
+			time.Sleep(time.Second * 5)
 		}
 	}()
 
