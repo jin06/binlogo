@@ -10,18 +10,22 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+// EventPrefix returns event prefix
 func EventPrefix() string {
 	return etcdclient.Prefix() + "/event"
 }
 
+// PipelinePrefix returns pipeline event prefix
 func PipelinePrefix() string {
 	return EventPrefix() + "/pipeline"
 }
 
+// NodePrefix returns node event prefix
 func NodePrefix() string {
 	return EventPrefix() + "/node"
 }
 
+// List returns event list by resource type and resource name
 func List(resType string, resName string, opts ...clientv3.OpOption) (list []*event.Event, err error) {
 	key := EventPrefix() + "/" + resType + "/" + resName
 	opts = append(opts, clientv3.WithPrefix())
@@ -42,6 +46,7 @@ func List(resType string, resName string, opts ...clientv3.OpOption) (list []*ev
 	return
 }
 
+// Update create or update event
 func Update(e *event.Event) (err error) {
 	if e == nil {
 		return errors.New("event is null")
@@ -55,6 +60,7 @@ func Update(e *event.Event) (err error) {
 	return
 }
 
+// DeleteRange deletes events
 func DeleteRange(fromKey string, endKey string) (deleted int64, err error) {
 	res, err := etcdclient.Default().Delete(context.Background(), fromKey, clientv3.WithRange(endKey))
 	if err != nil {
