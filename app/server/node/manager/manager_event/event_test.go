@@ -7,8 +7,7 @@ import (
 )
 
 func TestRun(t *testing.T) {
-	configs.DefaultEnv()
-	configs.InitConfigs()
+	configs.InitGoTest()
 	m := New()
 	err := m.Run(context.Background())
 	if err != nil {

@@ -113,7 +113,13 @@ func (r *Register) reg() (err error) {
 	if err != nil {
 		return
 	}
-	res, err := r.client.Put(r.ctx, r.registerKey, string(b), clientv3.WithLease(r.leaseID))
+	txn := r.client.Txn(r.ctx).
+		If(clientv3.Compare(clientv3.CreateRevision(r.registerKey), "=", int64(0))).
+		Then(clientv3.OpPut(r.registerKey, string(b), clientv3.WithLease(r.leaseID)))
+	res, err := txn.Commit()
+	if err != nil {
+		return
+	}
 	if res != nil {
 		r.registerCreateRevision = res.Header.Revision
 	}

@@ -66,6 +66,9 @@ func (e *Election) campaign(ctx context.Context) {
 		for {
 			e.SetRole(role.FOLLOWER)
 			//time.Sleep(time.Second)
+			if e.election != nil {
+				e.Resign(myCtx)
+			}
 			select {
 			case <-ctx.Done():
 				{
@@ -73,7 +76,7 @@ func (e *Election) campaign(ctx context.Context) {
 				}
 			case <-time.Tick(d):
 				{
-					d = time.Second * 2
+					d = time.Second * 5
 				}
 			}
 

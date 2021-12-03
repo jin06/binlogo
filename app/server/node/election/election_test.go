@@ -37,8 +37,7 @@ func TestSetRole(t *testing.T) {
 }
 
 func TestRun(t *testing.T) {
-	configs.DefaultEnv()
-	configs.InitConfigs()
+	configs.InitGoTest()
 	n := New(OptionNode(node.NewNode("go_test_node")), OptionTTL(5))
 	n.Run(context.Background())
 	time.Sleep(time.Millisecond * 200)
