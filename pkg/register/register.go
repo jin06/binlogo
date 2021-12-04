@@ -64,7 +64,13 @@ func (r *Register) Run(ctx context.Context) {
 			logrus.Errorln(err)
 			return
 		}
-	LOOP:
+		defer func() {
+			errR := r.revoke()
+			if errR != nil {
+				logrus.Errorln(errR)
+			}
+			logrus.Errorln("Register end: ", r.registerKey)
+		}()
 		for {
 			select {
 			case <-ctx.Done():
@@ -79,24 +85,20 @@ func (r *Register) Run(ctx context.Context) {
 				{
 					err = r.keepOnce()
 					if err == rpctypes.ErrLeaseNotFound {
-						break LOOP
+						return
+						//break LOOP
 					}
 					wOk, wErr := r.watch()
 					if wErr != nil {
 						logrus.Errorln(wErr)
 					}
 					if !wOk {
-						break LOOP
+						return
+						//break LOOP
 					}
 				}
 			}
 		}
-		errR := r.revoke()
-		if errR != nil {
-			logrus.Errorln(errR)
-		}
-		logrus.Errorln("Register end: ", r.registerKey)
-		//time.Sleep(time.Second)
 	}()
 }
 
