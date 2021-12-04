@@ -1,6 +1,7 @@
 package dao_event
 
 import (
+	"github.com/coreos/etcd/clientv3"
 	"github.com/jin06/binlogo/configs"
 	"github.com/jin06/binlogo/pkg/store/model/event"
 	"strconv"
@@ -19,14 +20,14 @@ func TestUpdate(t *testing.T) {
 
 func TestList(t *testing.T) {
 	configs.InitGoTest()
-	_, err := List(string(event.PIPELINE), "go_test_pipeline")
+	_, err := List(string(event.PIPELINE), "go_test_pipeline", 20, clientv3.SortByModRevision, clientv3.SortDescend)
 	if err != nil {
 		t.Error(err)
 	}
 }
 
 func TestDeleteRange(t *testing.T) {
-	configs.InitConfigs()
+	configs.InitGoTest()
 	deleteTime := time.Now().UnixNano()
 	from := configs.NodeName + ".0"
 	end := configs.NodeName + "." + strconv.FormatInt(deleteTime, 10)
