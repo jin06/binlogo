@@ -2,6 +2,7 @@ package output
 
 import (
 	"context"
+	"errors"
 	message2 "github.com/jin06/binlogo/app/pipeline/message"
 	sender2 "github.com/jin06/binlogo/app/pipeline/output/sender"
 	"github.com/jin06/binlogo/app/pipeline/output/sender/http"
@@ -13,7 +14,7 @@ import (
 	"github.com/jin06/binlogo/pkg/store/dao/dao_pipe"
 	event2 "github.com/jin06/binlogo/pkg/store/model/event"
 	"github.com/jin06/binlogo/pkg/store/model/pipeline"
-	"github.com/sirupsen/logrus"
+	"time"
 )
 
 // Output handle message output
@@ -66,29 +67,65 @@ func recordPosition(msg *message2.Message) (err error) {
 	return
 }
 
-func (o *Output) handle(msg *message2.Message) {
-	var err error
-	defer func() {
-		err2 := recordPosition(msg)
-		if err2 != nil {
-			logrus.Error("Record position error, ", err2)
-		}
-		if err != nil {
-			event.Event(event2.NewErrorPipeline(o.Options.PipelineName, "send message error: " + err.Error()))
-		}
-	}()
-
-	if !msg.Filter {
-		var ok bool
-		ok, err = o.Sender.Send(msg)
-		if err != nil {
+func (o *Output) loopHandle(ctx context.Context, msg *message2.Message) {
+	for {
+		err := o.handle(msg)
+		if err == nil {
 			return
 		}
-		if !ok {
-			return
+		select {
+		case <-ctx.Done():
+			{
+				return
+			}
+		case <-time.Tick(time.Second):
+			{
+				continue
+			}
 		}
 	}
+}
 
+func (o *Output) handle(msg *message2.Message) (err error) {
+	defer func() {
+		if err != nil {
+			event.Event(event2.NewErrorPipeline(o.Options.PipelineName, "send message error: "+err.Error()))
+		}
+	}()
+	switch msg.Status {
+	case message2.STATUS_RECORD:
+		{
+			return
+		}
+	case message2.STATUS_SEND:
+		{
+			err = recordPosition(msg)
+			if err == nil {
+				msg.Status = message2.STATUS_RECORD
+			}
+			return
+		}
+	default:
+		if !msg.Filter {
+			var ok bool
+			ok, err = o.Sender.Send(msg)
+			if err == nil {
+				if !ok {
+					err = errors.New("send message failed")
+				}
+			}
+			if err == nil {
+				msg.Status = message2.STATUS_SEND
+			}
+		}
+		if err == nil {
+			err = recordPosition(msg)
+			if err == nil {
+				msg.Status = message2.STATUS_RECORD
+			}
+		}
+		return
+	}
 }
 
 // Run start Output to send message
@@ -111,7 +148,7 @@ func (o *Output) Run(ctx context.Context) (err error) {
 				}
 			case msg := <-o.InChan:
 				{
-					o.handle(msg)
+					o.loopHandle(ctx, msg)
 				}
 			}
 		}

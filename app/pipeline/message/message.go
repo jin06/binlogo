@@ -9,6 +9,10 @@ import (
 const (
 	// STATUS_NEW a new message
 	STATUS_NEW = iota
+	// STATUS_SEND message has be sended
+	STATUS_SEND
+	// STATUS_RECORD message has be recorded
+	STATUS_RECORD
 )
 
 // STATUS for message control
