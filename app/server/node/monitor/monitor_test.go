@@ -15,8 +15,7 @@ import (
 )
 
 func TestRun(t *testing.T) {
-	configs.DefaultEnv()
-	configs.InitConfigs()
+	configs.InitGoTest()
 	m, err := NewMonitor()
 	if err != nil {
 		t.Error(err)
@@ -38,7 +37,7 @@ func TestRun(t *testing.T) {
 	}
 	dao_sche.UpdatePipelineBind(pipeName, nodeName)
 	defer dao_sche.DeletePipelineBind(pipeName)
-	r, _ := register.New(
+	r := register.New(
 		register.WithTTL(5),
 		register.WithKey(dao_node.NodeRegisterPrefix()+"/"+nodeName),
 	)

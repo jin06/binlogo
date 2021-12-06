@@ -10,23 +10,23 @@ import (
 	"time"
 )
 
-func (m *Monitor) monitorPipe(ctx context.Context) (err error) {
-	//ch, err := m.pipeWatcher.WatchEtcdList(ctx)
+func (m *Monitor) monitorPipe(ctx context.Context) (resCtx context.Context, err error) {
+	resCtx, cancel := context.WithCancel(ctx)
+	defer func() {
+		if err != nil {
+			cancel()
+		}
+	}()
 	ch, err := m.newPipeWatcherCh(ctx)
 	if err != nil {
 		return
 	}
-	//insWatcher, err := instance.New(dao_pipe.InstancePrefix())
-	//if err != nil {
-	//	return
-	//}
-	//insCh, err := insWatcher.WatchEtcdList(ctx)
-	//if err != nil {
-	//	return
-	//}
 	m.checkAllPipelineBind()
 	m.checkAllPipelineDelete()
 	go func() {
+		defer func() {
+			cancel()
+		}()
 		for {
 			select {
 			case <-time.Tick(time.Second * 120):
@@ -38,30 +38,33 @@ func (m *Monitor) monitorPipe(ctx context.Context) (err error) {
 				{
 					return
 				}
-			case n := <-ch:
+			case n, ok := <-ch:
 				{
+					if !ok {
+						return
+					}
 					if n.Event.Type == mvccpb.DELETE {
 						if val, ok := n.Data.(*pipeline.Pipeline); ok {
-							_, err := dao_sche.DeletePipelineBind(val.Name)
-							if err != nil {
-								logrus.Error("Delete pipeline bind failed: ", err)
+							_, err1 := dao_sche.DeletePipelineBind(val.Name)
+							if err1 != nil {
+								logrus.Error("Delete pipeline bind failed: ", err1)
 							}
 						}
 					}
 					if n.Event.Type == mvccpb.PUT {
-						if val, ok := n.Data.(*pipeline.Pipeline); ok {
+						if val, ok1 := n.Data.(*pipeline.Pipeline); ok1 {
 							if val.IsDelete {
 								m.deletePipeline(val)
 								continue
 							}
 							if val.ExpectRun() {
-								err := dao_sche.UpdatePipelineBindIfNotExist(val.Name, "")
-								if err != nil {
-									logrus.Error("Update pipeline bind failed ", err)
+								err1 := dao_sche.UpdatePipelineBindIfNotExist(val.Name, "")
+								if err1 != nil {
+									logrus.Error("Update pipeline bind failed ", err1)
 								}
 							} else {
-								if _, err := dao_sche.DeletePipelineBind(val.Name); err != nil {
-									logrus.Errorln(err)
+								if _, err1 := dao_sche.DeletePipelineBind(val.Name); err1 != nil {
+									logrus.Errorln(err1)
 								}
 							}
 						}
@@ -70,7 +73,7 @@ func (m *Monitor) monitorPipe(ctx context.Context) (err error) {
 			}
 		}
 	}()
-	return nil
+	return
 }
 
 func (m *Monitor) checkAllPipelineBind() {

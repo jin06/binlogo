@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"github.com/jin06/binlogo/app/server/node/election"
+	"github.com/jin06/binlogo/app/server/node/manager"
 	"github.com/jin06/binlogo/app/server/node/manager/manager_event"
 	"github.com/jin06/binlogo/app/server/node/manager/manager_pipe"
 	"github.com/jin06/binlogo/app/server/node/manager/manager_status"
@@ -71,31 +72,11 @@ func New(opts ...Option) (node *Node, err error) {
 }
 
 func (n *Node) init() (err error) {
-	n.Register, err = register.New(
-		register.WithTTL(5),
-		register.WithKey(dao_node.NodeRegisterPrefix()+"/"+n.Options.Node.Name),
-		register.WithData(n.Options.Node),
-	)
-	if err != nil {
-		return
-	}
-	n.Scheduler = scheduler.New()
-
 	logrus.Debug("---->", n.Options.Node)
-	n.StatusManager = manager_status.NewManager(n.Options.Node)
-	n.monitor, err = monitor.NewMonitor()
-	if err != nil {
-		return
-	}
-	n.pipeManager = manager_pipe.New(n.Options.Node)
-	n.eventManager = manager_event.New()
 	return
 }
 
-// Run start working
-func (n *Node) Run(ctx context.Context) (err error) {
-	myCtx, cancel := context.WithCancel(ctx)
-	defer cancel()
+func (n *Node) refreshNode() (err error) {
 	var newest *node.Node
 	newest, err = dao_node.GetNode(n.Options.Node.Name)
 	if err != nil {
@@ -106,14 +87,32 @@ func (n *Node) Run(ctx context.Context) (err error) {
 		return
 	}
 	n.Options.Node = newest
+	return
+}
+
+// Run start working
+func (n *Node) Run(ctx context.Context) (err error) {
+	myCtx, cancel := context.WithCancel(ctx)
+	defer cancel()
+	err = n.refreshNode()
+	if err != nil {
+		return
+	}
+	n.Register = register.New(
+		register.WithTTL(5),
+		register.WithKey(dao_node.NodeRegisterPrefix()+"/"+n.Options.Node.Name),
+		register.WithData(n.Options.Node),
+	)
 	n.Register.Run(myCtx)
-	err = n.StatusManager.Run(myCtx)
 	n.election = election.New(
 		election.OptionNode(n.Options.Node),
 		election.OptionTTL(5),
 	)
 	n.election.Run(myCtx)
+	n.pipeManager = manager_pipe.New(n.Options.Node)
 	n.pipeManager.Run(myCtx)
+	n.StatusManager = manager_status.NewManager(n.Options.Node)
+	err = n.StatusManager.Run(myCtx)
 	n._leaderRun(myCtx)
 	select {
 	case <-ctx.Done():
@@ -165,24 +164,43 @@ func (n *Node) leaderRun(ctx context.Context, r role.Role) {
 	case role.LEADER:
 		{
 			var err error
-			err = n.Scheduler.Run(ctx)
-			if err != nil {
-				return
+			if n.Scheduler == nil || n.Scheduler.Status() == scheduler.SCHEDULER_STOP {
+				n.Scheduler = scheduler.New()
+				err = n.Scheduler.Run(ctx)
+				if err != nil {
+					return
+				}
 			}
-			err = n.monitor.Run(ctx)
-			if err != nil {
-				return
+			if n.monitor == nil || n.monitor.Status() == monitor.STATUS_STOP {
+				n.monitor, err = monitor.NewMonitor()
+				if err != nil {
+					return
+				}
+				err = n.monitor.Run(ctx)
+				if err != nil {
+					return
+				}
 			}
-			err = n.eventManager.Run(ctx)
-			if err != nil {
-				return
+			if n.eventManager == nil || n.eventManager.Status == manager.STOP {
+				n.eventManager = manager_event.New()
+				err = n.eventManager.Run(ctx)
+				if err != nil {
+					return
+				}
+
 			}
 		}
 	default:
 		{
-			n.Scheduler.Stop()
-			n.monitor.Stop(ctx)
-			n.eventManager.Stop()
+			if n.Scheduler != nil {
+				n.Scheduler.Stop()
+			}
+			if n.monitor != nil {
+				n.monitor.Stop(ctx)
+			}
+			if n.eventManager != nil {
+				n.eventManager.Stop()
+			}
 		}
 	}
 }

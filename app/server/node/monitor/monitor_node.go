@@ -11,7 +11,13 @@ import (
 	"time"
 )
 
-func (m *Monitor) monitorNode(ctx context.Context) (err error) {
+func (m *Monitor) monitorNode(ctx context.Context) (resCtx context.Context, err error) {
+	resCtx, cancel := context.WithCancel(ctx)
+	defer func() {
+		if err != nil {
+			cancel()
+		}
+	}()
 	ch, err := m.newNodeWatcherCh(ctx)
 	if err != nil {
 		return
@@ -27,6 +33,9 @@ func (m *Monitor) monitorNode(ctx context.Context) (err error) {
 	}
 
 	go func() {
+		defer func() {
+			cancel()
+		}()
 		for {
 			select {
 			case <-ctx.Done():
@@ -38,8 +47,11 @@ func (m *Monitor) monitorNode(ctx context.Context) (err error) {
 					if e.Event.Type == mvccpb.DELETE {
 					}
 				}
-			case e := <-regCh:
+			case e, ok := <-regCh:
 				{
+					if !ok {
+						return
+					}
 					er := handleEventRegNode(e)
 					if er != nil {
 						logrus.Errorln(er)

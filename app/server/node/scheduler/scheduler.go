@@ -145,3 +145,7 @@ func schedulePipes(pb *scheduler.PipelineBind) {
 		}
 	}
 }
+
+func (s *Scheduler) Status() string {
+	return s.status
+}

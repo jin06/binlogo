@@ -71,7 +71,7 @@ func (i *instance) init() (err error) {
 		NodeName:     i.nodeName,
 		CreateTime:   time.Now(),
 	}
-	reg, err := register.New(
+	reg := register.New(
 		register.WithKey(dao_register.PipeInstancePrefix()+"/"+i.pipeName),
 		register.WithData(insModel),
 	)

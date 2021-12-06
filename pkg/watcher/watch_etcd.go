@@ -43,13 +43,17 @@ func (w *General) WatchEtcd(ctx context.Context, opts ...clientv3.OpOption) (ch 
 	}()
 	go func() {
 		watchCh := etcdclient.Default().Watch(ctx, w.key, opts...)
-	LOOP:
+		defer func() {
+			close(ch)
+		}()
+		//LOOP:
 		for {
 			select {
 			case resp, ok := <-watchCh:
 				{
 					if !ok {
-						break LOOP
+						return
+						//break LOOP
 					}
 					if resp.Err() != nil {
 						logrus.Error(resp.Err())
@@ -69,6 +73,7 @@ func (w *General) WatchEtcd(ctx context.Context, opts ...clientv3.OpOption) (ch 
 				}
 			}
 		}
+
 	}()
 	return
 }

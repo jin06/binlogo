@@ -12,7 +12,13 @@ import (
 	"time"
 )
 
-func (m *Monitor) monitorStatus(ctx context.Context) (err error) {
+func (m *Monitor) monitorStatus(ctx context.Context) (resCtx context.Context, err error) {
+	resCtx, cancel := context.WithCancel(ctx)
+	defer func() {
+		if err != nil {
+			cancel()
+		}
+	}()
 	watcher, err := node_status.New(dao_node.StatusPrefix())
 	if err != nil {
 		return
@@ -26,6 +32,9 @@ func (m *Monitor) monitorStatus(ctx context.Context) (err error) {
 		return
 	}
 	go func() {
+		defer func() {
+			cancel()
+		}()
 		for {
 			select {
 			case <-ctx.Done():
@@ -39,8 +48,11 @@ func (m *Monitor) monitorStatus(ctx context.Context) (err error) {
 						logrus.Errorln(er)
 					}
 				}
-			case e := <-ch:
+			case e, ok1 := <-ch:
 				{
+					if !ok1 {
+						return
+					}
 					if val, ok := e.Data.(*node.Status); ok {
 						if e.Event.Type == mvccpb.DELETE {
 							err1 := removePipelineBindIfBindNode(val.NodeName)

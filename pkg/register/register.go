@@ -11,7 +11,7 @@ import (
 )
 
 // New returns a new *Register
-func New(opts ...Option) (r *Register, err error) {
+func New(opts ...Option) (r *Register) {
 	r = &Register{
 		ttl: 5,
 	}
@@ -161,6 +161,8 @@ func (r *Register) watch() (ok bool, err error) {
 	if res.Kvs[0].CreateRevision == r.registerCreateRevision {
 		ok = true
 	}
+	logrus.Debug(res.Kvs[0].CreateRevision)
+	logrus.Debug(r.registerCreateRevision)
 	return
 }
 

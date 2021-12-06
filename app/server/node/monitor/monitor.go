@@ -15,6 +15,7 @@ type Monitor struct {
 	status string
 	lock   sync.Mutex
 	cancel context.CancelFunc
+	ctx    context.Context
 	//nodeWatcher     *watcher.General
 	//pipeWatcher     *watcher.General
 	//registerWatcher *watcher.General
@@ -62,6 +63,7 @@ func (m *Monitor) Run(ctx context.Context) (err error) {
 		return
 	}
 	myCtx, cancel := context.WithCancel(ctx)
+	m.ctx = myCtx
 	defer func() {
 		if err != nil {
 			cancel()
@@ -70,27 +72,40 @@ func (m *Monitor) Run(ctx context.Context) (err error) {
 		}
 	}()
 	m.cancel = cancel
-	err = m.monitorNode(myCtx)
+	nodeCtx, err := m.monitorNode(myCtx)
 	if err != nil {
 		return
 	}
-	//err = m.monitorRegister(nctx)
-	//if err != nil {
-	//	return
-	//}
-	err = m.monitorPipe(myCtx)
+	pipeCtx, err := m.monitorPipe(myCtx)
 	if err != nil {
 		return
 	}
-	err = m.monitorStatus(myCtx)
+	statusCtx, err := m.monitorStatus(myCtx)
 	if err != nil {
 		return
 	}
+	go func() {
+		defer func() {
+			cancel()
+			m.status = STATUS_STOP
+		}()
+		select {
+		case <-nodeCtx.Done():
+			{
+				return
+			}
+		case <-pipeCtx.Done():
+			{
+				return
+			}
+		case <-statusCtx.Done():
+			{
+				return
+			}
 
-	//err = m.monitorRegister(nctx)
-	//if err != nil {
-	//	return
-	//}
+		}
+	}()
+
 	return nil
 }
 
@@ -131,4 +146,9 @@ func (m *Monitor) newPipeWatcherCh(ctx context.Context) (ch chan *watcher.Event,
 	}
 	ch, err = pipeWatcher.WatchEtcdList(ctx)
 	return
+}
+
+// GetStatus get monitor status
+func (m *Monitor) Status() string {
+	return m.status
 }

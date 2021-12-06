@@ -11,14 +11,11 @@ import (
 
 func TestRegister(t *testing.T) {
 	configs.InitGoTest()
-	r, err := New(
+	r := New(
 		WithTTL(1),
 		WithKey(etcdclient.Prefix()+"/testregister"+random.String()),
 		WithData("1111"),
 	)
-	if err != nil {
-		t.Error(err)
-	}
 	ctx, cancel := context.WithCancel(context.Background())
 	r.Run(ctx)
 	time.Sleep(time.Millisecond * 1200)
