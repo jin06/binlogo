@@ -107,7 +107,7 @@ configuration. This is some advantages:
 
 ### Docs
 
-* [文档链接](https://github.com/jin06/binlogo/wiki)
+* [Documents Address](https://github.com/jin06/binlogo/wiki)
 
 ### Questions
 

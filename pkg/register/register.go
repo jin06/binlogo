@@ -88,9 +88,13 @@ func (r *Register) Run(ctx context.Context) {
 						return
 						//break LOOP
 					}
+				}
+			case <-time.Tick(time.Second * 5):
+				{
 					wOk, wErr := r.watch()
 					if wErr != nil {
 						logrus.Errorln(wErr)
+						return
 					}
 					if !wOk {
 						return
@@ -98,6 +102,7 @@ func (r *Register) Run(ctx context.Context) {
 					}
 				}
 			}
+
 		}
 	}()
 }
@@ -147,7 +152,7 @@ func (r *Register) watch() (ok bool, err error) {
 	var res *clientv3.GetResponse
 	res, err = r.client.Get(r.ctx, r.registerKey)
 	if err != nil {
-		logrus.Errorln(err)
+		//logrus.Errorln(err)
 		return
 	}
 	if len(res.Kvs) == 0 {
