@@ -83,12 +83,13 @@ func (e *Election) campaign(ctx context.Context) {
 			client, err := etcdclient.New()
 			if err != nil {
 				logrus.Errorln("Election new client error: ", err)
-				continue
+				return
 			}
 			sen, errSe := concurrency.NewSession(client, concurrency.WithTTL(e.ttl))
 			if errSe != nil {
 				logrus.Error("Election error")
-				continue
+				return
+				//continue
 			}
 			ele := concurrency.NewElection(
 				sen,
@@ -101,7 +102,8 @@ func (e *Election) campaign(ctx context.Context) {
 			if errC != nil {
 				//_ = sen.Close()
 				logrus.Error("campaign error", errC)
-				continue
+				return
+				//continue
 			}
 
 			logrus.Info("Win election")
