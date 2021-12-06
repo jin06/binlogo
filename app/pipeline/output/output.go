@@ -9,6 +9,7 @@ import (
 	kafka2 "github.com/jin06/binlogo/app/pipeline/output/sender/kafka"
 	"github.com/jin06/binlogo/app/pipeline/output/sender/rabbitmq"
 	"github.com/jin06/binlogo/app/pipeline/output/sender/redis"
+	"github.com/jin06/binlogo/app/pipeline/output/sender/rocketmq"
 	stdout2 "github.com/jin06/binlogo/app/pipeline/output/sender/stdout"
 	"github.com/jin06/binlogo/pkg/event"
 	"github.com/jin06/binlogo/pkg/store/dao/dao_pipe"
@@ -50,6 +51,8 @@ func (o *Output) init() (err error) {
 		o.Sender, err = redis.New(o.Options.Output.Sender.Redis)
 	case pipeline.SENDER_TYPE_KAFKA:
 		o.Sender, err = kafka2.New(o.Options.Output.Sender.Kafka)
+	case pipeline.SENDER_TYPE_ROCKETMQ:
+		o.Sender, err = rocketmq.New(o.Options.Output.Sender.RocketMQ)
 	default:
 		o.Sender, err = stdout2.New()
 	}

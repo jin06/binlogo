@@ -87,6 +87,22 @@ func CompletePipelineBind(i *Item, pb *scheduler.PipelineBind) (err error) {
 	return
 }
 
+func completeEmpty(i *Item) {
+	sender := i.Pipeline.Output.Sender
+	if sender.RocketMQ == nil {
+		sender.RocketMQ = &pipeline.RocketMQ{}
+	}
+	if sender.Redis == nil {
+		sender.Redis = &pipeline.Redis{}
+	}
+	if sender.Kafka == nil {
+		sender.Kafka = &pipeline.Kafka{}
+	}
+	if sender.Http == nil {
+		sender.Http = &pipeline.Http{}
+	}
+}
+
 // CompleteInfoList complete pipeline list info
 func CompleteInfoList(list []*Item) (err error) {
 	pb, err := dao_sche.GetPipelineBind()
@@ -104,6 +120,7 @@ func CompleteInfoList(list []*Item) (err error) {
 		if err2 := completePipelineRun(v, allInstance); err2 != nil {
 			return
 		}
+		completeEmpty(v)
 	}
 	return
 }

@@ -6,6 +6,7 @@ replace google.golang.org/grpc v1.42.0 => google.golang.org/grpc v1.26.0
 
 require (
 	github.com/Shopify/sarama v1.30.0
+	github.com/aliyunmq/mq-http-go-sdk v1.0.3
 	github.com/coreos/bbolt v1.3.6 // indirect
 	github.com/coreos/etcd v3.3.27+incompatible
 	github.com/coreos/go-systemd v0.0.0-20191104093116-d3cd4ed1dbcf // indirect
@@ -16,6 +17,8 @@ require (
 	github.com/go-mysql-org/go-mysql v1.3.0
 	github.com/go-redis/redis/v8 v8.11.4
 	github.com/go-resty/resty/v2 v2.7.0
+	github.com/gogap/errors v0.0.0-20210818113853-edfbba0ddea9 // indirect
+	github.com/gogap/stack v0.0.0-20150131034635-fef68dddd4f8 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da
 	github.com/gorilla/websocket v1.4.2 // indirect
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0 // indirect
@@ -31,6 +34,7 @@ require (
 	github.com/spf13/viper v1.9.0
 	github.com/streadway/amqp v1.0.0
 	github.com/tmc/grpc-websocket-proxy v0.0.0-20201229170055-e5319fda7802 // indirect
+	github.com/valyala/fasthttp v1.31.0 // indirect
 	github.com/xiang90/probing v0.0.0-20190116061207-43a291ad63a2 // indirect
 	google.golang.org/grpc v1.42.0 // indirect
 	sigs.k8s.io/yaml v1.3.0 // indirect

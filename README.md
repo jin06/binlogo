@@ -104,6 +104,7 @@ configuration. This is some advantages:
 * [RabbitMQ](/docs/1.0.*/en/configure-rabbitmq-outupt.md)
 * [Kafka](/docs/1.0.*/en/configure-kafka-output.md)
 * [Redis](/docs/1.0.*/en/configure-redis-outupt.md)
+* [AliCloud RocketMQ](/docs/1.0.*/en/configure-rocketmq-outupt.md)
 
 ### Docs
 

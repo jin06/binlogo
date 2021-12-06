@@ -98,32 +98,14 @@ func (n *Node) Run(ctx context.Context) (err error) {
 	if err != nil {
 		return
 	}
-	n.Register = register.New(
-		register.WithTTL(5),
-		register.WithKey(dao_node.NodeRegisterPrefix()+"/"+n.Options.Node.Name),
-		register.WithData(n.Options.Node),
-	)
-	n.Register.Run(myCtx)
-	n.election = election.New(
-		election.OptionNode(n.Options.Node),
-		election.OptionTTL(5),
-	)
-	n.election.Run(myCtx)
-	n.pipeManager = manager_pipe.New(n.Options.Node)
-	n.pipeManager.Run(myCtx)
-	n.StatusManager = manager_status.NewManager(n.Options.Node)
-	err = n.StatusManager.Run(myCtx)
+	nodeCtx := n._mustRun(myCtx)
 	n._leaderRun(myCtx)
 	select {
 	case <-ctx.Done():
 		{
 			return
 		}
-	case <-n.Register.Context().Done():
-		{
-			return
-		}
-	case <-n.election.Context().Done():
+	case <-nodeCtx.Done():
 		{
 			return
 		}
@@ -135,6 +117,7 @@ func (n *Node) Role() role.Role {
 	return n.election.Role()
 }
 
+// _leaderRun run when node is leader
 func (n *Node) _leaderRun(ctx context.Context) {
 	go func() {
 		for {
@@ -203,4 +186,43 @@ func (n *Node) leaderRun(ctx context.Context, r role.Role) {
 			}
 		}
 	}
+}
+
+// _mustRun run manager that every node must run
+// such as election, node register, node status
+func (n *Node) _mustRun(ctx context.Context) (resCtx context.Context) {
+	resCtx, cancel := context.WithCancel(ctx)
+	n.Register = register.New(
+		register.WithTTL(5),
+		register.WithKey(dao_node.NodeRegisterPrefix()+"/"+n.Options.Node.Name),
+		register.WithData(n.Options.Node),
+	)
+	n.Register.Run(ctx)
+	n.election = election.New(
+		election.OptionNode(n.Options.Node),
+		election.OptionTTL(5),
+	)
+	n.election.Run(ctx)
+	n.pipeManager = manager_pipe.New(n.Options.Node)
+	n.pipeManager.Run(ctx)
+	n.StatusManager = manager_status.NewManager(n.Options.Node)
+	n.StatusManager.Run(ctx)
+	go func() {
+		defer cancel()
+		select {
+		case <-ctx.Done():
+			{
+				return
+			}
+		case <-n.Register.Context().Done():
+			{
+				return
+			}
+		case <-n.election.Context().Done():
+			{
+				return
+			}
+		}
+	}()
+	return
 }

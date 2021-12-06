@@ -9,6 +9,7 @@ const SNEDER_TYPE_STDOUT = "stdout"
 const SNEDER_TYPE_HTTP = "http"
 const SNEDER_TYPE_RABBITMQ = "rabbitMQ"
 const SENDER_TYPE_REDIS = "redis"
+const SENDER_TYPE_ROCKETMQ = "rocketMQ"
 
 // Sender output configuration
 type Sender struct {
@@ -19,6 +20,7 @@ type Sender struct {
 	Http     *Http     `json:"http"`
 	RabbitMQ *RabbitMQ `json:"rabbitMQ"`
 	Redis    *Redis    `json:"redis"`
+	RocketMQ *RocketMQ `json:"rocketMQ"`
 }
 
 // Kafka output configuration
@@ -55,4 +57,16 @@ type Redis struct {
 	Password string `json:"password"`
 	DB       int    `json:"db"`
 	List     string `json:"list"`
+}
+
+// RocketMQ aliyun rocketmq configuration
+type RocketMQ struct {
+	// Endpoint http endpoint
+	Endpoint string `json:"endpoint"`
+	// TopicName topic name
+	TopicName string `json:"topic_name"`
+	// Instance name
+	InstanceId string `json:"instance_id"`
+	AccessKey  string `json:"access_key"`
+	SecretKey  string `json:"secret_key"`
 }
