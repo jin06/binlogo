@@ -11,12 +11,7 @@ import (
 
 func TestWatcher(t *testing.T) {
 	configs.InitGoTest()
-	w, err := New(dao_node.StatusPrefix())
-	if err != nil {
-		t.Error(err)
-	}
-	ctx, cancel := context.WithCancel(context.Background())
-	_,  err = w.WatchEtcdList(ctx)
+	_, err := WatchList(context.Background(), dao_node.StatusPrefix())
 	if err != nil {
 		t.Error(err)
 	}
@@ -26,6 +21,5 @@ func TestWatcher(t *testing.T) {
 		t.Error(err)
 	}
 	dao_node.DeleteStatus(nName)
-	time.Sleep(time.Millisecond*100)
-	cancel()
+	time.Sleep(time.Millisecond * 100)
 }

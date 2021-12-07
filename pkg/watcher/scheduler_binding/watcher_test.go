@@ -11,8 +11,7 @@ import (
 
 func TestWatcher(t *testing.T) {
 	configs.InitGoTest()
-	w, err := New()
-	_, err = w.WatchEtcd(context.Background())
+	_, err := Watch(context.Background(), dao_sche.PipeBindPrefix(), "pipeline_bind")
 	if err != nil {
 		t.Error(err)
 	}

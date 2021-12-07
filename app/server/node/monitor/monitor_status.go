@@ -19,11 +19,12 @@ func (m *Monitor) monitorStatus(ctx context.Context) (resCtx context.Context, er
 			cancel()
 		}
 	}()
-	watcher, err := node_status.New(dao_node.StatusPrefix())
-	if err != nil {
-		return
-	}
-	ch, err := watcher.WatchEtcdList(ctx)
+	//watcher, err := node_status.New(dao_node.StatusPrefix())
+	//if err != nil {
+	//	return
+	//}
+	//ch, err := watcher.WatchEtcdList(ctx)
+	ch, err := node_status.WatchList(ctx, dao_node.StatusPrefix())
 	if err != nil {
 		return
 	}

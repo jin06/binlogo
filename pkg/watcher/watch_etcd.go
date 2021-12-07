@@ -10,8 +10,9 @@ import (
 // General a base watcher
 // this will be use for most watchers
 type General struct {
-	key          string
-	EventHandler func(*clientv3.Event) (*Event, error)
+	key string
+	//EventHandler func(*clientv3.Event, bool) (*Event, error)
+	EventHandler Handler
 }
 
 // Handler function of handle event
@@ -25,6 +26,12 @@ func NewGeneral(key string) (w *General, err error) {
 	w.EventHandler = func(event *clientv3.Event) (*Event, error) {
 		return nil, nil
 	}
+	return
+}
+
+// New returns a new General watcher with handler
+func New(key string, handler Handler) (w *General, err error) {
+	w = &General{key: key, EventHandler: handler}
 	return
 }
 

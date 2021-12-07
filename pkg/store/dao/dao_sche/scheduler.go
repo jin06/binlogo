@@ -12,6 +12,11 @@ func PipeBindPrefix() string {
 	return etcdclient.Prefix() + "/scheduler/pipeline_bind"
 }
 
+// SchedulerPrefix etcd prefix of scheduler
+func SchedulerPrefix() string {
+	return etcdclient.Prefix() + "/scheduler"
+}
+
 // GetPipelineBind get pipeline bind from etcd
 func GetPipelineBind() (pb *scheduler.PipelineBind, err error) {
 	res, err := etcdclient.Default().Get(context.TODO(), PipeBindPrefix())

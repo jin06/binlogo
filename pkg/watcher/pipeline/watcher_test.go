@@ -13,18 +13,10 @@ import (
 func TestWatcher(t *testing.T) {
 	configs.InitGoTest()
 	pName := "gotest" + random.String()
-	w, err := New(dao_pipe.PipelinePrefix())
-	if err != nil {
-		t.Error(err)
-	}
-	ctx, cancel := context.WithCancel(context.Background())
-	_, err = w.WatchEtcdList(ctx)
-	if err != nil {
-		t.Error(err)
-	}
+
+	WatchList(context.Background(), dao_pipe.PipelinePrefix())
 	dao_pipe.CreatePipeline(pipeline.NewPipeline(pName))
 	dao_pipe.DeletePipeline(pName)
-	time.Sleep(time.Millisecond*100)
-	cancel()
-	time.Sleep(time.Millisecond*100)
+	time.Sleep(time.Millisecond * 100)
+	time.Sleep(time.Millisecond * 100)
 }

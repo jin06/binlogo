@@ -1,34 +1,27 @@
-package node_status
+package str
 
 import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"github.com/coreos/etcd/clientv3"
 	"github.com/coreos/etcd/mvcc/mvccpb"
-	"github.com/jin06/binlogo/pkg/store/model/node"
 	"github.com/jin06/binlogo/pkg/watcher"
+	"github.com/sirupsen/logrus"
 )
 
 func withHandler(prefix string, name string) watcher.Handler {
 	return func(e *clientv3.Event) (ev *watcher.Event, err error) {
 		ev = &watcher.Event{}
-		m := &node.Status{}
+		var m string
 		ev.Event = e
 		ev.Data = m
 		if e.Type == mvccpb.DELETE {
-			if name == "" {
-				_, err = fmt.Sscanf(string(e.Kv.Key), prefix+"/%s", &m.NodeName)
-				if err != nil {
-					return
-				}
-			} else {
-				m.NodeName = name
-			}
+
 		} else {
-			err = json.Unmarshal(e.Kv.Value, m)
+			err = json.Unmarshal(e.Kv.Value, &m)
 			if err != nil {
+				logrus.Error(err)
 				return
 			}
 		}
@@ -58,13 +51,3 @@ func WatchList(ctx context.Context, prefix string) (ch chan *watcher.Event, err 
 	}
 	return w.WatchEtcdList(ctx)
 }
-
-// New returns a new node status watcher
-//func New(key string) (w *watcher.General, err error) {
-//	w, err = watcher.NewGeneral(key)
-//	if err != nil {
-//		return
-//	}
-//	w.EventHandler = withHandler(key)
-//	return
-//}

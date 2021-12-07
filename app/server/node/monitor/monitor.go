@@ -122,30 +122,30 @@ func (m *Monitor) Stop(ctx context.Context) {
 }
 
 func (m *Monitor) newNodeWatcherCh(ctx context.Context) (ch chan *watcher.Event, err error) {
-	wa, err := node.New(dao_node.NodePrefix())
-	if err != nil {
-		return
-	}
-	ch, err = wa.WatchEtcdList(ctx)
-	return
+	//wa, err := node.New(dao_node.NodePrefix())
+	//if err != nil {
+	//	return
+	//}
+	//ch, err = wa.WatchEtcdList(ctx)
+	return node.WatchList(ctx, dao_node.NodePrefix())
 }
 
 func (m *Monitor) newNodeRegWatcherCh(ctx context.Context) (ch chan *watcher.Event, err error) {
-	nodeRegWatcher, err := node.New(dao_node.NodeRegisterPrefix())
-	if err != nil {
-		return
-	}
-	ch, err = nodeRegWatcher.WatchEtcdList(ctx)
-	return
+	//nodeRegWatcher, err := node.New(dao_node.NodeRegisterPrefix())
+	//if err != nil {
+	//	return
+	//}
+	//ch, err = nodeRegWatcher.WatchEtcdList(ctx)
+	return node.WatchList(ctx, dao_node.NodeRegisterPrefix())
 }
 
 func (m *Monitor) newPipeWatcherCh(ctx context.Context) (ch chan *watcher.Event, err error) {
-	pipeWatcher, err := pipeline.New(dao_pipe.PipelinePrefix())
-	if err != nil {
-		return
-	}
-	ch, err = pipeWatcher.WatchEtcdList(ctx)
-	return
+	//pipeWatcher, err := pipeline.New(dao_pipe.PipelinePrefix())
+	//if err != nil {
+	//	return
+	//}
+	//ch, err = pipeWatcher.WatchEtcdList(ctx)
+	return pipeline.WatchList(ctx, dao_pipe.PipelinePrefix())
 }
 
 // GetStatus get monitor status

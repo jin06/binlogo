@@ -50,11 +50,12 @@ func (s *Scheduler) Run(ctx context.Context) (err error) {
 
 func (s *Scheduler) _schedule(ctx context.Context) {
 	defer s.Stop()
-	wa, err := scheduler_binding.New()
-	if err != nil {
-		return
-	}
-	waCh, err := wa.WatchEtcd(ctx)
+	//wa, err := scheduler_binding.New()
+	//if err != nil {
+	//	return
+	//}
+	//waCh, err := wa.WatchEtcd(ctx, false)
+	waCh, err := scheduler_binding.Watch(ctx, dao_sche.SchedulerPrefix(), "pipeline_bind")
 	if err != nil {
 		return
 	}

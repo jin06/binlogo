@@ -13,13 +13,12 @@ import (
 func TestWatcher(t *testing.T) {
 	configs.InitGoTest()
 	nName := "gotest" + random.String()
-	w, err := New(dao_node.NodePrefix())
-	_, err = w.WatchEtcdList(context.Background())
+	_, err := WatchList(context.Background(), dao_node.NodePrefix())
 	if err != nil {
 		t.Error(err)
 	}
 	dao_node.CreateNode(node.NewNode(nName))
 	dao_node.DeleteNode(nName)
 
-	time.Sleep(time.Millisecond*100)
+	time.Sleep(time.Millisecond * 100)
 }

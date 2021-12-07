@@ -2,12 +2,15 @@ package election
 
 import (
 	"context"
+	"fmt"
 	"github.com/coreos/etcd/clientv3/concurrency"
+	"github.com/coreos/etcd/mvcc/mvccpb"
 	"github.com/jin06/binlogo/configs"
 	"github.com/jin06/binlogo/pkg/etcdclient"
 	"github.com/jin06/binlogo/pkg/node/role"
 	"github.com/jin06/binlogo/pkg/store/dao/dao_cluster"
 	node2 "github.com/jin06/binlogo/pkg/store/model/node"
+	"github.com/jin06/binlogo/pkg/watcher/str"
 	"github.com/sirupsen/logrus"
 	"sync"
 	"time"
@@ -44,7 +47,6 @@ func New(opts ...Option) (e *Election) {
 	} else {
 		e.campaignVal = e.node.Name
 	}
-	//err = e.init()
 	return
 }
 
@@ -57,90 +59,111 @@ func (e *Election) campaign(ctx context.Context) {
 	myCtx, cancel := context.WithCancel(ctx)
 	e.ctx = myCtx
 	go func() {
+		logrus.Info("Election cycle start")
+		var err error
 		defer func() {
 			e.SetRole(role.FOLLOWER)
-			e.Resign(myCtx)
-			cancel()
-		}()
-		d := time.Millisecond
-		for {
-			e.SetRole(role.FOLLOWER)
-			//time.Sleep(time.Second)
-			if e.election != nil {
-				e.Resign(myCtx)
+			if err != nil {
+				logrus.Error("Election failed: ", err)
 			}
+			errR := e.Resign(ctx)
+			if errR != nil {
+				logrus.Error(errR)
+			}
+			cancel()
+			logrus.Info("Election cycle end")
+		}()
+		e.SetRole(role.FOLLOWER)
+		client, err := etcdclient.New()
+		if err != nil {
+			return
+		}
+		sen, err := concurrency.NewSession(client, concurrency.WithTTL(e.ttl))
+		if err != nil {
+			return
+		}
+		ele := concurrency.NewElection(
+			sen,
+			e.prefix,
+		)
+		e.election = ele
+
+		logrus.Info("Run for election")
+		errCh := make(chan error, 1)
+		go func() {
+			errCh <- ele.Campaign(ctx, e.campaignVal)
+		}()
+		ch, err := str.Watch(ctx, dao_cluster.ElectionPrefix(), fmt.Sprintf("%s/%x", e.prefix, sen.Lease()))
+		if err != nil {
+			return
+		}
+		for {
+			var b bool
+			select {
+			case err = <-errCh:
+				{
+					if err != nil {
+						return
+					} else {
+						b = true
+						break
+					}
+				}
+			case ev, ok := <-ch:
+				{
+					if !ok {
+						return
+					}
+					if ev.Event.Type == mvccpb.DELETE {
+						return
+					}
+				}
+			case <-time.Tick(time.Minute):
+				{
+					s, er := dao_cluster.GetElection(fmt.Sprintf("%x", sen.Lease()))
+					if er != nil {
+						return
+					}
+					if s == nil {
+						return
+					}
+				}
+			}
+			if b {
+				close(ch)
+				break
+			}
+		}
+
+		logrus.Info("Win election")
+		e.SetRole(role.LEADER)
+
+		logrus.Info("Election Watch ")
+
+		obsCh := e.election.Observe(ctx)
+		for {
 			select {
 			case <-ctx.Done():
 				{
 					return
 				}
-			case <-time.Tick(d):
+			case <-sen.Done():
 				{
-					d = time.Second * 5
+					return
 				}
-			}
-
-			client, err := etcdclient.New()
-			if err != nil {
-				logrus.Errorln("Election new client error: ", err)
-				return
-			}
-			sen, errSe := concurrency.NewSession(client, concurrency.WithTTL(e.ttl))
-			if errSe != nil {
-				logrus.Error("Election error")
-				return
-				//continue
-			}
-			ele := concurrency.NewElection(
-				sen,
-				e.prefix,
-			)
-			e.setElection(ele)
-
-			logrus.Info("Run for election")
-			errC := ele.Campaign(myCtx, e.campaignVal)
-			if errC != nil {
-				//_ = sen.Close()
-				logrus.Error("campaign error", errC)
-				return
-				//continue
-			}
-
-			logrus.Info("Win election")
-			e.SetRole(role.LEADER)
-
-			logrus.Info("Election Watch ")
-
-			obsCh := e.election.Observe(myCtx)
-		LOOP:
-			for {
-				select {
-				case <-ctx.Done():
-					{
+			case gr, ok := <-obsCh:
+				{
+					if !ok {
 						return
 					}
-				case <-sen.Done():
-					{
-						break LOOP
+					if len(gr.Kvs) == 0 {
+						return
 					}
-				case gr, ok := <-obsCh:
-					{
-						if !ok {
-							break LOOP
-						}
-						if len(gr.Kvs) == 0 {
-							break LOOP
-						}
-						if string(gr.Kvs[0].Value) != e.campaignVal {
-							break LOOP
-						}
+					if string(gr.Kvs[0].Value) != e.campaignVal {
+						return
 					}
 				}
 			}
-			if errResign := e.election.Resign(myCtx); errResign != nil {
-				logrus.Errorln("Election failed, start new election.", errResign)
-			}
-			logrus.Errorln("Lost leader... ")
 		}
 	}()
 	return
@@ -154,23 +177,9 @@ func (e *Election) SetRole(r role.Role) {
 	e.RoleCh <- r
 }
 
-// getElection get etcd election client
-func (e *Election) getElection() *concurrency.Election {
-	e.eleLock.Lock()
-	defer e.eleLock.Unlock()
-	return e.election
-}
-
-// setElection sets etcd election client
-func (e *Election) setElection(ele *concurrency.Election) {
-	e.eleLock.Lock()
-	defer e.eleLock.Unlock()
-	e.election = ele
-}
-
 // Leader returns name of current leader node
 func (e *Election) Leader() (name string, err error) {
-	res, err := e.getElection().Leader(context.TODO())
+	res, err := e.election.Leader(context.TODO())
 	if err != nil {
 		return
 	}
