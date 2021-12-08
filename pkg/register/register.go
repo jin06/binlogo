@@ -75,10 +75,10 @@ func (r *Register) Run(ctx context.Context) {
 			select {
 			case <-ctx.Done():
 				{
-					err = r.revoke()
-					if err != nil {
-						logrus.Errorln(err)
-					}
+					//err = r.revoke()
+					//if err != nil {
+					//	logrus.Errorln(err)
+					//}
 					return
 				}
 			case <-time.Tick(time.Second):

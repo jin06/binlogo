@@ -13,38 +13,62 @@ type Manager struct {
 	mutex    sync.Mutex
 	optNode  *node.Node
 	election *Election
+	roleCh   chan role.Role
 }
 
 // NewManager returns a new manager
-func NewManager() (m *Manager) {
+func NewManager(optNode *node.Node) (m *Manager) {
 	m = &Manager{
-		ctx:   context.Background(),
-		mutex: sync.Mutex{},
+		ctx:     context.Background(),
+		mutex:   sync.Mutex{},
+		optNode: optNode,
+		roleCh:  make(chan role.Role, 1000),
 	}
 	return
 }
 
 // Run election cycle
-func (m *Manager) Run(ctx context.Context) (err error) {
+func (m *Manager) Run(ctx context.Context) {
 	myCtx, cancel := context.WithCancel(ctx)
 	m.ctx = myCtx
 	go func() {
 		defer func() {
 			cancel()
 		}()
-		m.election = New(
-			OptionNode(m.optNode),
-			OptionTTL(5),
-		)
-		m.election.Run(myCtx)
-		select {
-		case <-ctx.Done():
-			{
-				return
-			}
-		case <-m.Context().Done():
-			{
-				break
+		for {
+			en := New(
+				OptionNode(m.optNode),
+				OptionTTL(5),
+			)
+
+			m.election = en
+			en.Run(myCtx)
+			go func() {
+				select {
+				case <-en.Context().Done():
+					{
+						return
+					}
+				case r, ok := <-en.RoleCh:
+					{
+						if !ok {
+							return
+						}
+						if r == m.election.Role() {
+							m.roleCh <- r
+						}
+					}
+				}
+			}()
+			select {
+			case <-ctx.Done():
+				{
+					return
+				}
+			case <-en.Context().Done():
+				{
+					break
+				}
 			}
 		}
 	}()
@@ -62,4 +86,9 @@ func (m *Manager) Role() role.Role {
 		return role.FOLLOWER
 	}
 	return m.election.Role()
+}
+
+// RoleCh return role chan
+func (m *Manager) RoleCh() chan role.Role {
+	return m.roleCh
 }

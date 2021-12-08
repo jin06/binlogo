@@ -23,17 +23,18 @@ import (
 // Running pipeline, reporting status, etc.
 // if it becomes the master node, it will run tasks such as scheduling pipeline, monitoring, event management, etc
 type Node struct {
-	Mode           *NodeMode
-	Options        *Options
-	Name           string
-	Register       *register.Register
-	election       *election.Election
-	Scheduler      *scheduler.Scheduler
-	StatusManager  *manager_status.Manager
-	monitor        *monitor.Monitor
-	leaderRunMutex sync.Mutex
-	pipeManager    *manager_pipe.Manager
-	eventManager   *manager_event.Manager
+	Mode     *NodeMode
+	Options  *Options
+	Name     string
+	Register *register.Register
+	//election       *election.Election
+	electionManager *election.Manager
+	Scheduler       *scheduler.Scheduler
+	StatusManager   *manager_status.Manager
+	monitor         *monitor.Monitor
+	leaderRunMutex  sync.Mutex
+	pipeManager     *manager_pipe.Manager
+	eventManager    *manager_event.Manager
 }
 
 type NodeMode byte
@@ -114,7 +115,8 @@ func (n *Node) Run(ctx context.Context) (err error) {
 
 // Role returns current role
 func (n *Node) Role() role.Role {
-	return n.election.Role()
+	return n.electionManager.Role()
+	//return n.election.Role()
 }
 
 // _leaderRun run when node is leader
@@ -126,13 +128,13 @@ func (n *Node) _leaderRun(ctx context.Context) {
 				{
 					return
 				}
-			case r := <-n.election.RoleCh:
+			case r := <-n.electionManager.RoleCh():
 				{
 					n.leaderRun(ctx, r)
 				}
-			case <-time.Tick(time.Second * 5):
+			case <-time.Tick(time.Second * 3):
 				{
-					n.leaderRun(ctx, "")
+					n.leaderRun(ctx, n.Role())
 				}
 			}
 		}
@@ -140,9 +142,9 @@ func (n *Node) _leaderRun(ctx context.Context) {
 }
 
 func (n *Node) leaderRun(ctx context.Context, r role.Role) {
-	if r == "" {
-		r = n.Role()
-	}
+	//if r == "" {
+	//	r = n.Role()
+	//}
 	switch r {
 	case role.LEADER:
 		{
@@ -170,7 +172,6 @@ func (n *Node) leaderRun(ctx context.Context, r role.Role) {
 				if err != nil {
 					return
 				}
-
 			}
 		}
 	default:
@@ -198,11 +199,13 @@ func (n *Node) _mustRun(ctx context.Context) (resCtx context.Context) {
 		register.WithData(n.Options.Node),
 	)
 	n.Register.Run(ctx)
-	n.election = election.New(
-		election.OptionNode(n.Options.Node),
-		election.OptionTTL(5),
-	)
-	n.election.Run(ctx)
+	//n.election = election.New(
+	//	election.OptionNode(n.Options.Node),
+	//	election.OptionTTL(5),
+	//)
+	//n.election.Run(ctx)
+	n.electionManager = election.NewManager(n.Options.Node)
+	n.electionManager.Run(ctx)
 	n.pipeManager = manager_pipe.New(n.Options.Node)
 	n.pipeManager.Run(ctx)
 	n.StatusManager = manager_status.NewManager(n.Options.Node)
@@ -218,7 +221,8 @@ func (n *Node) _mustRun(ctx context.Context) (resCtx context.Context) {
 			{
 				return
 			}
-		case <-n.election.Context().Done():
+			//case <-n.election.Context().Done():
+		case <-n.electionManager.Context().Done():
 			{
 				return
 			}

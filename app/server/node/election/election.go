@@ -72,6 +72,7 @@ func (e *Election) campaign(ctx context.Context) {
 			}
 			cancel()
 			logrus.Info("Election cycle end")
+			close(e.RoleCh)
 		}()
 		e.SetRole(role.FOLLOWER)
 		client, err := etcdclient.New()
@@ -91,15 +92,19 @@ func (e *Election) campaign(ctx context.Context) {
 		logrus.Info("Run for election")
 		errCh := make(chan error, 1)
 		go func() {
-			errCh <- ele.Campaign(ctx, e.campaignVal)
+			errCh <- ele.Campaign(myCtx, e.campaignVal)
 		}()
-		ch, err := str.Watch(ctx, dao_cluster.ElectionPrefix(), fmt.Sprintf("%s/%x", e.prefix, sen.Lease()))
+		ch, err := str.Watch(myCtx, dao_cluster.ElectionPrefix(), fmt.Sprintf("%s/%x", e.prefix, sen.Lease()))
 		if err != nil {
 			return
 		}
 		for {
 			var b bool
 			select {
+			case <-ctx.Done():
+				{
+					return
+				}
 			case err = <-errCh:
 				{
 					if err != nil {
