@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/coreos/etcd/clientv3"
 	"github.com/jin06/binlogo/configs"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"sync"
 	"time"
@@ -38,7 +39,8 @@ func Default() *clientv3.Client {
 		var err error
 		client, err = New()
 		if err != nil {
-			panic(err)
+			//panic(err)
+			logrus.Errorln("New default etcd client error: ", err)
 		}
 	}
 	return client

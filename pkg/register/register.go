@@ -71,6 +71,7 @@ func (r *Register) Run(ctx context.Context) {
 			}
 			logrus.Errorln("Register end: ", r.registerKey)
 		}()
+
 		for {
 			select {
 			case <-ctx.Done():
