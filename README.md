@@ -8,11 +8,12 @@ Binlogo
 [中文](README_zh.md) | [English](README.md)
 
 Binlogo is the distributed, visualized application based on MySQL binlog. In short, binlogo is to process the data
-changes of MySQL into easy to understand messages and send them to different places according to the user's
-configuration. This is some advantages:
+changes of MySQL into easily understand messages and output to different systems according to the user's
+configuration. Here are part of advantages:
 
-* Distributed, multi node improves availability.
-* Visualization, can complete common operations and observe the status of the whole cluster in the control background
+* Distributed, multi node improves availability of the whole system.
+* Visualization, can complete common operations and observe the status of the whole cluster in the control website 
+* It can be output to multiple queues or other applications, and new outputs are constantly added
 
 ### Get Started
 
@@ -29,7 +30,7 @@ configuration. This is some advantages:
 
     * > $ ./binlogo server --config ./configs/binlogo.yaml
 
-* Open browser: http://127.0.0.1:9999/console
+* Open up your browser to http://127.0.0.1:9999/console to view the console website
 
 * Create Pipeline:
 
