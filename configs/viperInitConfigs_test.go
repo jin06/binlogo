@@ -1,9 +1,10 @@
 package configs
 
 import (
-	"github.com/spf13/viper"
 	"os"
 	"testing"
+
+	"github.com/spf13/viper"
 )
 
 func TestInitConfigs(t *testing.T) {
@@ -15,7 +16,7 @@ func TestInitConfigs(t *testing.T) {
 	}
 	viper.Set("node.name", nil)
 	viper.Set("cluster.name", nil)
-	InitConfigs()
+	InitGoTest()
 	hostname, err := os.Hostname()
 	if err != nil {
 		t.Error(err)
@@ -31,5 +32,4 @@ func TestInitConfigs(t *testing.T) {
 		t.Error("env get cluster.name fail")
 		t.Fail()
 	}
-	DefaultEnv()
 }

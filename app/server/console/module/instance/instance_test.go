@@ -1,17 +1,17 @@
 package instance
 
 import (
+	"testing"
+	"time"
+
 	"github.com/jin06/binlogo/configs"
 	"github.com/jin06/binlogo/pkg/store/dao/dao_pipe"
 	"github.com/jin06/binlogo/pkg/store/model/pipeline"
 	"github.com/jin06/binlogo/pkg/util/random"
-	"testing"
-	"time"
 )
 
 func TestGetInstanceByName(t *testing.T) {
-	configs.DefaultEnv()
-	configs.InitConfigs()
+	configs.InitGoTest()
 	pipeName := "go_test_pipeline" + random.String()
 	_, err := GetInstanceByName(pipeName)
 	if err != nil {

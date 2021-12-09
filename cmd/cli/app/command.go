@@ -2,6 +2,7 @@ package app
 
 import (
 	"fmt"
+
 	"github.com/jin06/binlogo/configs"
 	"github.com/jin06/binlogo/pkg/blog"
 	store2 "github.com/jin06/binlogo/pkg/store"
@@ -20,7 +21,8 @@ func NewCommand() (cmd *cobra.Command) {
 	cmd.AddCommand(cmdPipeline())
 	cmd.PersistentFlags().String("config", "./configs/binlogo.yaml", "config file default is ./configs/binlogo.yaml")
 	err := viper.BindPFlag("config", cmd.PersistentFlags().Lookup("config"))
-	configs.InitViperFromFile(viper.GetString("config"))
+	// configs.InitViperFromFile(viper.GetString("config"))
+	configs.Init(viper.GetString("config"))
 	//etcd2.DefaultETCD()
 	blog.Env(configs.Env(viper.GetString("env")))
 	if err != nil {

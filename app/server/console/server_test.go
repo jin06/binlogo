@@ -2,14 +2,14 @@ package console
 
 import (
 	"context"
-	"github.com/jin06/binlogo/configs"
 	"testing"
 	"time"
+
+	"github.com/jin06/binlogo/configs"
 )
 
 func TestRun(t *testing.T) {
-	configs.DefaultEnv()
-	configs.InitConfigs()
+	configs.InitGoTest()
 	go func() {
 		err := Run(context.Background())
 		if err != nil {
