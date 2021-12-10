@@ -3,15 +3,15 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/go-redis/redis/v8"
 	"time"
+
+	"github.com/go-redis/redis/v8"
 )
 
 func main() {
 	list := "test-redis"
 	rdb := redis.NewClient(&redis.Options{
-		//Addr:     "localhost:16379",
-		Addr: "redis-apple-master.shan-dev.svc.cluster.local:6379",
+		Addr:     "localhost:16379",
 		Password: "",
 		DB:       0,
 	})

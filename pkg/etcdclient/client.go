@@ -2,12 +2,13 @@ package etcdclient
 
 import (
 	"fmt"
+	"sync"
+	"time"
+
 	"github.com/coreos/etcd/clientv3"
 	"github.com/jin06/binlogo/configs"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
-	"sync"
-	"time"
 )
 
 // Prefix return cluster prefix

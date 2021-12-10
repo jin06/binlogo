@@ -3,6 +3,9 @@ package node
 import (
 	"context"
 	"errors"
+	"sync"
+	"time"
+
 	"github.com/jin06/binlogo/app/server/node/election"
 	"github.com/jin06/binlogo/app/server/node/manager"
 	"github.com/jin06/binlogo/app/server/node/manager/manager_event"
@@ -15,8 +18,6 @@ import (
 	"github.com/jin06/binlogo/pkg/store/dao/dao_node"
 	"github.com/jin06/binlogo/pkg/store/model/node"
 	"github.com/sirupsen/logrus"
-	"sync"
-	"time"
 )
 
 // Node represents a node instance
@@ -223,6 +224,14 @@ func (n *Node) _mustRun(ctx context.Context) (resCtx context.Context) {
 			}
 			//case <-n.election.Context().Done():
 		case <-n.electionManager.Context().Done():
+			{
+				return
+			}
+		case <-n.pipeManager.Context().Done():
+			{
+				return
+			}
+		case <-n.StatusManager.Context().Done():
 			{
 				return
 			}

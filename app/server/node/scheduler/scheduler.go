@@ -2,6 +2,9 @@ package scheduler
 
 import (
 	"context"
+	"sync"
+	"time"
+
 	"github.com/coreos/etcd/mvcc/mvccpb"
 	"github.com/jin06/binlogo/pkg/event"
 	"github.com/jin06/binlogo/pkg/store/dao/dao_sche"
@@ -9,8 +12,6 @@ import (
 	"github.com/jin06/binlogo/pkg/store/model/scheduler"
 	"github.com/jin06/binlogo/pkg/watcher/scheduler_binding"
 	"github.com/sirupsen/logrus"
-	"sync"
-	"time"
 )
 
 // Scheduler schedule the pipeline.
@@ -49,7 +50,13 @@ func (s *Scheduler) Run(ctx context.Context) (err error) {
 }
 
 func (s *Scheduler) _schedule(ctx context.Context) {
-	defer s.Stop()
+	defer func() {
+		r := recover()
+		if r != nil {
+			logrus.Errorln("schedule error, ", r)
+		}
+		s.Stop()
+	}()
 	//wa, err := scheduler_binding.New()
 	//if err != nil {
 	//	return

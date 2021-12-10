@@ -3,13 +3,15 @@ package pipeline
 import (
 	"context"
 	"errors"
+	"sync"
+
 	filter2 "github.com/jin06/binlogo/app/pipeline/filter"
 	input2 "github.com/jin06/binlogo/app/pipeline/input"
 	message2 "github.com/jin06/binlogo/app/pipeline/message"
 	output2 "github.com/jin06/binlogo/app/pipeline/output"
 	"github.com/jin06/binlogo/pkg/event"
 	event2 "github.com/jin06/binlogo/pkg/store/model/event"
-	"sync"
+	"github.com/sirupsen/logrus"
 )
 
 // Pipeline for handle message
@@ -124,6 +126,9 @@ func (p *Pipeline) Run(ctx context.Context) {
 	go func() {
 		var err error
 		defer func() {
+			if r := recover(); r != nil {
+				logrus.Errorln("pipeline run panic, ", r)
+			}
 			cancel()
 		}()
 		if err = p.Input.Run(myCtx); err != nil {

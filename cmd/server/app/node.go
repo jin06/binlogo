@@ -2,12 +2,14 @@ package app
 
 import (
 	"context"
+	"errors"
+	"time"
+
 	node2 "github.com/jin06/binlogo/app/server/node"
 	"github.com/jin06/binlogo/configs"
 	"github.com/jin06/binlogo/pkg/store/dao/dao_node"
 	"github.com/jin06/binlogo/pkg/store/model/node"
 	"github.com/sirupsen/logrus"
-	"time"
 )
 
 // RunNode run node.
@@ -44,11 +46,23 @@ func RunNode() (err error) {
 	ctx := context.TODO()
 	go func() {
 		for {
-			logrus.WithField("node name", configs.NodeName).Info("Running node")
-			err = _node.Run(ctx)
+			ch := make(chan error, 1)
+			go func() {
+				defer func() {
+					if r := recover(); r != nil {
+						logrus.Errorln("run node panic, ", r)
+						ch <- errors.New("panic")
+					}
+				}()
+				logrus.WithField("node name", configs.NodeName).Info("Running node")
+				ch <- _node.Run(ctx)
+			}()
+			errNode := <-ch
+			if errNode != nil {
+				logrus.Errorln("run node error, ", errNode)
+			}
 			time.Sleep(time.Second * 5)
 		}
 	}()
-
 	return
 }

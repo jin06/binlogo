@@ -2,13 +2,14 @@ package monitor
 
 import (
 	"context"
+	"time"
+
 	"github.com/coreos/etcd/mvcc/mvccpb"
 	"github.com/jin06/binlogo/pkg/store/dao/dao_node"
 	"github.com/jin06/binlogo/pkg/store/dao/dao_sche"
 	nodeModel "github.com/jin06/binlogo/pkg/store/model/node"
 	"github.com/jin06/binlogo/pkg/watcher"
 	"github.com/sirupsen/logrus"
-	"time"
 )
 
 func (m *Monitor) monitorNode(ctx context.Context) (resCtx context.Context, err error) {
@@ -34,6 +35,9 @@ func (m *Monitor) monitorNode(ctx context.Context) (resCtx context.Context, err 
 
 	go func() {
 		defer func() {
+			if r := recover(); r != nil {
+				logrus.Errorln("monitor node panic, ", r)
+			}
 			cancel()
 		}()
 		for {

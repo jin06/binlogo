@@ -2,13 +2,14 @@ package manager_status
 
 import (
 	"context"
+	"net"
+	"sync"
+	"time"
+
 	"github.com/jin06/binlogo/pkg/store/dao/dao_node"
 	"github.com/jin06/binlogo/pkg/store/model/node"
 	"github.com/jin06/binlogo/pkg/util/ip"
 	"github.com/sirupsen/logrus"
-	"net"
-	"sync"
-	"time"
 )
 
 // Manager report node status and resource usage
@@ -16,6 +17,7 @@ type Manager struct {
 	Node      *node.Node
 	syncMutex sync.Mutex
 	nodeMutex sync.Mutex
+	ctx       context.Context
 }
 
 // NewManager returns a new Manager
@@ -30,11 +32,20 @@ func NewManager(n *node.Node) *Manager {
 
 // Run start working
 func (m *Manager) Run(ctx context.Context) (err error) {
+	myCtx, cancel := context.WithCancel(ctx)
+	m.ctx = myCtx
 	if err = m.syncStatus(); err != nil {
 		logrus.Error("Sync status failed: ", err)
+		cancel()
 		return
 	}
 	go func() {
+		defer func() {
+			if r := recover(); r != nil {
+				logrus.Errorln("manager status panic, ", r)
+			}
+			cancel()
+		}()
 		for {
 			select {
 			case <-ctx.Done():
@@ -86,4 +97,9 @@ func (m *Manager) syncIP() (err error) {
 		m.Node.IP = nip
 	}
 	return
+}
+
+// Context retuns Manager context
+func (m *Manager) Context() context.Context {
+	return m.ctx
 }

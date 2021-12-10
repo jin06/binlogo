@@ -2,12 +2,13 @@ package monitor
 
 import (
 	"context"
+	"time"
+
 	"github.com/coreos/etcd/mvcc/mvccpb"
 	"github.com/jin06/binlogo/pkg/store/dao/dao_pipe"
 	"github.com/jin06/binlogo/pkg/store/dao/dao_sche"
 	"github.com/jin06/binlogo/pkg/store/model/pipeline"
 	"github.com/sirupsen/logrus"
-	"time"
 )
 
 func (m *Monitor) monitorPipe(ctx context.Context) (resCtx context.Context, err error) {
@@ -25,6 +26,9 @@ func (m *Monitor) monitorPipe(ctx context.Context) (resCtx context.Context, err 
 	m.checkAllPipelineDelete()
 	go func() {
 		defer func() {
+			if r := recover(); r != nil {
+				logrus.Errorln("monitor pipeline panic, ", r)
+			}
 			cancel()
 		}()
 		for {

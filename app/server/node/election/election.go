@@ -3,6 +3,9 @@ package election
 import (
 	"context"
 	"fmt"
+	"sync"
+	"time"
+
 	"github.com/coreos/etcd/clientv3/concurrency"
 	"github.com/coreos/etcd/mvcc/mvccpb"
 	"github.com/jin06/binlogo/configs"
@@ -12,8 +15,6 @@ import (
 	node2 "github.com/jin06/binlogo/pkg/store/model/node"
 	"github.com/jin06/binlogo/pkg/watcher/str"
 	"github.com/sirupsen/logrus"
-	"sync"
-	"time"
 )
 
 // Election for leader node election
@@ -62,6 +63,9 @@ func (e *Election) campaign(ctx context.Context) {
 		logrus.Info("Election cycle start")
 		var err error
 		defer func() {
+			if r := recover(); r != nil {
+				logrus.Errorln("election panic, ", r)
+			}
 			e.SetRole(role.FOLLOWER)
 			if err != nil {
 				logrus.Error("Election failed: ", err)

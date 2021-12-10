@@ -2,13 +2,14 @@ package manager_event
 
 import (
 	"context"
+	"strconv"
+	"time"
+
 	"github.com/jin06/binlogo/app/server/node/manager"
 	"github.com/jin06/binlogo/pkg/store/dao/dao_event"
 	"github.com/jin06/binlogo/pkg/store/dao/dao_node"
 	"github.com/jin06/binlogo/pkg/store/dao/dao_pipe"
 	"github.com/sirupsen/logrus"
-	"strconv"
-	"time"
 )
 
 // Manager is event manager
@@ -37,11 +38,15 @@ func (m *Manager) Run(ctx context.Context) (err error) {
 	m.Status = manager.START
 	go func() {
 		defer func() {
+			if r := recover(); r != nil {
+				logrus.Errorln("event manager panic, ", r)
+			}
 			m.Lock()
-			m.Unlock()
+			defer m.Unlock()
+			cancel()
 			m.Status = manager.STOP
 		}()
-		go m.cleanHistoryEvent()
+		// go m.cleanHistoryEvent()
 		for {
 			select {
 			case <-myCtx.Done():

@@ -2,12 +2,13 @@ package manager_pipe
 
 import (
 	"context"
+	"sync"
+	"time"
+
 	"github.com/jin06/binlogo/pkg/store/dao/dao_sche"
 	"github.com/jin06/binlogo/pkg/store/model/node"
 	"github.com/jin06/binlogo/pkg/store/model/scheduler"
 	"github.com/sirupsen/logrus"
-	"sync"
-	"time"
 )
 
 // Manager is pipeline instance manager.
@@ -18,6 +19,7 @@ type Manager struct {
 	mappingIns map[string]*instance
 	node       *node.Node
 	mutex      sync.Mutex
+	ctx        context.Context
 }
 
 // New returns a new Manager
@@ -35,7 +37,15 @@ func New(n *node.Node) (m *Manager) {
 
 // Run start woking
 func (m *Manager) Run(ctx context.Context) {
+	myCtx, cancel := context.WithCancel(ctx)
+	m.ctx = myCtx
 	go func() {
+		defer func() {
+			if r := recover(); r != nil {
+				logrus.Errorln("election manager panic, ", r)
+			}
+			cancel()
+		}()
 		if err := m.scanPipelines(nil); err != nil {
 			logrus.Error(err)
 		}
@@ -109,5 +119,9 @@ func (m *Manager) dispatch() {
 			}
 		}
 	}
+}
 
+// Context returns Manager ctx
+func (m *Manager) Context() context.Context {
+	return m.ctx
 }

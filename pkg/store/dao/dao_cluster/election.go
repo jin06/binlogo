@@ -3,6 +3,7 @@ package dao_cluster
 import (
 	"context"
 	"errors"
+
 	"github.com/coreos/etcd/clientv3"
 	"github.com/jin06/binlogo/pkg/etcdclient"
 )
