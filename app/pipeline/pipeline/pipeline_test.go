@@ -2,13 +2,14 @@ package pipeline
 
 import (
 	"context"
+	"strconv"
+	"testing"
+	"time"
+
 	"github.com/jin06/binlogo/configs"
 	"github.com/jin06/binlogo/pkg/store/dao/dao_pipe"
 	"github.com/jin06/binlogo/pkg/store/model/pipeline"
 	"github.com/jin06/binlogo/pkg/util/random"
-	"strconv"
-	"testing"
-	"time"
 )
 
 func TestRun(t *testing.T) {
@@ -30,7 +31,7 @@ func TestRun(t *testing.T) {
 			Mode:     pipeline.MODE_GTID,
 		},
 		Filters: []*pipeline.Filter{
-			&pipeline.Filter{
+			{
 				Type: pipeline.FILTER_BLACK,
 				Rule: "mysql",
 			},
@@ -59,7 +60,7 @@ func TestRun(t *testing.T) {
 		t.Error(err)
 	}
 	pipe.Run(context.Background())
-	time.Sleep(time.Millisecond*200)
+	time.Sleep(time.Millisecond * 200)
 	_, err = dao_pipe.DeletePipeline(pipeName)
 	if err != nil {
 		t.Error(err)
@@ -86,7 +87,7 @@ func TestRunCommon(t *testing.T) {
 			Mode:     pipeline.MODE_POSITION,
 		},
 		Filters: []*pipeline.Filter{
-			&pipeline.Filter{
+			{
 				Type: pipeline.FILTER_BLACK,
 				Rule: "mysql",
 			},
@@ -116,7 +117,7 @@ func TestRunCommon(t *testing.T) {
 	}
 	ctx, cancel := context.WithCancel(context.Background())
 	pipe.Run(ctx)
-	time.Sleep(time.Millisecond*200)
+	time.Sleep(time.Millisecond * 200)
 	_, err = dao_pipe.DeletePipeline(pipeName)
 	if err != nil {
 		t.Error(err)

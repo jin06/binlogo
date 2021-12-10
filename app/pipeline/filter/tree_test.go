@@ -1,9 +1,10 @@
 package filter
 
 import (
+	"testing"
+
 	message2 "github.com/jin06/binlogo/app/pipeline/message"
 	"github.com/jin06/binlogo/pkg/store/model/pipeline"
-	"testing"
 )
 
 func TestIsFilter(t *testing.T) {
@@ -45,7 +46,7 @@ func TestIsFilter(t *testing.T) {
 
 func TestNewTree(t *testing.T) {
 	filters := []*pipeline.Filter{
-		&pipeline.Filter{
+		{
 			Type: pipeline.FILTER_BLACK,
 			Rule: "mysql.user",
 		},

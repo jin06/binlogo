@@ -46,11 +46,11 @@ func TestExpectRunAndWith(t *testing.T) {
 	},
 		AliasName: "alias",
 		Filters: []*Filter{
-			&Filter{
+			{
 				Type: "",
 				Rule: "",
 			},
-			&Filter{
+			{
 				Type: "",
 				Rule: "",
 			},

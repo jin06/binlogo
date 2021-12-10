@@ -3,11 +3,12 @@ package register
 import (
 	"context"
 	"encoding/json"
+	"time"
+
 	"github.com/coreos/etcd/clientv3"
 	"github.com/coreos/etcd/etcdserver/api/v3rpc/rpctypes"
 	"github.com/jin06/binlogo/pkg/etcdclient"
 	"github.com/sirupsen/logrus"
-	"time"
 )
 
 // New returns a new *Register
@@ -51,6 +52,9 @@ func (r *Register) Run(ctx context.Context) {
 	r.ctx = myCtx
 	go func() {
 		defer func() {
+			if r := recover(); r != nil {
+				logrus.Errorln("register panic, ", r)
+			}
 			cancel()
 		}()
 		var err error

@@ -1,9 +1,10 @@
 package blog
 
 import (
+	"testing"
+
 	"github.com/jin06/binlogo/configs"
 	"github.com/sirupsen/logrus"
-	"testing"
 )
 
 func TestEnv(t *testing.T) {

@@ -5,6 +5,7 @@ import (
 	message2 "github.com/jin06/binlogo/app/pipeline/message"
 	"strconv"
 )
+
 func emptyMessage(msg *message2.Message) {
 	msg.Filter = true
 	msg.Content.Head = &message2.Head{

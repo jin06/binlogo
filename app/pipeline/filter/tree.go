@@ -2,10 +2,11 @@ package filter
 
 import (
 	"fmt"
+	"strings"
+
 	message2 "github.com/jin06/binlogo/app/pipeline/message"
 	"github.com/jin06/binlogo/pkg/pipeline/tool"
 	"github.com/jin06/binlogo/pkg/store/model/pipeline"
-	"strings"
 )
 
 type tree struct {

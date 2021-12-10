@@ -6,4 +6,3 @@ type Model interface {
 	Key() string
 	Unmarshal([]byte) error
 }
-

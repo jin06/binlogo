@@ -3,9 +3,10 @@ package tool
 import (
 	"errors"
 	"fmt"
+	"strings"
+
 	"github.com/jin06/binlogo/app/pipeline/message"
 	"github.com/jin06/binlogo/pkg/store/model/pipeline"
-	"strings"
 )
 
 // NewFilter return a Filter object

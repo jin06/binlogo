@@ -3,13 +3,14 @@ package etcd
 import (
 	"context"
 	"fmt"
+	"os"
+	"time"
+
 	"github.com/coreos/etcd/clientv3"
 	options2 "github.com/jin06/binlogo/pkg/store/etcd/options"
 	model2 "github.com/jin06/binlogo/pkg/store/model"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
-	"os"
-	"time"
 )
 
 var E *ETCD

@@ -12,5 +12,3 @@ func TestRandom(t *testing.T) {
 		t.Fail()
 	}
 }
-
-

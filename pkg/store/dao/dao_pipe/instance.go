@@ -3,6 +3,7 @@ package dao_pipe
 import (
 	"context"
 	"encoding/json"
+
 	"github.com/coreos/etcd/clientv3"
 	"github.com/jin06/binlogo/pkg/etcdclient"
 	"github.com/jin06/binlogo/pkg/store/model/pipeline"

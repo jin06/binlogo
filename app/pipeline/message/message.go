@@ -3,6 +3,7 @@ package message
 import (
 	"encoding/json"
 	"fmt"
+
 	"github.com/jin06/binlogo/pkg/store/model/pipeline"
 )
 

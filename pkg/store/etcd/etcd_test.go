@@ -1,9 +1,10 @@
 package etcd
 
 import (
+	"testing"
+
 	"github.com/jin06/binlogo/configs"
 	"github.com/jin06/binlogo/pkg/store/model/pipeline"
-	"testing"
 )
 
 func TestCreate(t *testing.T) {
@@ -38,7 +39,7 @@ func TestDelete(t *testing.T) {
 	DefaultETCD()
 	testPipe := pipeline.NewPipeline("go_test_pipeline")
 	testPipe.Remark = "update"
-	ok , err := Delete(testPipe)
+	ok, err := Delete(testPipe)
 	if err != nil {
 		t.Error(err)
 	}

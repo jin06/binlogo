@@ -18,5 +18,3 @@ type Item struct {
 type Info struct {
 	Role role.Role `json:"role"`
 }
-
-

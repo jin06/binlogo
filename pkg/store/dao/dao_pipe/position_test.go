@@ -1,10 +1,11 @@
 package dao_pipe
 
 import (
+	"testing"
+
 	"github.com/jin06/binlogo/configs"
 	"github.com/jin06/binlogo/pkg/store/model/pipeline"
 	"github.com/jin06/binlogo/pkg/util/random"
-	"testing"
 )
 
 func TestPosition(t *testing.T) {

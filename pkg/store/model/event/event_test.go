@@ -1,8 +1,9 @@
 package event
 
 import (
-	"github.com/jin06/binlogo/configs"
 	"testing"
+
+	"github.com/jin06/binlogo/configs"
 )
 
 func TestNewInfoNode(t *testing.T) {

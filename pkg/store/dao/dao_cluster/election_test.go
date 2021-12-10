@@ -1,8 +1,9 @@
 package dao_cluster
 
 import (
-	"github.com/jin06/binlogo/configs"
 	"testing"
+
+	"github.com/jin06/binlogo/configs"
 )
 
 func TestLeaderNode(t *testing.T) {

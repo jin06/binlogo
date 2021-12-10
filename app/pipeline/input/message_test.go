@@ -1,12 +1,13 @@
 package input
 
 import (
+	"testing"
+	"time"
+
 	"github.com/go-mysql-org/go-mysql/canal"
 	"github.com/go-mysql-org/go-mysql/replication"
 	"github.com/go-mysql-org/go-mysql/schema"
 	message2 "github.com/jin06/binlogo/app/pipeline/message"
-	"testing"
-	"time"
 )
 
 func TestRowsMessage(t *testing.T) {
@@ -19,7 +20,7 @@ func TestRowsMessage(t *testing.T) {
 			Schema: "database1",
 			Name:   "table1",
 			Columns: []schema.TableColumn{
-				schema.TableColumn{
+				{
 					Name: "id",
 					Type: schema.TYPE_NUMBER,
 				},
@@ -29,7 +30,7 @@ func TestRowsMessage(t *testing.T) {
 			UnsignedColumns: []int{},
 		},
 		Rows: [][]interface{}{
-			[]interface{}{
+			{
 				10001,
 			},
 		},

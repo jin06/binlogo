@@ -1,12 +1,13 @@
 package dao_event
 
 import (
-	"github.com/coreos/etcd/clientv3"
-	"github.com/jin06/binlogo/configs"
-	"github.com/jin06/binlogo/pkg/store/model/event"
 	"strconv"
 	"testing"
 	"time"
+
+	"github.com/coreos/etcd/clientv3"
+	"github.com/jin06/binlogo/configs"
+	"github.com/jin06/binlogo/pkg/store/model/event"
 )
 
 func TestUpdate(t *testing.T) {

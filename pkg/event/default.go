@@ -2,6 +2,7 @@ package event
 
 import (
 	"context"
+
 	"github.com/jin06/binlogo/pkg/store/model/event"
 )
 

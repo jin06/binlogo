@@ -14,7 +14,7 @@ import (
 func TestCanalHandler(t *testing.T) {
 	handler := &canalHandler{
 		DummyEventHandler: canal.DummyEventHandler{},
-		ch:                make(chan *message.Message,10),
+		ch:                make(chan *message.Message, 10),
 		pipe:              &pipeline.Pipeline{Name: "go_test_pipeline"},
 		msg:               nil,
 	}
@@ -28,7 +28,7 @@ func TestCanalHandler(t *testing.T) {
 			Schema: "database1",
 			Name:   "table1",
 			Columns: []schema.TableColumn{
-				schema.TableColumn{
+				{
 					Name: "id",
 					Type: schema.TYPE_NUMBER,
 				},
@@ -38,7 +38,7 @@ func TestCanalHandler(t *testing.T) {
 			UnsignedColumns: []int{},
 		},
 		Rows: [][]interface{}{
-			[]interface{}{
+			{
 				10001,
 			},
 		},
@@ -59,17 +59,17 @@ func TestCanalHandler(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	err = handler.OnRotate(nil )
-	if err != nil{
+	err = handler.OnRotate(nil)
+	if err != nil {
 		t.Error(err)
 	}
 	if err = handler.OnXID(mysql.Position{}); err != nil {
 		t.Error(err)
 	}
-	if err = handler.OnGTID(nil);err != nil {
+	if err = handler.OnGTID(nil); err != nil {
 		t.Error(err)
 	}
-	if err = handler.OnDDL(mysql.Position{}, &replication.QueryEvent{});err != nil {
+	if err = handler.OnDDL(mysql.Position{}, &replication.QueryEvent{}); err != nil {
 		t.Error(err)
 	}
 }

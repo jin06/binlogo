@@ -1,7 +1,10 @@
 package main
 
-import "github.com/hashicorp/consul/api"
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/hashicorp/consul/api"
+)
 
 func main() {
 	// Get a new client

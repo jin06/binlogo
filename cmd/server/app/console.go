@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+
 	"github.com/jin06/binlogo/app/server/console"
 )
 

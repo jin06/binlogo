@@ -2,8 +2,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/jin06/binlogo/cmd/cli/app"
 	"os"
+
+	"github.com/jin06/binlogo/cmd/cli/app"
 )
 
 func main() {

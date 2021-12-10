@@ -1,11 +1,12 @@
 package dao_pipe
 
 import (
+	"testing"
+	"time"
+
 	"github.com/jin06/binlogo/configs"
 	"github.com/jin06/binlogo/pkg/store/model/pipeline"
 	"github.com/jin06/binlogo/pkg/util/random"
-	"testing"
-	"time"
 )
 
 func TestPipeline(t *testing.T) {
@@ -49,8 +50,7 @@ func TestPipeline(t *testing.T) {
 		}),
 		pipeline.WithPipeDelete(false),
 		pipeline.WithPipeMode(pipeline.MODE_POSITION),
-		pipeline.WithAddFilter(&pipeline.Filter{
-		}),
+		pipeline.WithAddFilter(&pipeline.Filter{}),
 		pipeline.WithUpdateFilter(0, &pipeline.Filter{}),
 	)
 	if err != nil {
@@ -71,7 +71,5 @@ func TestPipeline(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-
-
 
 }

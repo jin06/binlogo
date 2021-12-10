@@ -2,11 +2,13 @@ package mutex
 
 import (
 	"context"
+
 	"github.com/jin06/binlogo/pkg/etcdclient"
 
 	//"github.com/jin06/binlogo/pkg/store/etcd"
-	"github.com/coreos/etcd/clientv3/concurrency"
 	"time"
+
+	"github.com/coreos/etcd/clientv3/concurrency"
 )
 
 // Mutex Distributed lock encapsulating etcd

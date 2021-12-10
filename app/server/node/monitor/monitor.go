@@ -2,12 +2,13 @@ package monitor
 
 import (
 	"context"
+	"sync"
+
 	"github.com/jin06/binlogo/pkg/store/dao/dao_node"
 	"github.com/jin06/binlogo/pkg/store/dao/dao_pipe"
 	"github.com/jin06/binlogo/pkg/watcher"
 	"github.com/jin06/binlogo/pkg/watcher/node"
 	"github.com/jin06/binlogo/pkg/watcher/pipeline"
-	"sync"
 )
 
 // Monitor monitor the operation of pipelines, nodes and other resources

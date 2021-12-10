@@ -1,9 +1,10 @@
 package node
 
 import (
-	"github.com/jin06/binlogo/configs"
 	"net"
 	"testing"
+
+	"github.com/jin06/binlogo/configs"
 )
 
 func TestNode(t *testing.T) {

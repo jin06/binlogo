@@ -2,11 +2,12 @@ package register
 
 import (
 	"context"
+	"testing"
+	"time"
+
 	"github.com/jin06/binlogo/configs"
 	"github.com/jin06/binlogo/pkg/etcdclient"
 	"github.com/jin06/binlogo/pkg/util/random"
-	"testing"
-	"time"
 )
 
 func TestRegister(t *testing.T) {

@@ -1,9 +1,10 @@
 package tool
 
 import (
+	"testing"
+
 	"github.com/jin06/binlogo/app/pipeline/message"
 	"github.com/jin06/binlogo/pkg/store/model/pipeline"
-	"testing"
 )
 
 func TestIsFilterWithName(t *testing.T) {

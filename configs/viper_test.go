@@ -1,9 +1,10 @@
 package configs
 
 import (
-	"github.com/spf13/viper"
 	"reflect"
 	"testing"
+
+	"github.com/spf13/viper"
 )
 
 func TestInitViperFromFile(t *testing.T) {

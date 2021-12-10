@@ -2,9 +2,10 @@ package node
 
 import (
 	"encoding/json"
-	"github.com/jin06/binlogo/configs"
 	"net"
 	"time"
+
+	"github.com/jin06/binlogo/configs"
 )
 
 // Node is node

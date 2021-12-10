@@ -1,9 +1,10 @@
 package dao_pipe
 
 import (
+	"testing"
+
 	"github.com/jin06/binlogo/configs"
 	"github.com/jin06/binlogo/pkg/util/random"
-	"testing"
 )
 
 func TestInstance(t *testing.T) {

@@ -25,13 +25,11 @@ func NewPipeline(name string) (pipe *Pipeline) {
 		Name:      name,
 		Status:    STATUS_STOP,
 		AliasName: name,
-		Mysql: &Mysql{
-
-		},
-		Filters: []*Filter{},
+		Mysql:     &Mysql{},
+		Filters:   []*Filter{},
 		Output: &Output{
 			Sender: &Sender{
-				Type: SNEDER_TYPE_STDOUT,
+				Type:     SNEDER_TYPE_STDOUT,
 				Kafka:    nil,
 				Stdout:   nil,
 				Http:     nil,

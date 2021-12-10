@@ -19,5 +19,5 @@ func TestWatcher(t *testing.T) {
 	nName := "gotest" + random.String()
 	dao_sche.UpdatePipelineBind(pName, nName)
 	dao_sche.DeletePipelineBind(pName)
-	time.Sleep(time.Millisecond*100)
+	time.Sleep(time.Millisecond * 100)
 }

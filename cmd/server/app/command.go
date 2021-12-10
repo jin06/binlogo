@@ -2,11 +2,12 @@ package app
 
 import (
 	"fmt"
+	"os"
+
 	"github.com/jin06/binlogo/configs"
 	"github.com/jin06/binlogo/pkg/event"
 	event2 "github.com/jin06/binlogo/pkg/store/model/event"
 	"github.com/spf13/cobra"
-	"os"
 )
 
 // NewCommand returns a new command for binlogo server

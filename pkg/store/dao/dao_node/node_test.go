@@ -1,11 +1,12 @@
 package dao_node
 
 import (
+	"testing"
+	"time"
+
 	"github.com/jin06/binlogo/configs"
 	node2 "github.com/jin06/binlogo/pkg/store/model/node"
 	"github.com/jin06/binlogo/pkg/util/random"
-	"testing"
-	"time"
 )
 
 func TestNode(t *testing.T) {

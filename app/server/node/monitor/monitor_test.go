@@ -2,6 +2,9 @@ package monitor
 
 import (
 	"context"
+	"testing"
+	"time"
+
 	"github.com/jin06/binlogo/configs"
 	"github.com/jin06/binlogo/pkg/register"
 	"github.com/jin06/binlogo/pkg/store/dao/dao_node"
@@ -10,8 +13,6 @@ import (
 	"github.com/jin06/binlogo/pkg/store/model/node"
 	"github.com/jin06/binlogo/pkg/store/model/pipeline"
 	"github.com/jin06/binlogo/pkg/util/random"
-	"testing"
-	"time"
 )
 
 func TestRun(t *testing.T) {
