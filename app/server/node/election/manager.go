@@ -2,9 +2,11 @@ package election
 
 import (
 	"context"
+	"sync"
+
 	"github.com/jin06/binlogo/pkg/node/role"
 	"github.com/jin06/binlogo/pkg/store/model/node"
-	"sync"
+	"github.com/sirupsen/logrus"
 )
 
 // Manager is election cycle manager
@@ -33,6 +35,12 @@ func (m *Manager) Run(ctx context.Context) {
 	m.ctx = myCtx
 	go func() {
 		defer func() {
+			defer func() {
+				r := recover()
+				if r != nil {
+					logrus.Errorln("election manager panic, ", r)
+				}
+			}()
 			cancel()
 		}()
 		for {
@@ -44,18 +52,25 @@ func (m *Manager) Run(ctx context.Context) {
 			m.election = en
 			en.Run(myCtx)
 			go func() {
-				select {
-				case <-en.Context().Done():
-					{
-						return
+				defer func() {
+					if r := recover(); r != nil {
+						logrus.Errorln("election manager panic, ", r)
 					}
-				case r, ok := <-en.RoleCh:
-					{
-						if !ok {
+				}()
+				for {
+					select {
+					case <-en.Context().Done():
+						{
 							return
 						}
-						if r == m.election.Role() {
-							m.roleCh <- r
+					case r, ok := <-en.RoleCh:
+						{
+							if !ok {
+								return
+							}
+							if r == m.election.Role() {
+								m.roleCh <- r
+							}
 						}
 					}
 				}

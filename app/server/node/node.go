@@ -199,18 +199,18 @@ func (n *Node) _mustRun(ctx context.Context) (resCtx context.Context) {
 		register.WithKey(dao_node.NodeRegisterPrefix()+"/"+n.Options.Node.Name),
 		register.WithData(n.Options.Node),
 	)
-	n.Register.Run(ctx)
+	n.Register.Run(resCtx)
 	//n.election = election.New(
 	//	election.OptionNode(n.Options.Node),
 	//	election.OptionTTL(5),
 	//)
 	//n.election.Run(ctx)
 	n.electionManager = election.NewManager(n.Options.Node)
-	n.electionManager.Run(ctx)
+	n.electionManager.Run(resCtx)
 	n.pipeManager = manager_pipe.New(n.Options.Node)
-	n.pipeManager.Run(ctx)
+	n.pipeManager.Run(resCtx)
 	n.StatusManager = manager_status.NewManager(n.Options.Node)
-	n.StatusManager.Run(ctx)
+	n.StatusManager.Run(resCtx)
 	go func() {
 		defer cancel()
 		select {
