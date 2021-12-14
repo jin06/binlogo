@@ -43,9 +43,9 @@ func RunNode() (err error) {
 	if _node, err = node2.New(node2.OptionNode(nModel)); err != nil {
 		return
 	}
-	ctx := context.TODO()
 	go func() {
 		for {
+			ctx := context.Background()
 			ch := make(chan error, 1)
 			go func() {
 				defer func() {

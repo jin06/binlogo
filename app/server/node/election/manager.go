@@ -50,7 +50,8 @@ func (m *Manager) Run(ctx context.Context) {
 			)
 
 			m.election = en
-			en.Run(myCtx)
+			cCtx, _ := context.WithCancel(myCtx)
+			en.Run(cCtx)
 			go func() {
 				defer func() {
 					if r := recover(); r != nil {
@@ -59,6 +60,10 @@ func (m *Manager) Run(ctx context.Context) {
 				}()
 				for {
 					select {
+					case <-myCtx.Done():
+						{
+							return
+						}
 					case <-en.Context().Done():
 						{
 							return
@@ -76,6 +81,10 @@ func (m *Manager) Run(ctx context.Context) {
 				}
 			}()
 			select {
+			case <-myCtx.Done():
+				{
+					return
+				}
 			case <-ctx.Done():
 				{
 					return

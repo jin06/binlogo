@@ -70,7 +70,7 @@ func (e *Election) campaign(ctx context.Context) {
 			if err != nil {
 				logrus.Error("Election failed: ", err)
 			}
-			errR := e.Resign(ctx)
+			errR := e.Resign(myCtx)
 			if errR != nil {
 				logrus.Error(errR)
 			}
