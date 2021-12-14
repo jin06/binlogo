@@ -7,7 +7,7 @@ import (
 )
 
 // RunConsole run gin
-func RunConsole() (err error) {
-	err = console.Run(context.Background())
+func RunConsole(c context.Context) (err error) {
+	err = console.Run(c)
 	return
 }
