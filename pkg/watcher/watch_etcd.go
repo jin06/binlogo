@@ -2,9 +2,9 @@ package watcher
 
 import (
 	"context"
-	"github.com/coreos/etcd/clientv3"
 	"github.com/jin06/binlogo/pkg/etcdclient"
 	"github.com/sirupsen/logrus"
+	clientv3 "go.etcd.io/etcd/client/v3"
 )
 
 // General a base watcher

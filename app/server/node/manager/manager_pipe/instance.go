@@ -81,7 +81,7 @@ func (i *instance) init() (err error) {
 	return
 }
 
-func (i *instance) start() (err error) {
+func (i *instance) start(c context.Context) (err error) {
 	if i.status == STATUS_RUN {
 		return
 	}
@@ -97,7 +97,7 @@ func (i *instance) start() (err error) {
 	if err != nil {
 		return
 	}
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(c)
 	defer func() {
 		cancel()
 	}()
@@ -108,6 +108,10 @@ func (i *instance) start() (err error) {
 	event.Event(event2.NewInfoPipeline(i.pipeName, "Pipeline instance start success"))
 
 	select {
+	case <- c.Done():
+		{
+			return
+		}
 	case <-ctx.Done():
 		{
 			return

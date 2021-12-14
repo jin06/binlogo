@@ -15,11 +15,11 @@ import (
 // If there is a pipeline bound to the current node, run an instance
 // will also stop inbound instance on the current node
 type Manager struct {
-	mapping    map[string]bool
-	mappingIns map[string]*instance
-	node       *node.Node
-	mutex      sync.Mutex
-	ctx        context.Context
+	mapping        map[string]bool
+	mappingIns     map[string]*instance
+	node           *node.Node
+	mutex          sync.Mutex
+	ctx            context.Context
 }
 
 // New returns a new Manager

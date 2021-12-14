@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	"github.com/coreos/etcd/clientv3"
+	clientv3 "go.etcd.io/etcd/client/v3"
 	"github.com/jin06/binlogo/pkg/etcdclient"
 )
 

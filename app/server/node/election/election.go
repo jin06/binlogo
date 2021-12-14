@@ -6,8 +6,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/coreos/etcd/clientv3/concurrency"
-	"github.com/coreos/etcd/mvcc/mvccpb"
 	"github.com/jin06/binlogo/configs"
 	"github.com/jin06/binlogo/pkg/etcdclient"
 	"github.com/jin06/binlogo/pkg/node/role"
@@ -15,6 +13,8 @@ import (
 	node2 "github.com/jin06/binlogo/pkg/store/model/node"
 	"github.com/jin06/binlogo/pkg/watcher/str"
 	"github.com/sirupsen/logrus"
+	"go.etcd.io/etcd/api/v3/mvccpb"
+	"go.etcd.io/etcd/client/v3/concurrency"
 )
 
 // Election for leader node election

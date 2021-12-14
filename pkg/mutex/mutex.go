@@ -8,7 +8,7 @@ import (
 	//"github.com/jin06/binlogo/pkg/store/etcd"
 	"time"
 
-	"github.com/coreos/etcd/clientv3/concurrency"
+	"go.etcd.io/etcd/client/v3/concurrency"
 )
 
 // Mutex Distributed lock encapsulating etcd

@@ -6,7 +6,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/coreos/etcd/clientv3"
+	clientv3 "go.etcd.io/etcd/client/v3"
 	options2 "github.com/jin06/binlogo/pkg/store/etcd/options"
 	model2 "github.com/jin06/binlogo/pkg/store/model"
 	"github.com/sirupsen/logrus"

@@ -1,7 +1,7 @@
 package watcher
 
 import (
-	"github.com/coreos/etcd/clientv3"
+	clientv3 "go.etcd.io/etcd/client/v3"
 )
 
 // Event watcher event

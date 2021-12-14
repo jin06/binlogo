@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/coreos/etcd/clientv3"
+	clientv3 "go.etcd.io/etcd/client/v3"
 	"github.com/jin06/binlogo/configs"
 	"github.com/jin06/binlogo/pkg/store/model/event"
 )
