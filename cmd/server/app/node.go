@@ -13,7 +13,13 @@ import (
 )
 
 // RunNode run node.
-func RunNode() (err error) {
+func RunNode(c context.Context) (resCtx context.Context,  error) {
+	resCtx, cancel := context.WithCancel(c)
+	defer func ()  {
+		if err != nil {
+			cancel()
+		}		
+	}()
 	nModel := &node.Node{
 		Name:       configs.NodeName,
 		Version:    configs.VERSITON,
@@ -44,8 +50,9 @@ func RunNode() (err error) {
 		return
 	}
 	go func() {
+		cancel()
 		for {
-			ctx := context.Background()
+			ctx, _ := context.WithCancel(c)
 			ch := make(chan error, 1)
 			go func() {
 				defer func() {

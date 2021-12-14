@@ -1,6 +1,7 @@
 package app
 
 import (
+	"context"
 	"fmt"
 	"os"
 
@@ -29,16 +30,24 @@ func NewCommand() (cmd *cobra.Command) {
 			cfg, _ := cmd.Flags().GetString("config")
 			Init(cfg)
 			RunEvent()
-			if err := RunNode(); err != nil {
+			var nodeCtx context.Context
+			var err error
+			if nodeCtx, err = RunNode(context.Background()); err != nil {
 				fmt.Println(err.Error())
 				os.Exit(1)
 			}
 			event.Event(event2.NewInfoNode("Run node success"))
-			if err := RunConsole(); err != nil {
+			if err = RunConsole(context.Background()); err != nil {
 				fmt.Println(err.Error())
 				os.Exit(1)
 			}
-			select {}
+			select {
+			case <-nodeCtx.Done():
+				{
+					fmt.Println("node exit")
+					return
+				}
+			}
 		},
 	}
 
