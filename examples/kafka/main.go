@@ -8,10 +8,10 @@ import (
 
 func main() {
 	addr := []string{
-		//"",
-		"kafka-apple.shan-dev.svc.cluster.local:9092",
+		//"127.0.0.1:9092",
+		"kafka-banana.shan.svc.cluster.local:9092",
 	}
-	topic := "test-kafka"
+	topic := "product_incr_release2"
 	cfg := sarama.NewConfig()
 	cfg.ClientID = "test123"
 	consume, err := sarama.NewConsumer(addr, cfg)

@@ -15,11 +15,11 @@ import (
 // If there is a pipeline bound to the current node, run an instance
 // will also stop inbound instance on the current node
 type Manager struct {
-	mapping        map[string]bool
-	mappingIns     map[string]*instance
-	node           *node.Node
-	mutex          sync.Mutex
-	ctx            context.Context
+	mapping    map[string]bool
+	mappingIns map[string]*instance
+	node       *node.Node
+	mutex      sync.Mutex
+	ctx        context.Context
 }
 
 // New returns a new Manager
@@ -109,8 +109,12 @@ func (m *Manager) dispatch() {
 			if !isExist {
 				newIns := newInstance(pName, m.node.Name)
 				m.mappingIns[pName] = newIns
+				go m.mappingIns[pName].start(m.ctx)
+			} else {
+				if m.mappingIns[pName].StartTime().Add(5 * time.Second).Before(time.Now()) {
+					go m.mappingIns[pName].start(m.ctx)
+				}
 			}
-			go m.mappingIns[pName].start()
 		}
 		if !shouldRun {
 			if isExist {

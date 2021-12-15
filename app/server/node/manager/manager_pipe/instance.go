@@ -3,6 +3,9 @@ package manager_pipe
 import (
 	"context"
 	"errors"
+	"sync"
+	"time"
+
 	"github.com/jin06/binlogo/app/pipeline/pipeline"
 	"github.com/jin06/binlogo/pkg/event"
 	"github.com/jin06/binlogo/pkg/register"
@@ -11,19 +14,18 @@ import (
 	event2 "github.com/jin06/binlogo/pkg/store/model/event"
 	pipeline2 "github.com/jin06/binlogo/pkg/store/model/pipeline"
 	"github.com/sirupsen/logrus"
-	"sync"
-	"time"
 )
 
 type instance struct {
-	pipeName string
-	nodeName string
-	pipeIns  *pipeline.Pipeline
-	pipeInfo *pipeline2.Pipeline
-	pipeReg  *register.Register
-	cancel   context.CancelFunc
-	status   status
-	mutex    sync.Mutex
+	pipeName  string
+	nodeName  string
+	pipeIns   *pipeline.Pipeline
+	pipeInfo  *pipeline2.Pipeline
+	pipeReg   *register.Register
+	cancel    context.CancelFunc
+	status    status
+	mutex     sync.Mutex
+	startTime time.Time
 }
 
 type status byte
@@ -35,10 +37,11 @@ const (
 
 func newInstance(pipeName string, nodeName string) *instance {
 	ins := &instance{
-		pipeName: pipeName,
-		nodeName: nodeName,
-		mutex:    sync.Mutex{},
-		status:   STATUS_STOP,
+		pipeName:  pipeName,
+		nodeName:  nodeName,
+		mutex:     sync.Mutex{},
+		status:    STATUS_STOP,
+		startTime: time.Time{},
 	}
 	return ins
 }
@@ -82,6 +85,7 @@ func (i *instance) init() (err error) {
 }
 
 func (i *instance) start(c context.Context) (err error) {
+	i.startTime = time.Now()
 	if i.status == STATUS_RUN {
 		return
 	}
@@ -108,7 +112,7 @@ func (i *instance) start(c context.Context) (err error) {
 	event.Event(event2.NewInfoPipeline(i.pipeName, "Pipeline instance start success"))
 
 	select {
-	case <- c.Done():
+	case <-c.Done():
 		{
 			return
 		}
@@ -128,6 +132,7 @@ func (i *instance) start(c context.Context) (err error) {
 }
 
 func (i *instance) stop() {
+	i.startTime = time.Time{}
 	if i.status == STATUS_STOP {
 		return
 	}
@@ -137,4 +142,9 @@ func (i *instance) stop() {
 	i.cancel()
 	logrus.Info("pipeline instance stop: ", i.pipeName)
 	return
+}
+
+// StartTime returns instance start time
+func (i *instance) StartTime() time.Time {
+	return i.startTime
 }
