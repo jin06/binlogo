@@ -9,7 +9,6 @@ import (
 func main() {
 	addr := []string{
 		//"127.0.0.1:9092",
-		"kafka-banana.shan.svc.cluster.local:9092",
 	}
 	topic := "product_incr_release2"
 	cfg := sarama.NewConfig()

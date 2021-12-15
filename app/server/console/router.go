@@ -1,6 +1,8 @@
 package console
 
 import (
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/jin06/binlogo/app/server/console/handler/cluster"
 	"github.com/jin06/binlogo/app/server/console/handler/event"
@@ -9,10 +11,11 @@ import (
 	"github.com/jin06/binlogo/app/server/console/handler/pipeline"
 	"github.com/jin06/binlogo/app/server/console/handler/position"
 	mid "github.com/jin06/binlogo/app/server/console/middleware"
-	"net/http"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 func router(g *gin.Engine) {
+	g.GET("/metrics", gin.WrapH(promhttp.Handler()))
 	g.Use(mid.Cors)
 
 	g.GET("/", func(c *gin.Context) {

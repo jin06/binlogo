@@ -3,6 +3,8 @@ package output
 import (
 	"context"
 	"errors"
+	"time"
+
 	message2 "github.com/jin06/binlogo/app/pipeline/message"
 	sender2 "github.com/jin06/binlogo/app/pipeline/output/sender"
 	"github.com/jin06/binlogo/app/pipeline/output/sender/http"
@@ -11,11 +13,13 @@ import (
 	"github.com/jin06/binlogo/app/pipeline/output/sender/redis"
 	"github.com/jin06/binlogo/app/pipeline/output/sender/rocketmq"
 	stdout2 "github.com/jin06/binlogo/app/pipeline/output/sender/stdout"
+	"github.com/jin06/binlogo/configs"
 	"github.com/jin06/binlogo/pkg/event"
+	prometheus2 "github.com/jin06/binlogo/pkg/promethues"
 	"github.com/jin06/binlogo/pkg/store/dao/dao_pipe"
 	event2 "github.com/jin06/binlogo/pkg/store/model/event"
 	"github.com/jin06/binlogo/pkg/store/model/pipeline"
-	"time"
+	"github.com/prometheus/client_golang/prometheus"
 )
 
 // Output handle message output
@@ -70,9 +74,9 @@ func recordPosition(msg *message2.Message) (err error) {
 	return
 }
 
-func (o *Output) loopHandle(ctx context.Context, msg *message2.Message) {
-	for {
-		err := o.handle(msg)
+func (o *Output) loopHandle(ctx context.Context, msg *message2.Message) (err error) {
+	for i := 0; i < 3; i++ {
+		err = o.handle(msg)
 		if err == nil {
 			return
 		}
@@ -87,6 +91,7 @@ func (o *Output) loopHandle(ctx context.Context, msg *message2.Message) {
 			}
 		}
 	}
+	return
 }
 
 func (o *Output) handle(msg *message2.Message) (err error) {
@@ -140,7 +145,9 @@ func (o *Output) Run(ctx context.Context) (err error) {
 	myCtx, cancel := context.WithCancel(ctx)
 	o.ctx = myCtx
 	go func() {
+		counterSend := prometheus2.RegisterPipelineCounter(o.Options.PipelineName, "message_send")
 		defer func() {
+			prometheus.Unregister(counterSend)
 			cancel()
 		}()
 		for {
@@ -151,7 +158,10 @@ func (o *Output) Run(ctx context.Context) (err error) {
 				}
 			case msg := <-o.InChan:
 				{
-					o.loopHandle(ctx, msg)
+					counterSend.With(prometheus.Labels{"pipeline": o.Options.PipelineName, "node": configs.NodeName}).Inc()
+					if err1 := o.loopHandle(ctx, msg); err1 != nil {
+						return
+					}
 				}
 			}
 		}

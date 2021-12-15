@@ -5,19 +5,23 @@ import (
 	"github.com/go-mysql-org/go-mysql/mysql"
 	"github.com/go-mysql-org/go-mysql/replication"
 	"github.com/jin06/binlogo/app/pipeline/message"
+	"github.com/jin06/binlogo/configs"
 	"github.com/jin06/binlogo/pkg/store/model/pipeline"
+	"github.com/prometheus/client_golang/prometheus"
 )
 
 type canalHandler struct {
 	canal.DummyEventHandler
-	ch   chan *message.Message
-	pipe *pipeline.Pipeline
-	msg  *message.Message
+	ch      chan *message.Message
+	pipe    *pipeline.Pipeline
+	msg     *message.Message
+	counter *prometheus.CounterVec
 }
 
 func (h *canalHandler) OnRow(e *canal.RowsEvent) error {
 	msg := rowsMessage(e)
 	h.msg = msg
+	h.counter.With(prometheus.Labels{"pipeline": h.pipe.Name, "node": configs.NodeName}).Inc()
 	return nil
 }
 func (h *canalHandler) OnTableChanged(schema string, table string) error {
