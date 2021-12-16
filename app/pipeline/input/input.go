@@ -10,12 +10,10 @@ import (
 	"github.com/go-mysql-org/go-mysql/mysql"
 	message2 "github.com/jin06/binlogo/app/pipeline/message"
 	"github.com/jin06/binlogo/pkg/event"
-	prometheus2 "github.com/jin06/binlogo/pkg/promethues"
 	"github.com/jin06/binlogo/pkg/store/dao/dao_pipe"
 	event2 "github.com/jin06/binlogo/pkg/store/model/event"
 	"github.com/jin06/binlogo/pkg/store/model/node"
 	"github.com/jin06/binlogo/pkg/store/model/pipeline"
-	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 )
 
@@ -127,11 +125,9 @@ func (r *Input) runCanal() (err error) {
 				return
 			}
 		}
-		counter := prometheus2.RegisterPipelineCounter(r.Options.PipeName, "message_total")
 		r.canal.SetEventHandler(&canalHandler{
-			ch:      r.OutChan,
-			pipe:    r.pipe,
-			counter: counter,
+			ch:   r.OutChan,
+			pipe: r.pipe,
 		})
 		//go r.canal.StartFromGTID(canGTID)
 		go func() {
@@ -139,7 +135,6 @@ func (r *Input) runCanal() (err error) {
 			if startErr != nil {
 				event.Event(event2.NewErrorPipeline(r.Options.PipeName, "Start mysql replication error: "+startErr.Error()))
 			}
-			prometheus.Unregister(counter)
 		}()
 		return
 	}
@@ -161,12 +156,10 @@ func (r *Input) runCanal() (err error) {
 				pos.BinlogPosition,
 			}
 		}
-		counter := prometheus2.RegisterPipelineCounter(r.Options.PipeName, "message_total")
 		//logrus.Debugln(pos)
 		r.canal.SetEventHandler(&canalHandler{
-			ch:      r.OutChan,
-			pipe:    r.pipe,
-			counter: counter,
+			ch:   r.OutChan,
+			pipe: r.pipe,
 		})
 		//go r.canal.RunFrom(canPos)
 		go func() {
@@ -175,7 +168,6 @@ func (r *Input) runCanal() (err error) {
 				fmt.Println(startErr)
 				event.Event(event2.NewErrorPipeline(r.Options.PipeName, "Start mysql replication error: "+startErr.Error()))
 			}
-			prometheus.Unregister(counter)
 		}()
 		return
 	}

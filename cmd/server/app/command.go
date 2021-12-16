@@ -7,6 +7,7 @@ import (
 
 	"github.com/jin06/binlogo/configs"
 	"github.com/jin06/binlogo/pkg/event"
+	"github.com/jin06/binlogo/pkg/promeths"
 	event2 "github.com/jin06/binlogo/pkg/store/model/event"
 	"github.com/spf13/cobra"
 )
@@ -29,6 +30,7 @@ func NewCommand() (cmd *cobra.Command) {
 		Run: func(cmd *cobra.Command, args []string) {
 			cfg, _ := cmd.Flags().GetString("config")
 			Init(cfg)
+			promeths.Init()
 			RunEvent()
 			var nodeCtx context.Context
 			var err error

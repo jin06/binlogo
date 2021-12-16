@@ -78,6 +78,9 @@ github.com/go-redis/redis/v8/internal/util
 # github.com/go-resty/resty/v2 v2.7.0
 ## explicit
 github.com/go-resty/resty/v2
+# github.com/go-sql-driver/mysql v1.6.0
+## explicit
+github.com/go-sql-driver/mysql
 # github.com/gogap/errors v0.0.0-20210818113853-edfbba0ddea9
 ## explicit
 github.com/gogap/errors

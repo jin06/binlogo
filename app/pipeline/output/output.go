@@ -15,7 +15,7 @@ import (
 	stdout2 "github.com/jin06/binlogo/app/pipeline/output/sender/stdout"
 	"github.com/jin06/binlogo/configs"
 	"github.com/jin06/binlogo/pkg/event"
-	prometheus2 "github.com/jin06/binlogo/pkg/promethues"
+	"github.com/jin06/binlogo/pkg/promeths"
 	"github.com/jin06/binlogo/pkg/store/dao/dao_pipe"
 	event2 "github.com/jin06/binlogo/pkg/store/model/event"
 	"github.com/jin06/binlogo/pkg/store/model/pipeline"
@@ -145,9 +145,7 @@ func (o *Output) Run(ctx context.Context) (err error) {
 	myCtx, cancel := context.WithCancel(ctx)
 	o.ctx = myCtx
 	go func() {
-		counterSend := prometheus2.RegisterPipelineCounter(o.Options.PipelineName, "message_send")
 		defer func() {
-			prometheus.Unregister(counterSend)
 			cancel()
 		}()
 		for {
@@ -158,10 +156,12 @@ func (o *Output) Run(ctx context.Context) (err error) {
 				}
 			case msg := <-o.InChan:
 				{
-					counterSend.With(prometheus.Labels{"pipeline": o.Options.PipelineName, "node": configs.NodeName}).Inc()
 					if err1 := o.loopHandle(ctx, msg); err1 != nil {
 						return
 					}
+					promeths.MessageSendCounter.With(prometheus.Labels{"pipeline": o.Options.PipelineName, "node": configs.NodeName}).Inc()
+					pass := uint32(time.Now().Unix()) - msg.Content.Head.Time
+					promeths.MessageSendHistogram.With(prometheus.Labels{"pipeline": o.Options.PipelineName, "node": configs.NodeName}).Observe(float64(pass))
 				}
 			}
 		}

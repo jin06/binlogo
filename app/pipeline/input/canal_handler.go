@@ -6,22 +6,24 @@ import (
 	"github.com/go-mysql-org/go-mysql/replication"
 	"github.com/jin06/binlogo/app/pipeline/message"
 	"github.com/jin06/binlogo/configs"
+	"github.com/jin06/binlogo/pkg/promeths"
 	"github.com/jin06/binlogo/pkg/store/model/pipeline"
 	"github.com/prometheus/client_golang/prometheus"
 )
 
 type canalHandler struct {
 	canal.DummyEventHandler
-	ch      chan *message.Message
-	pipe    *pipeline.Pipeline
-	msg     *message.Message
-	counter *prometheus.CounterVec
+	ch   chan *message.Message
+	pipe *pipeline.Pipeline
+	msg  *message.Message
 }
 
 func (h *canalHandler) OnRow(e *canal.RowsEvent) error {
+	// fmt.Println(e.Rows)
 	msg := rowsMessage(e)
 	h.msg = msg
-	h.counter.With(prometheus.Labels{"pipeline": h.pipe.Name, "node": configs.NodeName}).Inc()
+	promeths.MessageTotalCounter.With(prometheus.Labels{"pipeline": h.pipe.Name, "node": configs.NodeName}).Inc()
+
 	return nil
 }
 func (h *canalHandler) OnTableChanged(schema string, table string) error {
@@ -30,6 +32,7 @@ func (h *canalHandler) OnTableChanged(schema string, table string) error {
 	return nil
 }
 func (h *canalHandler) OnPosSynced(pos mysql.Position, set mysql.GTIDSet, force bool) error {
+	// fmt.Println("on pos synced", set)
 	if h.msg != nil {
 		h.msg.BinlogPosition = &pipeline.Position{
 			BinlogFile:     pos.Name,
@@ -54,6 +57,7 @@ func (h *canalHandler) OnRotate(e *replication.RotateEvent) error {
 }
 
 func (h *canalHandler) OnXID(p mysql.Position) error {
+	// fmt.Println("-------> on xid")
 	//if h.msg != nil {
 	//	fmt.Println("on xid ", p)
 	//}
