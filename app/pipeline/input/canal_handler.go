@@ -25,9 +25,9 @@ func (h *canalHandler) OnRow(e *canal.RowsEvent) error {
 	}
 	// fmt.Println("---> ", len(e.Rows))
 	// fmt.Println(e.Header.LogPos)
-	msg := rowsMessage(e)
+	msgs := rowsMessage(e)
 	// h.msg = msg
-	h.messages = append(h.messages, msg)
+	h.messages = append(h.messages, msgs...)
 	promeths.MessageTotalCounter.With(prometheus.Labels{"pipeline": h.pipe.Name, "node": configs.NodeName}).Inc()
 
 	return nil
@@ -39,7 +39,7 @@ func (h *canalHandler) OnTableChanged(schema string, table string) error {
 }
 func (h *canalHandler) OnPosSynced(pos mysql.Position, set mysql.GTIDSet, force bool) error {
 	defer func() {
-		h.messages = []*message.Message{}
+		h.messages = nil
 	}()
 	// fmt.Println("on pos synced", set)
 	if h.messages == nil {

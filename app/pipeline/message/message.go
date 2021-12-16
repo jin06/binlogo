@@ -53,6 +53,7 @@ type Head struct {
 	Database string             `json:"database"`
 	Table    string             `json:"table"`
 	Position *pipeline.Position `json:"position"`
+	Xid      int                `json:"xid"`
 }
 
 // Json marshal message to json data
