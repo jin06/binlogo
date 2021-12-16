@@ -13,15 +13,21 @@ import (
 
 type canalHandler struct {
 	canal.DummyEventHandler
-	ch   chan *message.Message
-	pipe *pipeline.Pipeline
-	msg  *message.Message
+	ch       chan *message.Message
+	pipe     *pipeline.Pipeline
+	messages []*message.Message
 }
 
 func (h *canalHandler) OnRow(e *canal.RowsEvent) error {
 	// fmt.Println(e.Rows)
+	if h.messages == nil {
+		h.messages = []*message.Message{}
+	}
+	// fmt.Println("---> ", len(e.Rows))
+	// fmt.Println(e.Header.LogPos)
 	msg := rowsMessage(e)
-	h.msg = msg
+	// h.msg = msg
+	h.messages = append(h.messages, msg)
 	promeths.MessageTotalCounter.With(prometheus.Labels{"pipeline": h.pipe.Name, "node": configs.NodeName}).Inc()
 
 	return nil
@@ -32,23 +38,28 @@ func (h *canalHandler) OnTableChanged(schema string, table string) error {
 	return nil
 }
 func (h *canalHandler) OnPosSynced(pos mysql.Position, set mysql.GTIDSet, force bool) error {
+	defer func() {
+		h.messages = []*message.Message{}
+	}()
 	// fmt.Println("on pos synced", set)
-	if h.msg != nil {
-		h.msg.BinlogPosition = &pipeline.Position{
+	if h.messages == nil {
+		return nil
+	}
+	for _, v := range h.messages {
+		msg := v
+		msg.BinlogPosition = &pipeline.Position{
 			BinlogFile:     pos.Name,
 			BinlogPosition: pos.Pos,
 			PipelineName:   h.pipe.Name,
 		}
 		//fmt.Println("on pos synced" ,set)
 		if set != nil {
-			h.msg.BinlogPosition.GTIDSet = set.String()
+			msg.BinlogPosition.GTIDSet = set.String()
 		}
-		h.msg.Content.Head.Position = h.msg.BinlogPosition
+		msg.Content.Head.Position = msg.BinlogPosition
 		//
-		h.ch <- h.msg
-		h.msg = nil
+		h.ch <- msg
 	}
-	//fmt.Println(pos)
 	return nil
 }
 
