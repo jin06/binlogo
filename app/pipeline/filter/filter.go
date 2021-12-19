@@ -2,7 +2,6 @@ package filter
 
 import (
 	"context"
-
 	message2 "github.com/jin06/binlogo/app/pipeline/message"
 	"github.com/sirupsen/logrus"
 )

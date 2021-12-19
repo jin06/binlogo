@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 	"errors"
 
-	clientv3 "go.etcd.io/etcd/client/v3"
 	"github.com/jin06/binlogo/pkg/etcdclient"
 	"github.com/jin06/binlogo/pkg/store/model/pipeline"
+	clientv3 "go.etcd.io/etcd/client/v3"
 )
 
 // PositionPrefix returns etcd prefix of pipeline position

@@ -8,6 +8,7 @@ import (
 type Options struct {
 	Output       *pipeline.Output
 	PipelineName string
+	MysqlMode    pipeline.Mode
 }
 
 // Option is a function for configure Options
@@ -24,5 +25,12 @@ func OptionOutput(val *pipeline.Output) Option {
 func OptionPipeName(name string) Option {
 	return func(options *Options) {
 		options.PipelineName = name
+	}
+}
+
+// OptionPipeMode sets mysql mode
+func OptionMysqlMode(mode pipeline.Mode) Option {
+	return func(options *Options) {
+		options.MysqlMode = mode
 	}
 }

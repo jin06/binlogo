@@ -21,10 +21,9 @@ type STATUS int16
 
 // Message basic message for pipeline handle
 type Message struct {
-	Status         int16
-	Filter         bool
-	BinlogPosition *pipeline.Position
-	Content        *Content
+	Status  int16
+	Filter  bool
+	Content *Content
 }
 
 // New return a new message
@@ -53,7 +52,6 @@ type Head struct {
 	Database string             `json:"database"`
 	Table    string             `json:"table"`
 	Position *pipeline.Position `json:"position"`
-	Xid      int                `json:"xid"`
 }
 
 // Json marshal message to json data
@@ -81,12 +79,10 @@ func (msg *Message) JsonContent() (string, error) {
 func (msg *Message) ToString() string {
 	res := "Status: " + fmt.Sprintf("%v\n", msg.Status)
 	res += "Filter: " + fmt.Sprintf("%v\n", msg.Filter)
-	if msg.BinlogPosition != nil {
-		res += "BinlogPosition.File: " + fmt.Sprintf("%v\n", msg.BinlogPosition.BinlogFile)
-		res += "BinlogPosition.Pos: " + fmt.Sprintf("%v\n", msg.BinlogPosition.BinlogPosition)
-		res += "BinlogPosition.GTID: " + fmt.Sprintf("%v\n", msg.BinlogPosition.GTIDSet)
-	}
 	if msg.Content != nil {
+		res += "BinlogPosition.File: " + fmt.Sprintf("%v\n", msg.Content.Head.Position.BinlogFile)
+		res += "BinlogPosition.Pos: " + fmt.Sprintf("%v\n", msg.Content.Head.Position.BinlogPosition)
+		res += "BinlogPosition.GTID: " + fmt.Sprintf("%v\n", msg.Content.Head.Position.GTIDSet)
 		res += "Content.Head: " + fmt.Sprintf("%v\n", msg.Content.Head)
 		res += "Content.Data: " + fmt.Sprintf("%v\n", msg.Content.Data)
 	}

@@ -108,6 +108,7 @@ func (p *Pipeline) initOutput() (err error) {
 	p.Output, err = output2.New(
 		output2.OptionOutput(p.Options.Pipeline.Output),
 		output2.OptionPipeName(p.Options.Pipeline.Name),
+		output2.OptionMysqlMode(p.Options.Pipeline.Mysql.Mode),
 	)
 	p.Output.InChan = p.OutChan.Filter
 	return

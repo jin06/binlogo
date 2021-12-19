@@ -102,25 +102,35 @@ func (r *Input) prepareCanal() (err error) {
 }
 
 func (r *Input) runCanal() (err error) {
-	pos, err := dao_pipe.GetPosition(r.Options.PipeName)
+	record, err := dao_pipe.GetRecord(r.Options.PipeName)
 	if err != nil {
 		return
 	}
-
 	if r.pipe.Mysql.Mode == pipeline.MODE_GTID {
 		var canGTID mysql.GTIDSet
-		if pos != nil {
-			if pos.GTIDSet != "" {
-				canGTID, err = mysql.ParseGTIDSet(r.pipe.Mysql.Flavor.YaString(), pos.GTIDSet)
-				if err != nil {
-					return
+		if record != nil {
+			if record.Pre != nil {
+				if record.Pre.GTIDSet != "" {
+					canGTID, err = mysql.ParseGTIDSet(r.pipe.Mysql.Flavor.YaString(), record.Pre.GTIDSet)
+					if err != nil {
+						return
+					}
 				}
 			}
 		}
 
 		if canGTID == nil {
-			pos = &pipeline.Position{}
 			canGTID, err = r.canal.GetMasterGTIDSet()
+			if err != nil {
+				return
+			}
+			err = dao_pipe.UpdateRecord(&pipeline.RecordPosition{
+				PipelineName: r.Options.PipeName,
+				Pre: &pipeline.Position{
+					GTIDSet:      canGTID.String(),
+					PipelineName: r.Options.PipeName,
+				},
+			})
 			if err != nil {
 				return
 			}
@@ -141,19 +151,32 @@ func (r *Input) runCanal() (err error) {
 
 	if r.pipe.Mysql.Mode == pipeline.MODE_POSITION {
 		logrus.Debugln("Run pipeline in mode position", r.Options.PipeName)
-		var canPos mysql.Position
-		if pos == nil {
-			pos = &pipeline.Position{}
-			logrus.Warn("Empty binlog file")
-			canPos, err = r.canal.GetMasterPos()
+		var canPos *mysql.Position
+		if record != nil {
+			if record.Pre != nil {
+				canPos = &mysql.Position{
+					Name: record.Pre.BinlogFile,
+					Pos:  record.Pre.BinlogPosition,
+				}
+			}
+		}
+		if canPos == nil {
+			canPos = &mysql.Position{}
+			*canPos, err = r.canal.GetMasterPos()
 			if err != nil {
 				logrus.Errorln(err)
 				return
 			}
-		} else {
-			canPos = mysql.Position{
-				pos.BinlogFile,
-				pos.BinlogPosition,
+			err = dao_pipe.UpdateRecord(&pipeline.RecordPosition{
+				PipelineName: r.Options.PipeName,
+				Pre: &pipeline.Position{
+					BinlogFile:     canPos.Name,
+					BinlogPosition: canPos.Pos,
+					PipelineName:   r.Options.PipeName,
+				},
+			})
+			if err != nil {
+				return
 			}
 		}
 		//logrus.Debugln(pos)
@@ -163,7 +186,7 @@ func (r *Input) runCanal() (err error) {
 		})
 		//go r.canal.RunFrom(canPos)
 		go func() {
-			startErr := r.canal.RunFrom(canPos)
+			startErr := r.canal.RunFrom(*canPos)
 			if startErr != nil {
 				fmt.Println(startErr)
 				event.Event(event2.NewErrorPipeline(r.Options.PipeName, "Start mysql replication error: "+startErr.Error()))

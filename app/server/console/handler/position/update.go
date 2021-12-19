@@ -33,7 +33,15 @@ func Update(c *gin.Context) {
 	switch q.Mode {
 	case pipeline.MODE_GTID:
 		{
-			ok, err := dao_pipe.UpdatePositionSafe(q.Position.PipelineName, pipeline.WithGTIDSet(q.Position.GTIDSet))
+			var ok bool
+			ok, err = dao_pipe.UpdateRecordSafe(
+				q.Position.PipelineName,
+				pipeline.WithPre(&pipeline.Position{
+					PipelineName: q.Position.PipelineName,
+					GTIDSet:      q.Position.GTIDSet,
+				}),
+				pipeline.WithNow(nil),
+			)
 			if err != nil || !ok {
 				c.JSON(200, handler.Fail("update failed "+err.Error()))
 				return
@@ -41,7 +49,16 @@ func Update(c *gin.Context) {
 		}
 	case pipeline.MODE_POSITION:
 		{
-			ok, err := dao_pipe.UpdatePositionSafe(q.Position.PipelineName, pipeline.WithBinlogFile(q.Position.BinlogFile), pipeline.WithPos(q.Position.BinlogPosition))
+			var ok bool
+			ok, err = dao_pipe.UpdateRecordSafe(
+				q.Position.PipelineName,
+				pipeline.WithPre(&pipeline.Position{
+					BinlogFile:     q.Position.BinlogFile,
+					BinlogPosition: q.Position.BinlogPosition,
+					PipelineName:   q.Position.PipelineName,
+				}),
+				pipeline.WithNow(nil),
+			)
 			if err != nil || !ok {
 				c.JSON(200, handler.Fail("update failed "+err.Error()))
 				return

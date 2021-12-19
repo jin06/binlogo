@@ -28,7 +28,6 @@ func (h *canalHandler) OnRow(e *canal.RowsEvent) error {
 	msgs := rowsMessage(e)
 	// h.msg = msg
 	h.messages = append(h.messages, msgs...)
-	promeths.MessageTotalCounter.With(prometheus.Labels{"pipeline": h.pipe.Name, "node": configs.NodeName}).Inc()
 
 	return nil
 }
@@ -45,20 +44,20 @@ func (h *canalHandler) OnPosSynced(pos mysql.Position, set mysql.GTIDSet, force 
 	if h.messages == nil {
 		return nil
 	}
-	for _, v := range h.messages {
-		msg := v
-		msg.BinlogPosition = &pipeline.Position{
-			BinlogFile:     pos.Name,
-			BinlogPosition: pos.Pos,
-			PipelineName:   h.pipe.Name,
-		}
+	total := len(h.messages)
+	for i := 0; i < total; i++ {
+		msg := h.messages[i]
+		msg.Content.Head.Position.BinlogPosition = pos.Pos
+		msg.Content.Head.Position.BinlogFile = pos.Name
+		msg.Content.Head.Position.PipelineName = h.pipe.Name
+		msg.Content.Head.Position.TotalRows = total
+		msg.Content.Head.Position.ConsumeRows = i + 1
 		//fmt.Println("on pos synced" ,set)
 		if set != nil {
-			msg.BinlogPosition.GTIDSet = set.String()
+			msg.Content.Head.Position.GTIDSet = set.String()
 		}
-		msg.Content.Head.Position = msg.BinlogPosition
-		//
 		h.ch <- msg
+		promeths.MessageTotalCounter.With(prometheus.Labels{"pipeline": h.pipe.Name, "node": configs.NodeName}).Inc()
 	}
 	return nil
 }

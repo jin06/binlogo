@@ -2,6 +2,7 @@ package promeths
 
 import (
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
 
@@ -12,6 +13,7 @@ var (
 )
 
 func Init() {
+	logrus.Info("init prometheus")
 	pipelineLabels := []string{"pipeline", "node"}
 	nameSpace := "binlogo"
 	subSystem := viper.GetString("cluster.name")

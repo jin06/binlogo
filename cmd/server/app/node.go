@@ -14,6 +14,7 @@ import (
 
 // RunNode run node.
 func RunNode(c context.Context) (resCtx context.Context, err error) {
+	logrus.Info("init node")
 	resCtx, cancel := context.WithCancel(c)
 	defer func() {
 		if err != nil {
@@ -55,19 +56,22 @@ func RunNode(c context.Context) (resCtx context.Context, err error) {
 			ctx, _ := context.WithCancel(c)
 			ch := make(chan error, 1)
 			go func() {
+				var nodeError error
 				defer func() {
 					if r := recover(); r != nil {
 						logrus.Errorln("run node panic, ", r)
-						ch <- errors.New("panic")
+						nodeError = errors.New("panic")
 					}
+					ch <- nodeError
 				}()
 				logrus.WithField("node name", configs.NodeName).Info("Running node")
-				ch <- _node.Run(ctx)
+				nodeError = _node.Run(ctx)
 			}()
 			errNode := <-ch
 			if errNode != nil {
 				logrus.Errorln("run node error, ", errNode)
 			}
+			close(ch)
 			time.Sleep(time.Second * 5)
 		}
 	}()

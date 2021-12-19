@@ -3,9 +3,10 @@ package stdout
 import (
 	"encoding/json"
 	"fmt"
+	"os"
+
 	message2 "github.com/jin06/binlogo/app/pipeline/message"
 	"github.com/sirupsen/logrus"
-	"os"
 )
 
 // Stdout send message to stdout
@@ -21,10 +22,10 @@ func New() (std *Stdout, err error) {
 
 // Send logic and control
 func (s *Stdout) Send(msg *message2.Message) (bool, error) {
-	_, err := fmt.Fprintln(os.Stdout, msg.ToString())
-	if err != nil {
-		logrus.Errorln(err)
-	}
+	// _, err := fmt.Fprintln(os.Stdout, msg.ToString())
+	// if err != nil {
+	// 	logrus.Errorln(err)
+	// }
 	b, err := json.Marshal(msg.Content)
 	if err != nil {
 		logrus.Errorln(err)
@@ -33,6 +34,5 @@ func (s *Stdout) Send(msg *message2.Message) (bool, error) {
 	if err != nil {
 		logrus.Errorln(err)
 	}
-
 	return true, nil
 }

@@ -29,6 +29,7 @@ type Output struct {
 	Sender  sender2.Sender
 	Options *Options
 	ctx     context.Context
+	record  *pipeline.RecordPosition
 }
 
 // New return a Output object
@@ -64,22 +65,13 @@ func (o *Output) init() (err error) {
 	return
 }
 
-func recordPosition(msg *message2.Message) (err error) {
-	//logrus.Debugf(
-	//	"Record new replication position, file %s, pos %v",
-	//	msg.BinlogPosition.BinlogFile,
-	//	msg.BinlogPosition.BinlogPosition,
-	//)
-	err = dao_pipe.UpdatePosition(msg.BinlogPosition)
-	return
-}
-
 func (o *Output) loopHandle(ctx context.Context, msg *message2.Message) (err error) {
 	for i := 0; i < 3; i++ {
 		err = o.handle(msg)
 		if err == nil {
 			return
 		}
+		// time.Sleep(time.Second)
 		select {
 		case <-ctx.Done():
 			{
@@ -107,7 +99,7 @@ func (o *Output) handle(msg *message2.Message) (err error) {
 		}
 	case message2.STATUS_SEND:
 		{
-			err = recordPosition(msg)
+			err = o.syncRecord()
 			if err == nil {
 				msg.Status = message2.STATUS_RECORD
 			}
@@ -127,7 +119,7 @@ func (o *Output) handle(msg *message2.Message) (err error) {
 			}
 		}
 		if err == nil {
-			err = recordPosition(msg)
+			err = o.syncRecord()
 			if err == nil {
 				msg.Status = message2.STATUS_RECORD
 			}
@@ -156,6 +148,13 @@ func (o *Output) Run(ctx context.Context) (err error) {
 				}
 			case msg := <-o.InChan:
 				{
+					check, errPrepare := o.prepareRecord(msg)
+					if errPrepare != nil {
+						return
+					}
+					if !check {
+						continue
+					}
 					if err1 := o.loopHandle(ctx, msg); err1 != nil {
 						return
 					}
@@ -172,4 +171,65 @@ func (o *Output) Run(ctx context.Context) (err error) {
 // Context return Output's context
 func (o *Output) Context() context.Context {
 	return o.ctx
+}
+
+func (o *Output) prepareRecord(msg *message2.Message) (pass bool, err error) {
+	pass = true
+	if o.record == nil {
+		o.record, err = dao_pipe.GetRecord(o.Options.PipelineName)
+		if err != nil {
+			return
+		}
+		if o.record == nil {
+			o.record = &pipeline.RecordPosition{
+				PipelineName: o.Options.PipelineName,
+				Pre:          msg.Content.Head.Position,
+				Now:          msg.Content.Head.Position,
+			}
+			return
+		}
+	}
+	if msg.Content.Head.Position.TotalRows == msg.Content.Head.Position.ConsumeRows {
+		o.record = &pipeline.RecordPosition{
+			PipelineName: o.Options.PipelineName,
+			Pre:          msg.Content.Head.Position,
+			Now:          msg.Content.Head.Position,
+		}
+		return
+	}
+	if o.record.Pre == nil {
+		o.record.Pre = msg.Content.Head.Position
+	}
+	if o.record.Now == nil {
+		o.record.Now = msg.Content.Head.Position
+		return
+	}
+	switch o.Options.MysqlMode {
+	case pipeline.MODE_GTID:
+		{
+			if o.record.Now.GTIDSet != msg.Content.Head.Position.GTIDSet {
+				o.record.Now = msg.Content.Head.Position
+				return
+			}
+		}
+	case pipeline.MODE_POSITION:
+		{
+			if o.record.Now.BinlogFile != msg.Content.Head.Position.BinlogFile ||
+				o.record.Now.BinlogPosition != msg.Content.Head.Position.BinlogPosition {
+				o.record.Now = msg.Content.Head.Position
+				return
+			}
+		}
+	}
+	if o.record.Now.ConsumeRows < msg.Content.Head.Position.ConsumeRows {
+		o.record.Now = msg.Content.Head.Position
+	} else {
+		pass = false
+	}
+	return
+}
+
+func (o *Output) syncRecord() (err error) {
+	err = dao_pipe.UpdateRecord(o.record)
+	return
 }

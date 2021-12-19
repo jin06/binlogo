@@ -1,14 +1,15 @@
 package input
 
 import (
+	"testing"
+	"time"
+
 	"github.com/go-mysql-org/go-mysql/canal"
 	"github.com/go-mysql-org/go-mysql/mysql"
 	"github.com/go-mysql-org/go-mysql/replication"
 	"github.com/go-mysql-org/go-mysql/schema"
 	"github.com/jin06/binlogo/app/pipeline/message"
 	"github.com/jin06/binlogo/pkg/store/model/pipeline"
-	"testing"
-	"time"
 )
 
 func TestCanalHandler(t *testing.T) {
@@ -16,7 +17,6 @@ func TestCanalHandler(t *testing.T) {
 		DummyEventHandler: canal.DummyEventHandler{},
 		ch:                make(chan *message.Message, 10),
 		pipe:              &pipeline.Pipeline{Name: "go_test_pipeline"},
-		msg:               nil,
 	}
 	t.Log(handler.String())
 	rowsEvent := &canal.RowsEvent{
