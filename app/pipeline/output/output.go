@@ -68,7 +68,9 @@ func (o *Output) init() (err error) {
 func (o *Output) loopHandle(ctx context.Context, msg *message2.Message) (err error) {
 	for i := 0; i < 3; i++ {
 		err = o.handle(msg)
-		if err == nil {
+		if err != nil {
+			promeths.MessageSendErrCounter.With(prometheus.Labels{"pipeline": o.Options.PipelineName, "node": configs.NodeName}).Inc()
+		} else {
 			return
 		}
 		// time.Sleep(time.Second)

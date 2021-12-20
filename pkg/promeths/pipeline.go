@@ -7,10 +7,11 @@ import (
 )
 
 var (
-	MessageTotalCounter  *prometheus.CounterVec
-	MessageSendCounter   *prometheus.CounterVec
-	MessageFilterCounter *prometheus.CounterVec
-	MessageSendHistogram *prometheus.HistogramVec
+	MessageTotalCounter   *prometheus.CounterVec
+	MessageSendCounter    *prometheus.CounterVec
+	MessageSendErrCounter *prometheus.CounterVec
+	MessageFilterCounter  *prometheus.CounterVec
+	MessageSendHistogram  *prometheus.HistogramVec
 )
 
 func Init() {
@@ -37,6 +38,15 @@ func Init() {
 		pipelineLabels,
 	)
 	prometheus.Register(MessageSendCounter)
+	MessageSendErrCounter = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: nameSpace,
+			Subsystem: subSystem,
+			Name:      "message_send_error",
+		},
+		pipelineLabels,
+	)
+	prometheus.Register(MessageSendErrCounter)
 	MessageFilterCounter = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
 			Namespace: nameSpace,
