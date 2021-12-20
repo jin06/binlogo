@@ -9,6 +9,7 @@ import (
 var (
 	MessageTotalCounter  *prometheus.CounterVec
 	MessageSendCounter   *prometheus.CounterVec
+	MessageFilterCounter *prometheus.CounterVec
 	MessageSendHistogram *prometheus.HistogramVec
 )
 
@@ -17,6 +18,7 @@ func Init() {
 	pipelineLabels := []string{"pipeline", "node"}
 	nameSpace := "binlogo"
 	subSystem := viper.GetString("cluster.name")
+
 	MessageTotalCounter = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
 			Namespace: nameSpace,
@@ -25,6 +27,7 @@ func Init() {
 		},
 		pipelineLabels,
 	)
+	prometheus.Register(MessageTotalCounter)
 	MessageSendCounter = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
 			Namespace: nameSpace,
@@ -33,6 +36,16 @@ func Init() {
 		},
 		pipelineLabels,
 	)
+	prometheus.Register(MessageSendCounter)
+	MessageFilterCounter = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: nameSpace,
+			Subsystem: subSystem,
+			Name:      "message_filter",
+		},
+		pipelineLabels,
+	)
+	prometheus.Register(MessageFilterCounter)
 	MessageSendHistogram = prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{
 			Namespace: nameSpace,
@@ -42,7 +55,6 @@ func Init() {
 		},
 		pipelineLabels,
 	)
-	prometheus.Register(MessageTotalCounter)
-	prometheus.Register(MessageSendCounter)
 	prometheus.Register(MessageSendHistogram)
+
 }

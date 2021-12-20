@@ -3,6 +3,9 @@ package filter
 import (
 	"context"
 	message2 "github.com/jin06/binlogo/app/pipeline/message"
+	"github.com/jin06/binlogo/configs"
+	"github.com/jin06/binlogo/pkg/promeths"
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 )
 
@@ -45,6 +48,9 @@ func (f *Filter) handle(msg *message2.Message) {
 	if err != nil {
 		logrus.Error(err)
 		return
+	}
+	if msg.Filter == true {
+		promeths.MessageFilterCounter.With(prometheus.Labels{"pipeline": f.Options.Pipe.Name, "node": configs.NodeName}).Inc()
 	}
 }
 
