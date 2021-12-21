@@ -52,7 +52,7 @@ func (r *Register) Run(ctx context.Context) {
 	r.ctx = myCtx
 	go func() {
 		defer func() {
-			if r := recover(); r != nil {
+			if re := recover(); re != nil {
 				logrus.Errorln("register panic, ", r)
 			}
 			cancel()

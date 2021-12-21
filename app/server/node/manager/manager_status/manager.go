@@ -31,14 +31,9 @@ func NewManager(n *node.Node) *Manager {
 }
 
 // Run start working
-func (m *Manager) Run(ctx context.Context) (err error) {
+func (m *Manager) Run(ctx context.Context) {
 	myCtx, cancel := context.WithCancel(ctx)
 	m.ctx = myCtx
-	if err = m.syncStatus(); err != nil {
-		logrus.Error("Sync status failed: ", err)
-		cancel()
-		return
-	}
 	go func() {
 		defer func() {
 			if r := recover(); r != nil {
@@ -46,6 +41,7 @@ func (m *Manager) Run(ctx context.Context) (err error) {
 			}
 			cancel()
 		}()
+		var err error
 		for {
 			select {
 			case <-ctx.Done():

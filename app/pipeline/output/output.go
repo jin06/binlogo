@@ -152,17 +152,21 @@ func (o *Output) Run(ctx context.Context) (err error) {
 				{
 					check, errPrepare := o.prepareRecord(msg)
 					if errPrepare != nil {
+						message2.Put(msg)
 						return
 					}
 					if !check {
+						message2.Put(msg)
 						continue
 					}
 					if err1 := o.loopHandle(ctx, msg); err1 != nil {
+						message2.Put(msg)
 						return
 					}
 					promeths.MessageSendCounter.With(prometheus.Labels{"pipeline": o.Options.PipelineName, "node": configs.NodeName}).Inc()
 					pass := uint32(time.Now().Unix()) - msg.Content.Head.Time
 					promeths.MessageSendHistogram.With(prometheus.Labels{"pipeline": o.Options.PipelineName, "node": configs.NodeName}).Observe(float64(pass))
+					message2.Put(msg)
 				}
 			}
 		}
@@ -183,34 +187,45 @@ func (o *Output) prepareRecord(msg *message2.Message) (pass bool, err error) {
 			return
 		}
 		if o.record == nil {
-			o.record = &pipeline.RecordPosition{
-				PipelineName: o.Options.PipelineName,
-				Pre:          msg.Content.Head.Position,
-				Now:          msg.Content.Head.Position,
-			}
+			o.record = pipeline.NewRecordPosition(pipeline.WithPipelineName(o.Options.PipelineName))
+			//o.record = &pipeline.RecordPosition{
+			//	PipelineName: o.Options.PipelineName,
+			//	Pre:         &pipeline.Position{},
+			//	Now:         &pipeline.Position{},
+			//}
+			*o.record.Pre = msg.Content.Head.Position
+			*o.record.Now = msg.Content.Head.Position
 			return
 		}
 	}
 	if msg.Content.Head.Position.TotalRows == msg.Content.Head.Position.ConsumeRows {
-		o.record = &pipeline.RecordPosition{
-			PipelineName: o.Options.PipelineName,
-			Pre:          msg.Content.Head.Position,
-			Now:          msg.Content.Head.Position,
-		}
+		//o.record = &pipeline.RecordPosition{
+		//	PipelineName: o.Options.PipelineName,
+		//Pre:          &msg.Content.Head.Position,
+		//Now:          &msg.Content.Head.Position,
+		//}
+		o.record = pipeline.NewRecordPosition(pipeline.WithPipelineName(o.Options.PipelineName))
+		*o.record.Pre = msg.Content.Head.Position
+		*o.record.Now = msg.Content.Head.Position
 		return
 	}
 	if o.record.Pre == nil {
-		o.record.Pre = msg.Content.Head.Position
+		//o.record.Pre = &msg.Content.Head.Position
+		o.record.Pre = &pipeline.Position{}
+		*o.record.Pre = msg.Content.Head.Position
 	}
 	if o.record.Now == nil {
-		o.record.Now = msg.Content.Head.Position
+		//o.record.Now = &msg.Content.Head.Position
+		o.record.Now = &pipeline.Position{}
+		*o.record.Now = msg.Content.Head.Position
 		return
 	}
 	switch o.Options.MysqlMode {
 	case pipeline.MODE_GTID:
 		{
 			if o.record.Now.GTIDSet != msg.Content.Head.Position.GTIDSet {
-				o.record.Now = msg.Content.Head.Position
+				*o.record.Now = msg.Content.Head.Position
+				//o.record.Now = msg.Content.Head.Position
 				return
 			}
 		}
@@ -218,13 +233,15 @@ func (o *Output) prepareRecord(msg *message2.Message) (pass bool, err error) {
 		{
 			if o.record.Now.BinlogFile != msg.Content.Head.Position.BinlogFile ||
 				o.record.Now.BinlogPosition != msg.Content.Head.Position.BinlogPosition {
-				o.record.Now = msg.Content.Head.Position
+				//o.record.Now = msg.Content.Head.Position
+				*o.record.Now = msg.Content.Head.Position
 				return
 			}
 		}
 	}
 	if o.record.Now.ConsumeRows < msg.Content.Head.Position.ConsumeRows {
-		o.record.Now = msg.Content.Head.Position
+		//o.record.Now = msg.Content.Head.Position
+		*o.record.Now = msg.Content.Head.Position
 	} else {
 		pass = false
 	}

@@ -35,12 +35,9 @@ func (m *Manager) Run(ctx context.Context) {
 	m.ctx = myCtx
 	go func() {
 		defer func() {
-			defer func() {
-				r := recover()
-				if r != nil {
-					logrus.Errorln("election manager panic, ", r)
-				}
-			}()
+			if r := recover(); r != nil {
+				logrus.Errorln("election manager panic, ", r)
+			}
 			cancel()
 		}()
 		for {
@@ -50,13 +47,14 @@ func (m *Manager) Run(ctx context.Context) {
 			)
 
 			m.election = en
-			cCtx, _ := context.WithCancel(myCtx)
+			cCtx, cCancel := context.WithCancel(myCtx)
 			en.Run(cCtx)
 			go func() {
 				defer func() {
 					if r := recover(); r != nil {
 						logrus.Errorln("election manager panic, ", r)
 					}
+					cCancel()
 				}()
 				for {
 					select {

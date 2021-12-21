@@ -27,7 +27,7 @@ func NewNodeStatus(nodeName string) *NodeStatus {
 }
 
 func (ns *NodeStatus) syncNodeStatus() (err error) {
-	logrus.Debug("Sync node status ")
+	logrus.Infoln("Sync node status ")
 	err = ns.setStatus()
 	if err != nil {
 		return

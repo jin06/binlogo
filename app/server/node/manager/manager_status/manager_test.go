@@ -18,14 +18,12 @@ func TestRun(t *testing.T) {
 	defer dao_node.DeleteNode(nodeName)
 	m := NewManager(&node.Node{Name: nodeName})
 	ctx, cancel := context.WithCancel(context.Background())
-	err := m.Run(ctx)
-	if err != nil {
-		t.Error(err)
-	}
+	m.Run(ctx)
 	ns := NewNodeStatus(m.Node.Name)
 	if ns == nil {
 		t.Fail()
 	}
+	var err error
 	err = ns.syncNodeStatus()
 	if err != nil {
 		t.Error(err)

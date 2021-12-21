@@ -55,3 +55,13 @@ func WithGTIDSet(g string) OptionPosition {
 		position.GTIDSet = g
 	}
 }
+
+// Reset reset position
+func (p *Position) Reset() {
+	p.ConsumeRows = 0
+	p.TotalRows = 0
+	p.BinlogFile = ""
+	p.GTIDSet = ""
+	p.PipelineName = ""
+	p.BinlogPosition = 0
+}

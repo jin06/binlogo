@@ -5,7 +5,6 @@ import (
 
 	"github.com/go-mysql-org/go-mysql/canal"
 	message2 "github.com/jin06/binlogo/app/pipeline/message"
-	"github.com/jin06/binlogo/pkg/store/model/pipeline"
 )
 
 func emptyMessage() (msgs []*message2.Message) {
@@ -122,14 +121,19 @@ func delete(e *canal.RowsEvent) (msgs []*message2.Message) {
 }
 
 func toMessage(e *canal.RowsEvent) (msg *message2.Message) {
-	msg = message2.New()
-	msg.Content.Head = &message2.Head{
-		Type:     mapType(e.Action),
-		Database: e.Table.Schema,
-		Table:    e.Table.Name,
-		Time:     e.Header.Timestamp,
-		Position: &pipeline.Position{},
-	}
+	//msg = message2.New()
+	msg = message2.Get()
+	//msg.Content.Head = &message2.Head{
+	//	Type:     mapType(e.Action),
+	//	Database: e.Table.Schema,
+	//	Table:    e.Table.Name,
+	//	Time:     e.Header.Timestamp,
+	//	Position: &pipeline.Position{},
+	//}
+	msg.Content.Head.Type = mapType(e.Action)
+	msg.Content.Head.Database = e.Table.Schema
+	msg.Content.Head.Table = e.Table.Name
+	msg.Content.Head.Time = e.Header.Timestamp
 	return
 }
 

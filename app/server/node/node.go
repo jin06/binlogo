@@ -3,6 +3,7 @@ package node
 import (
 	"context"
 	"errors"
+	"fmt"
 	"sync"
 	"time"
 
@@ -95,7 +96,12 @@ func (n *Node) refreshNode() (err error) {
 // Run start working
 func (n *Node) Run(ctx context.Context) (err error) {
 	myCtx, cancel := context.WithCancel(ctx)
-	defer cancel()
+	defer func() {
+		if re := recover(); re != nil {
+			err = errors.New(fmt.Sprintf("panic %v", re))
+		}
+		cancel()
+	}()
 	err = n.refreshNode()
 	if err != nil {
 		return
