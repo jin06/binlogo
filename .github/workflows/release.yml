@@ -1,0 +1,101 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: test
+        run: go test -v ./...
+      - name: Login to DockerHub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USER }}
+          password: ${{ secrets.DOCKERHUB_PASS }}
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: |
+            jin06/binlogo
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+      - name: Build and push
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.18
+
+      - name: Build
+      - run: |  
+          mkdir assets
+          mkdir -p assets/binlogo-darwin-amd64/configs
+          mkdir -p assets/binlogo-windows-amd64/configs
+          mkdir -p assets/binlogo-linux-amd64/configs
+          CGO_ENABLE=0 GOOS=darwin GOARCH=amd64 go build -o ./assets/binlogo-darwin-amd64/binlogo  cmd/server/binlogo.go 
+          CGO_ENABLE=0 GOOS=windows GOARCH=amd64 go build -o ./assets/binlogo-windows-amd64/binlogo  cmd/server/binlogo.go
+          CGO_ENABLE=0 GOOS=linux GOARCH=amd64 go build -o ./assets/binlogo-linux-amd64/binlogo  cmd/server/binlogo.go
+          zip -q -r -o ./assets/binlogo-darwin-amd64.zip ./assets/binlogo-darwin-amd64
+          zip -q -r -o ./assets/binlogo-windows-amd64.zip ./assets/binlogo-windows-amd64
+          tar -zcvf ./assets/binlogo-linux-amd64.tar.gz ./assets/binlogo-linux-amd64
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: ${{ github.ref }}
+          body: |
+            What's Changed
+            - First Change
+            - Second Change
+          draft: false
+          prerelease: false
+
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./assets/binlogo-darwin-amd64.zip
+          asset_name: binlogo-darwin-amd64.zip
+          asset_content_type: application/zip
+
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./assets/binlogo-windows-amd64.zip
+          asset_name: binlogo-windows-amd64.zip
+          asset_content_type: application/zip
+
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./assets/binlogo-linux-amd64.tar.gz
+          asset_name: binlogo-linux-amd64.tar.gz
+          asset_content_type: application/gzip
