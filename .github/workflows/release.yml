@@ -43,16 +43,16 @@ jobs:
 
       - name: Build
         run: |  
-          mkdir assets
-          mkdir -p assets/binlogo-darwin-amd64/configs
-          mkdir -p assets/binlogo-windows-amd64/configs
-          mkdir -p assets/binlogo-linux-amd64/configs
-          CGO_ENABLE=0 GOOS=darwin GOARCH=amd64 go build -o ./assets/binlogo-darwin-amd64/binlogo  cmd/server/binlogo.go 
-          CGO_ENABLE=0 GOOS=windows GOARCH=amd64 go build -o ./assets/binlogo-windows-amd64/binlogo  cmd/server/binlogo.go
-          CGO_ENABLE=0 GOOS=linux GOARCH=amd64 go build -o ./assets/binlogo-linux-amd64/binlogo  cmd/server/binlogo.go
-          zip -q -r -o ./assets/binlogo-darwin-amd64.zip ./assets/binlogo-darwin-amd64
-          zip -q -r -o ./assets/binlogo-windows-amd64.zip ./assets/binlogo-windows-amd64
-          tar -zcvf ./assets/binlogo-linux-amd64.tar.gz ./assets/binlogo-linux-amd64
+          mkdir upload
+          mkdir -p upload/binlogo-darwin-amd64/configs
+          mkdir -p upload/binlogo-windows-amd64/configs
+          mkdir -p upload/binlogo-linux-amd64/configs
+          CGO_ENABLE=0 GOOS=darwin GOARCH=amd64 go build -o ./upload/binlogo-darwin-amd64/binlogo  cmd/server/binlogo.go 
+          CGO_ENABLE=0 GOOS=windows GOARCH=amd64 go build -o ./upload/binlogo-windows-amd64/binlogo  cmd/server/binlogo.go
+          CGO_ENABLE=0 GOOS=linux GOARCH=amd64 go build -o ./upload/binlogo-linux-amd64/binlogo  cmd/server/binlogo.go
+          zip -q -r -o ./upload/binlogo-darwin-amd64.zip ./upload/binlogo-darwin-amd64
+          zip -q -r -o ./upload/binlogo-windows-amd64.zip ./upload/binlogo-windows-amd64
+          tar -zcvf ./upload/binlogo-linux-amd64.tar.gz ./upload/binlogo-linux-amd64
 
       - name: Create Release
         id: create_release
@@ -75,7 +75,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./assets/binlogo-darwin-amd64.zip
+          asset_path: ./upload/binlogo-darwin-amd64.zip
           asset_name: binlogo-darwin-amd64.zip
           asset_content_type: application/zip
 
@@ -85,7 +85,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./assets/binlogo-windows-amd64.zip
+          asset_path: ./upload/binlogo-windows-amd64.zip
           asset_name: binlogo-windows-amd64.zip
           asset_content_type: application/zip
 
@@ -95,6 +95,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./assets/binlogo-linux-amd64.tar.gz
+          asset_path: ./upload/binlogo-linux-amd64.tar.gz
           asset_name: binlogo-linux-amd64.tar.gz
           asset_content_type: application/gzip
