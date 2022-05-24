@@ -42,7 +42,7 @@ jobs:
           go-version: 1.18
 
       - name: Build
-      - run: |  
+        run: |  
           mkdir assets
           mkdir -p assets/binlogo-darwin-amd64/configs
           mkdir -p assets/binlogo-windows-amd64/configs
