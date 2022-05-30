@@ -43,10 +43,7 @@ jobs:
 
       - name: Build
         run: |  
-          mkdir upload
-          mkdir -p upload/binlogo-darwin-amd64/configs
-          mkdir -p upload/binlogo-windows-amd64/configs
-          mkdir -p upload/binlogo-linux-amd64/configs
+          mkdir -p upload/binlogo-{darwin-amd64,windows-amd64,linux-amd64}/configs
           CGO_ENABLE=0 GOOS=darwin GOARCH=amd64 go build -o ./upload/binlogo-darwin-amd64/binlogo  cmd/server/binlogo.go 
           CGO_ENABLE=0 GOOS=windows GOARCH=amd64 go build -o ./upload/binlogo-windows-amd64/binlogo  cmd/server/binlogo.go
           CGO_ENABLE=0 GOOS=linux GOARCH=amd64 go build -o ./upload/binlogo-linux-amd64/binlogo  cmd/server/binlogo.go
