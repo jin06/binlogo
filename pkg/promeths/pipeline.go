@@ -12,6 +12,7 @@ var (
 	MessageSendErrCounter *prometheus.CounterVec
 	MessageFilterCounter  *prometheus.CounterVec
 	MessageSendHistogram  *prometheus.HistogramVec
+	MessagePoolGauge      *prometheus.GaugeVec
 )
 
 func Init() {
@@ -66,5 +67,13 @@ func Init() {
 		pipelineLabels,
 	)
 	prometheus.Register(MessageSendHistogram)
-
+	MessagePoolGauge = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Namespace: nameSpace,
+			Subsystem: subSystem,
+			Name:      "message_pool",
+		},
+		pipelineLabels,
+	)
+	prometheus.Register(MessagePoolGauge)
 }

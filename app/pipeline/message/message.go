@@ -118,8 +118,9 @@ func (msg *Message) reset() {
 // Pool reuse message object
 var Pool = sync.Pool{
 	New: func() interface{} {
-		return &Message{
-		}
+		return new(Message)
+		//return &Message{
+		//}
 	},
 }
 
