@@ -19,6 +19,7 @@ import (
 	"github.com/jin06/binlogo/pkg/store/dao/dao_node"
 	"github.com/jin06/binlogo/pkg/store/model/node"
 	"github.com/sirupsen/logrus"
+	"github.com/hashicorp/raft"
 )
 
 // Node represents a node instance
@@ -37,6 +38,7 @@ type Node struct {
 	leaderRunMutex  sync.Mutex
 	pipeManager     *manager_pipe.Manager
 	eventManager    *manager_event.Manager
+	raft *raft.Raft
 }
 
 type NodeMode byte
