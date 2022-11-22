@@ -7,6 +7,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/hashicorp/raft"
 	"github.com/jin06/binlogo/app/server/node/election"
 	"github.com/jin06/binlogo/app/server/node/manager"
 	"github.com/jin06/binlogo/app/server/node/manager/manager_event"
@@ -19,7 +20,6 @@ import (
 	"github.com/jin06/binlogo/pkg/store/dao/dao_node"
 	"github.com/jin06/binlogo/pkg/store/model/node"
 	"github.com/sirupsen/logrus"
-	"github.com/hashicorp/raft"
 )
 
 // Node represents a node instance
@@ -38,7 +38,7 @@ type Node struct {
 	leaderRunMutex  sync.Mutex
 	pipeManager     *manager_pipe.Manager
 	eventManager    *manager_event.Manager
-	raft *raft.Raft
+	raft            *raft.Raft
 }
 
 type NodeMode byte
