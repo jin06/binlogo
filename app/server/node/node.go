@@ -7,6 +7,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/hashicorp/raft"
 	"github.com/jin06/binlogo/app/server/node/election"
 	"github.com/jin06/binlogo/app/server/node/manager"
 	"github.com/jin06/binlogo/app/server/node/manager/manager_event"
@@ -37,6 +38,7 @@ type Node struct {
 	leaderRunMutex  sync.Mutex
 	pipeManager     *manager_pipe.Manager
 	eventManager    *manager_event.Manager
+	raft            *raft.Raft
 }
 
 type NodeMode byte
