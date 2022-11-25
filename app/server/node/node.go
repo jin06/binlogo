@@ -247,3 +247,6 @@ func (n *Node) _mustRun(ctx context.Context) (resCtx context.Context) {
 	}()
 	return
 }
+
+func (n *Node) initRaft(ctx context.Context) {
+}
