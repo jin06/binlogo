@@ -4,10 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/jin06/binlogo/pkg/raft"
 	"sync"
 	"time"
 
-	"github.com/hashicorp/raft"
 	"github.com/jin06/binlogo/app/server/node/election"
 	"github.com/jin06/binlogo/app/server/node/manager"
 	"github.com/jin06/binlogo/app/server/node/manager/manager_event"
@@ -38,7 +38,7 @@ type Node struct {
 	leaderRunMutex  sync.Mutex
 	pipeManager     *manager_pipe.Manager
 	eventManager    *manager_event.Manager
-	raft            *raft.Raft
+	raftNode        *raft.RaftNode
 }
 
 type NodeMode byte
@@ -104,12 +104,18 @@ func (n *Node) Run(ctx context.Context) (err error) {
 		}
 		cancel()
 	}()
+	logrus.Errorln(123)
+	err = n.startRaftNode(myCtx)
+	if err != nil {
+		return
+	}
 	err = n.refreshNode()
 	if err != nil {
 		return
 	}
 	nodeCtx := n._mustRun(myCtx)
 	n._leaderRun(myCtx)
+
 	select {
 	case <-ctx.Done():
 		{
@@ -248,5 +254,8 @@ func (n *Node) _mustRun(ctx context.Context) (resCtx context.Context) {
 	return
 }
 
-func (n *Node) initRaft(ctx context.Context) {
+func (n *Node) startRaftNode(ctx context.Context) error {
+	var err error
+	n.raftNode, err = raft.NewRaftNode(ctx, n.Name, "0.0.0.0", 13001, "~/tmp/test/data")
+	return err
 }

@@ -3,6 +3,8 @@ package raft
 import (
 	"context"
 	"fmt"
+	"net"
+
 	pb "github.com/Jille/raft-grpc-example/proto"
 	"github.com/Jille/raft-grpc-leader-rpc/leaderhealth"
 	transport "github.com/Jille/raft-grpc-transport"
@@ -11,17 +13,22 @@ import (
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
-	"net"
 )
 
 // RaftNode a wrapper for raft and grpc server
 type RaftNode struct {
-	RaftID string
-	R      *raft.Raft
-	S      *grpc.Server
+	RaftID      string
+	R           *raft.Raft
+	S           *grpc.Server
+	RaftServers []raft.Server
 }
 
-func NewRaftNode(ctx context.Context, raftId string, domain string, port int, dir string) (*RaftNode, error) {
+type NodeConfig struct {
+	ID      raft.ServerID
+	Address raft.ServerAddress
+}
+
+func NewRaftNode(ctx context.Context, raftId string, domain string, port int, dir string, bootstrap bool, raftServers []raft.Server) (*RaftNode, error) {
 	var err error
 	addr := fmt.Sprintf("%s:%d", domain, port)
 	fmt.Println(addr)
@@ -34,16 +41,20 @@ func NewRaftNode(ctx context.Context, raftId string, domain string, port int, di
 	}
 
 	rn := &RaftNode{
-		RaftID: raftId,
+		RaftID:      raftId,
+		RaftServers: raftServers,
 	}
 
 	rn.R, err = NewRaft(ctx, raftId, addr, fsm, dir, tm.Transport())
 	if err != nil {
 		return nil, err
 	}
-	err = rn.bootstrapCluster(addr)
-	if err != nil {
-		logrus.Errorln(err)
+	if bootstrap {
+		err = rn.bootstrapCluster(addr)
+
+		if err != nil {
+			logrus.Errorln(err)
+		}
 	}
 	rn.S = grpc.NewServer()
 	pb.RegisterExampleServer(rn.S, &rpcInterface{
@@ -60,8 +71,26 @@ func NewRaftNode(ctx context.Context, raftId string, domain string, port int, di
 			logrus.Fatalln("raft grpc server error, ", err)
 		}
 	}(ctx)
+	fmt.Println(rn.R.GetConfiguration().Configuration())
+	go rn.doLeader(ctx)
 
 	return rn, err
+}
+
+func (rn *RaftNode) doLeader(ctx context.Context) {
+	ch := rn.R.LeaderCh()
+	for {
+		select {
+		case <-ctx.Done():
+			{
+				return
+			}
+		case <-ch:
+			{
+				rn.initNodes()
+			}
+		}
+	}
 }
 
 func (rn *RaftNode) bootstrapCluster(addr string) error {
@@ -77,6 +106,26 @@ func (rn *RaftNode) bootstrapCluster(addr string) error {
 	f := rn.R.BootstrapCluster(cfg)
 	if err := f.Error(); err != nil {
 		return fmt.Errorf("raft.Raft.BootstrapCluster: %v", err)
+
 	}
+
 	return nil
+}
+
+func (rn *RaftNode) initNodes() {
+	m := rn.existiServers()
+	for _, v := range rn.RaftServers {
+		if _, ok := m[v.ID]; !ok {
+			rn.R.AddVoter(v.ID, v.Address, 0, 0)
+		}
+	}
+}
+
+func (rn *RaftNode) existiServers() map[raft.ServerID]raft.Server {
+	m := map[raft.ServerID]raft.Server{}
+	servers := rn.R.GetConfiguration().Configuration().Servers
+	for _, v := range servers {
+		m[v.ID] = v
+	}
+	return m
 }
