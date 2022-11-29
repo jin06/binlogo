@@ -12,8 +12,8 @@ func TestMessage(t *testing.T) {
 		t.Error(err)
 	}
 
-	msg.Content = &Content{
-		Head: &Head{
+	msg.Content = Content{
+		Head: Head{
 			Type:     "",
 			Time:     0,
 			Database: "",

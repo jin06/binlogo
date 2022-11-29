@@ -1,9 +1,14 @@
 env: production
 cluster:
   name: cluster1
+  nodes:
+    - 127.0.0.1:50001
+    - 127.0.0.1:50002
+
 # node configs. Different node should have different name.
 node:
   name: node1
+  port: 50001
 # console configs
 console:
   port: 9999
