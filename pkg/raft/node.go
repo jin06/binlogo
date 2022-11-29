@@ -28,29 +28,29 @@ type NodeConfig struct {
 	Address raft.ServerAddress
 }
 
-func NewRaftNode(ctx context.Context, raftId string, domain string, port int, dir string, bootstrap bool, raftServers []raft.Server) (*RaftNode, error) {
+func NewRaftNode(ctx context.Context, myServer raft.Server, dir string, bootstrap bool, raftServers []raft.Server) (*RaftNode, error) {
 	var err error
-	addr := fmt.Sprintf("%s:%d", domain, port)
+	addr := myServer.Address
 	fmt.Println(addr)
 	fsm := &wordTracker{}
 	//todo security
 	tm := transport.New(raft.ServerAddress(addr), []grpc.DialOption{grpc.WithInsecure()})
-	sock, err := net.Listen("tcp", addr)
+	sock, err := net.Listen("tcp", string(addr))
 	if err != nil {
 		return nil, err
 	}
 
 	rn := &RaftNode{
-		RaftID:      raftId,
+		RaftID:      string(myServer.ID),
 		RaftServers: raftServers,
 	}
 
-	rn.R, err = NewRaft(ctx, raftId, addr, fsm, dir, tm.Transport())
+	rn.R, err = NewRaft(ctx, string(myServer.ID), string(addr), fsm, dir, tm.Transport())
 	if err != nil {
 		return nil, err
 	}
 	if bootstrap {
-		err = rn.bootstrapCluster(addr)
+		err = rn.bootstrapCluster(string(addr))
 
 		if err != nil {
 			logrus.Errorln(err)
