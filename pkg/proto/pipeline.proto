@@ -1,0 +1,138 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/jin06/binlogo/pkg/proto";
+
+service PipelineService {
+  rpc Get(GetReq) returns (GetResp) {}
+  rpc Create(CreateReq) returns(CreateResp) {}
+  rpc Update(UpdateReq) returns(UpdateResp) {}
+  rpc List(ListReq) returns(ListResp) {}
+
+  rpc Delete(DeleteReq) returns(DeleteResp) {}
+}
+
+message Pipeline {
+  string Name = 1;
+  string Status = 2;
+  string AliasName = 3;
+  Mysql Mysql = 4;
+  repeated Filter Filters = 5;
+  Output Output = 6;
+  int64 Replicas = 7;
+  google.protobuf.Timestamp CreateTime = 8;
+  string Remark = 9;
+  bool IsDelete =10;
+}
+
+message Mysql {
+  string Address = 1;
+  uint32 Port = 2;
+  string User = 3;
+  string Password = 4;
+  uint32 ServerId = 5;
+  string Flavor = 6;
+  string Mode = 7;
+}
+
+message Filter {
+  string Type = 1;
+  string Rule = 2;
+}
+
+message Output {
+  Sender Sender = 1;
+}
+
+message Sender {
+  string Name = 1;
+  string Type = 2;
+  Kafka Kafka = 3;
+  Stdout Stdout = 4;
+  Http Http = 5;
+  RabbitMQ RabbitMQ = 6;
+  Redis Redis = 7;
+  RocketMQ RocketMQ = 8;
+}
+
+message Kafka {
+  string Brokers = 1;
+  string Topic = 2;
+  int32 RequiredAcks = 3;
+  int32 Compression = 4;
+  int64 Retries = 5;
+  bool Idepotent = 6;
+}
+
+message Stdout {
+
+}
+
+message Http {
+  string API = 1;
+  int64 Retries = 2;
+}
+
+message RabbitMQ {
+  string Url = 1;
+  string ExchangeName = 2;
+}
+
+message Redis {
+  string Addr = 1;
+  string UserName = 2;
+  string Password = 3;
+  int64 DB = 4;
+  string List = 5;
+}
+
+message RocketMQ {
+  string Endpoint = 1;
+  string TopicName = 2;
+  string InstanceId = 3;
+  string AccessKey = 4;
+  string SecretKey = 5;
+}
+
+message GetReq {
+  string name = 1;
+}
+
+message GetResp {
+  Pipeline Pipeline = 1;
+}
+
+message CreateReq {
+  Pipeline Pipeline = 1;
+}
+
+message CreateResp {
+  bool OK = 1;
+}
+
+message UpdateReq {
+  Pipeline Pipeline = 1;
+}
+
+message UpdateResp {
+  bool OK = 1;
+}
+
+message ListReq {
+
+}
+
+message ListResp {
+  repeated Pipeline list =1 ;
+}
+
+message DeleteReq {
+  string name = 1;
+}
+
+message DeleteResp {
+  bool OK = 1;
+}
+
+

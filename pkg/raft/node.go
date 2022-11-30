@@ -3,8 +3,6 @@ package raft
 import (
 	"context"
 	"fmt"
-	"net"
-
 	pb "github.com/Jille/raft-grpc-example/proto"
 	"github.com/Jille/raft-grpc-leader-rpc/leaderhealth"
 	transport "github.com/Jille/raft-grpc-transport"
@@ -13,14 +11,21 @@ import (
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
+	"net"
 )
 
 // RaftNode a wrapper for raft and grpc server
 type RaftNode struct {
-	RaftID      string
-	R           *raft.Raft
-	S           *grpc.Server
-	RaftServers []raft.Server
+	RaftID  string
+	R       *raft.Raft
+	S       *grpc.Server
+	RConfig *raft.Config
+	*RServers
+}
+
+type RServers struct {
+	Arr []*raft.Server
+	Map map[raft.ServerID]*raft.Server
 }
 
 type NodeConfig struct {
@@ -28,33 +33,46 @@ type NodeConfig struct {
 	Address raft.ServerAddress
 }
 
-func NewRaftNode(ctx context.Context, myServer raft.Server, dir string, bootstrap bool, raftServers []raft.Server) (*RaftNode, error) {
+func newRServers(srvs []*raft.Server) *RServers {
+	rsServers := &RServers{
+		Arr: srvs,
+	}
+	m := map[raft.ServerID]*raft.Server{}
+	for _, v := range srvs {
+		m[v.ID] = v
+	}
+	return rsServers
+}
+
+func NewRaftNode(ctx context.Context, myServer raft.Server, dir string, raftServers []*raft.Server) (*RaftNode, error) {
+	logrus.Infoln("start new raft node", myServer)
 	var err error
 	addr := myServer.Address
-	fmt.Println(addr)
 	fsm := &wordTracker{}
 	//todo security
-	tm := transport.New(raft.ServerAddress(addr), []grpc.DialOption{grpc.WithInsecure()})
+	tm := transport.New(myServer.Address, []grpc.DialOption{grpc.WithInsecure()})
 	sock, err := net.Listen("tcp", string(addr))
 	if err != nil {
 		return nil, err
 	}
 
+	c := raft.DefaultConfig()
+	c.LocalID = myServer.ID
+
 	rn := &RaftNode{
-		RaftID:      string(myServer.ID),
-		RaftServers: raftServers,
+		RaftID:   string(myServer.ID),
+		RServers: newRServers(raftServers),
+		RConfig:  c,
 	}
 
-	rn.R, err = NewRaft(ctx, string(myServer.ID), string(addr), fsm, dir, tm.Transport())
+	rn.R, err = NewRaft(c, fsm, dir, tm.Transport())
 	if err != nil {
 		return nil, err
 	}
-	if bootstrap {
-		err = rn.bootstrapCluster(string(addr))
+	err = rn.bootstrapCluster(string(addr))
 
-		if err != nil {
-			logrus.Errorln(err)
-		}
+	if err != nil {
+		logrus.Errorln(err)
 	}
 	rn.S = grpc.NewServer()
 	pb.RegisterExampleServer(rn.S, &rpcInterface{
@@ -71,7 +89,6 @@ func NewRaftNode(ctx context.Context, myServer raft.Server, dir string, bootstra
 			logrus.Fatalln("raft grpc server error, ", err)
 		}
 	}(ctx)
-	fmt.Println(rn.R.GetConfiguration().Configuration())
 	go rn.doLeader(ctx)
 
 	return rn, err
@@ -87,6 +104,7 @@ func (rn *RaftNode) doLeader(ctx context.Context) {
 			}
 		case <-ch:
 			{
+				logrus.Infoln("win election")
 				rn.initNodes()
 			}
 		}
@@ -94,6 +112,9 @@ func (rn *RaftNode) doLeader(ctx context.Context) {
 }
 
 func (rn *RaftNode) bootstrapCluster(addr string) error {
+	if len(rn.R.GetConfiguration().Configuration().Servers) > 0 {
+		return nil
+	}
 	cfg := raft.Configuration{
 		Servers: []raft.Server{
 			{
@@ -113,15 +134,25 @@ func (rn *RaftNode) bootstrapCluster(addr string) error {
 }
 
 func (rn *RaftNode) initNodes() {
-	m := rn.existiServers()
-	for _, v := range rn.RaftServers {
+	m := rn.existServers()
+	for _, v := range rn.Arr {
 		if _, ok := m[v.ID]; !ok {
-			rn.R.AddVoter(v.ID, v.Address, 0, 0)
+			if v.Suffrage == raft.Voter {
+				rn.R.AddVoter(v.ID, v.Address, 0, 0)
+			} else {
+				rn.R.AddNonvoter(v.ID, v.Address, 0, 0)
+			}
 		}
 	}
+	for _, v := range m {
+		if _, ok := rn.Map[v.ID]; !ok {
+			rn.R.RemoveServer(v.ID, 0, 0)
+		}
+	}
+
 }
 
-func (rn *RaftNode) existiServers() map[raft.ServerID]raft.Server {
+func (rn *RaftNode) existServers() map[raft.ServerID]raft.Server {
 	m := map[raft.ServerID]raft.Server{}
 	servers := rn.R.GetConfiguration().Configuration().Servers
 	for _, v := range servers {

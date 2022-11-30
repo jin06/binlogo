@@ -15,12 +15,13 @@ func TestNewRaftNode(t *testing.T) {
 		raft.Server{raft.Voter, raft.ServerID("nodeB"), raft.ServerAddress("0.0.0.0:39002")},
 		raft.Server{raft.Voter, raft.ServerID("nodeC"), raft.ServerAddress("0.0.0.0:39003")},
 	}
+	id := "nodeA"
 	myServer := raft.Server{
 		raft.Voter,
-		raft.ServerID("nodeA"),
+		raft.ServerID(id),
 		raft.ServerAddress("0.0.0.0:39001"),
 	}
-	rn, err := NewRaftNode(ctx, myServer, "./testdata", false, nodes)
+	rn, err := NewRaftNode(ctx, myServer, "./testdata/"+id, nodes)
 	if err != nil {
 		t.Error(err)
 	}
@@ -36,12 +37,13 @@ func TestNewRaftNode2(t *testing.T) {
 		raft.Server{raft.Voter, raft.ServerID("nodeB"), raft.ServerAddress("0.0.0.0:39002")},
 		raft.Server{raft.Voter, raft.ServerID("nodeC"), raft.ServerAddress("0.0.0.0:39003")},
 	}
+	id := "nodeB"
 	myServer := raft.Server{
 		raft.Voter,
-		raft.ServerID("nodeB"),
+		raft.ServerID(id),
 		raft.ServerAddress("0.0.0.0:39002"),
 	}
-	rn, err := NewRaftNode(ctx, myServer, "./testdata", false, nodes)
+	rn, err := NewRaftNode(ctx, myServer, "./testdata/"+id, nodes)
 	if err != nil {
 		t.Error(err)
 	}
@@ -57,12 +59,13 @@ func TestNewRaftNode3(t *testing.T) {
 		raft.Server{raft.Voter, raft.ServerID("nodeB"), raft.ServerAddress("0.0.0.0:39002")},
 		raft.Server{raft.Voter, raft.ServerID("nodeC"), raft.ServerAddress("0.0.0.0:39003")},
 	}
+	id := "nodeC"
 	myServer := raft.Server{
 		raft.Voter,
-		raft.ServerID("nodeC"),
+		raft.ServerID(id),
 		raft.ServerAddress("0.0.0.0:39003"),
 	}
-	rn, err := NewRaftNode(ctx, myServer, "./testdata", false, nodes)
+	rn, err := NewRaftNode(ctx, myServer, "./testdata/"+id, nodes)
 	if err != nil {
 		t.Error(err)
 	}

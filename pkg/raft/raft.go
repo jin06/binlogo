@@ -1,7 +1,6 @@
 package raft
 
 import (
-	"context"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -11,11 +10,7 @@ import (
 	boltdb "github.com/hashicorp/raft-boltdb"
 )
 
-func NewRaft(ctx context.Context, myID, addr string, fsm raft.FSM, raftDir string, trans raft.Transport) (*raft.Raft, error) {
-	c := raft.DefaultConfig()
-	c.LocalID = raft.ServerID(myID)
-
-	baseDir := filepath.Join(raftDir, myID)
+func NewRaft(c *raft.Config, fsm raft.FSM, baseDir string, trans raft.Transport) (*raft.Raft, error) {
 	err := os.MkdirAll(baseDir, 0731)
 	if err != nil {
 		return nil, fmt.Errorf("create directory error, %v", err)
@@ -39,6 +34,7 @@ func NewRaft(ctx context.Context, myID, addr string, fsm raft.FSM, raftDir strin
 	//tm := transport.New(raft.ServerAddress(myAddress), []grpc.DialOption{grpc.WithInsecure()})
 
 	//r, err := raft.NewRaft(c, fsm, ldb, sdb, fss, tm.Transport())
+
 	r, err := raft.NewRaft(c, fsm, ldb, sdb, fss, trans)
 	if err != nil {
 		return nil, fmt.Errorf("raft.NewRaft: %v", err)
