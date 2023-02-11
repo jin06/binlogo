@@ -5,12 +5,11 @@ import "google/protobuf/timestamp.proto";
 option go_package = "github.com/jin06/binlogo/pkg/proto";
 
 service PipelineService {
-  rpc Get(GetReq) returns (GetResp) {}
-  rpc Create(CreateReq) returns(CreateResp) {}
-  rpc Update(UpdateReq) returns(UpdateResp) {}
-  rpc List(ListReq) returns(ListResp) {}
-
-  rpc Delete(DeleteReq) returns(DeleteResp) {}
+  rpc Get(PipeGetReq) returns (PipeGetResp) {}
+  rpc Create(PipeCreateReq) returns(PipeCreateResp) {}
+  rpc Update(PipeUpdateReq) returns(PipeUpdateResp) {}
+  rpc List(PipeListReq) returns(PipeListResp) {}
+  rpc Delete(PipeDeleteReq) returns(PipeDeleteResp) {}
 }
 
 message Pipeline {
@@ -95,43 +94,43 @@ message RocketMQ {
   string SecretKey = 5;
 }
 
-message GetReq {
+message PipeGetReq {
   string name = 1;
 }
 
-message GetResp {
+message PipeGetResp {
   Pipeline Pipeline = 1;
 }
 
-message CreateReq {
+message PipeCreateReq {
   Pipeline Pipeline = 1;
 }
 
-message CreateResp {
+message PipeCreateResp {
   bool OK = 1;
 }
 
-message UpdateReq {
+message PipeUpdateReq {
   Pipeline Pipeline = 1;
 }
 
-message UpdateResp {
+message PipeUpdateResp {
   bool OK = 1;
 }
 
-message ListReq {
+message PipeListReq {
 
 }
 
-message ListResp {
+message PipeListResp {
   repeated Pipeline list =1 ;
 }
 
-message DeleteReq {
+message PipeDeleteReq {
   string name = 1;
 }
 
-message DeleteResp {
+message PipeDeleteResp {
   bool OK = 1;
 }
 

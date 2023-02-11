@@ -47,6 +47,7 @@ func (f *wordTracker) Apply(l *raft.Log) interface{} {
 			break
 		}
 	}
+	fmt.Println(f.words)
 	return nil
 }
 
