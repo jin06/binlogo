@@ -6,7 +6,7 @@ go 1.18
 // replace google.golang.org/grpc => google.golang.org/grpc v1.25.1
 
 require (
-	github.com/Jille/raft-grpc-example v0.0.0-20221116163510-ca5c7e145c0f
+	github.com/Jille/grpc-multi-resolver v1.1.0
 	github.com/Jille/raft-grpc-leader-rpc v1.1.0
 	github.com/Jille/raft-grpc-transport v1.3.0
 	github.com/Jille/raftadmin v1.2.0
@@ -30,10 +30,12 @@ require (
 	go.etcd.io/etcd/api/v3 v3.5.1
 	go.etcd.io/etcd/client/v3 v3.5.1
 	google.golang.org/grpc v1.50.1
+	google.golang.org/protobuf v1.28.1
 )
 
 require (
 	github.com/BurntSushi/toml v0.3.1 // indirect
+	github.com/Jille/raft-grpc-example v0.0.0-20221116163510-ca5c7e145c0f // indirect
 	github.com/StackExchange/wmi v1.2.1 // indirect
 	github.com/andybalholm/brotli v1.0.2 // indirect
 	github.com/armon/go-metrics v0.4.1 // indirect
@@ -122,7 +124,6 @@ require (
 	golang.org/x/sys v0.2.0 // indirect
 	golang.org/x/text v0.4.0 // indirect
 	google.golang.org/genproto v0.0.0-20221114212237-e4508ebdbee1 // indirect
-	google.golang.org/protobuf v1.28.1 // indirect
 	gopkg.in/ini.v1 v1.63.2 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect

@@ -38,6 +38,7 @@ func initViperDefault() {
 	viper.SetDefault("cluster.name", CLUSTER_NAME)
 	viper.SetDefault("console.listen", CONSOLE_LISTEN)
 	viper.SetDefault("console.port", CONSOLE_PORT)
+	viper.SetDefault("raft.bootstrap", false)
 }
 
 // initViperFromEnv read config from env then whrite to viper
@@ -66,6 +67,12 @@ func initViperFromEnv() {
 	if val, found := syscall.Getenv("ETCD_USERNAME"); found {
 		viper.Set("etcd.username", val)
 	}
+	if val, found := syscall.Getenv("RAFT_BOOT"); found {
+		if val == "true" {
+			viper.Set("raft.bootstrap", true)
+		}
+	}
+
 }
 
 // initConst set global config

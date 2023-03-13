@@ -5,9 +5,11 @@ import (
 	"errors"
 	"fmt"
 	"github.com/jin06/binlogo/pkg/raft"
+	"github.com/spf13/viper"
 	"sync"
 	"time"
 
+	raft2 "github.com/hashicorp/raft"
 	"github.com/jin06/binlogo/app/server/node/election"
 	"github.com/jin06/binlogo/app/server/node/manager"
 	"github.com/jin06/binlogo/app/server/node/manager/manager_event"
@@ -104,7 +106,6 @@ func (n *Node) Run(ctx context.Context) (err error) {
 		}
 		cancel()
 	}()
-	logrus.Errorln(123)
 	err = n.startRaftNode(myCtx)
 	if err != nil {
 		return
@@ -254,8 +255,57 @@ func (n *Node) _mustRun(ctx context.Context) (resCtx context.Context) {
 	return
 }
 
+var a bool
 func (n *Node) startRaftNode(ctx context.Context) error {
+	if a {
+		return nil
+	}
+	a = true
+	logrus.Infoln("Start Raft Node!")
 	var err error
-	n.raftNode, err = raft.NewRaftNode(ctx, n.Name, "0.0.0.0", 13001, "~/tmp/test/data")
+	defer func() {
+		if err != nil {
+			logrus.Errorf("Start Raft Node with error %v", err)
+		}
+	}()
+	nodes := []*raft2.Server{}
+	err = viper.UnmarshalKey("raft.nodes", &nodes)
+	if err != nil {
+		return err
+	}
+	logrus.Infof("raft nodes configure: %v",nodes)
+	for _,v := range nodes {
+		logrus.Infoln(v)
+	}
+
+	myServerAddress := viper.GetString("raft.address")
+	myServerDir := viper.GetString("raft.data_dir")
+	logrus.Infoln("server id", n.Options.Node.Name)
+	myServer := raft2.Server{
+		Suffrage: raft2.Voter,
+		ID:       raft2.ServerID(n.Options.Node.Name),
+		Address:  raft2.ServerAddress(myServerAddress),
+	}
+	n.raftNode, err = raft.NewRaftNode(ctx, myServer, myServerDir, nodes, viper.GetBool("raft.bootstrap"))
+	go func() {
+		for {
+			//et := cache.Entry{
+			//	Menu:  "pipelineß",
+			//	Key:   "test" + time.Now().String(),
+			//	Value: []byte("111"),
+			//}
+			//b, _ := json.Marshal(et)
+			//af := n.raftNode.R.Apply(b,time.Second)
+			//fmt.Println(af.Error())
+
+			<- time.Tick(time.Second)
+			fmt.Println(n.raftNode.R.LastIndex())
+			fmt.Println(n.raftNode.R.LeaderWithID())
+			fmt.Println(n.raftNode.R.AppliedIndex())
+			//n.raftNode.R.Apply([]byte(time.Now().String()), time.Second)
+			//fmt.Println(n.raftNode.R.LastIndex())
+			//fmt.Printf("%v\n", n.raftNode.R.VerifyLeader())
+		}
+	}()
 	return err
 }

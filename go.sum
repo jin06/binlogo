@@ -367,6 +367,7 @@ github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03
 github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym/WlBOVXweHU+Q+/VP0lqqI8lqeDx9IjBqo=
 github.com/DataDog/datadog-go v2.2.0+incompatible/go.mod h1:LButxg5PwREeZtORoXG3tL4fMGNddJ+vMq1mwgfaqoQ=
 github.com/DataDog/datadog-go v3.2.0+incompatible/go.mod h1:LButxg5PwREeZtORoXG3tL4fMGNddJ+vMq1mwgfaqoQ=
+github.com/Jille/grpc-multi-resolver v1.1.0 h1:+SfnPGnoMjJVkURNfzpR8D+0Oy4w7IGAZ1azX1AQScY=
 github.com/Jille/grpc-multi-resolver v1.1.0/go.mod h1:mvSEHOdOT1ju0ySQXhWMNCI4QsAGhuUqy6+wHGVJS+8=
 github.com/Jille/raft-grpc-example v0.0.0-20221116163510-ca5c7e145c0f h1:AF7pz9YTOAQh9FTmiknF1Wv7/AgMdoGDO4SQTITmOmQ=
 github.com/Jille/raft-grpc-example v0.0.0-20221116163510-ca5c7e145c0f/go.mod h1:eivqGdmli4gkR2zJw0XKv6EHPMy7q19+7EtHU933PZg=

@@ -36,6 +36,7 @@ func NewRaft(c *raft.Config, fsm raft.FSM, baseDir string, trans raft.Transport)
 	//r, err := raft.NewRaft(c, fsm, ldb, sdb, fss, tm.Transport())
 
 	r, err := raft.NewRaft(c, fsm, ldb, sdb, fss, trans)
+
 	if err != nil {
 		return nil, fmt.Errorf("raft.NewRaft: %v", err)
 	}

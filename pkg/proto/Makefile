@@ -1,7 +1,7 @@
-pipeline.pb.go: pipeline.proto
+service.pb.go: service.proto
 	protoc *.proto --go_out=plugins=grpc:. --go_opt=paths=source_relative
 
-#force:
-#	rm -f pipeline.pb.go
-#	make pipeline.pb.go
+force:
+	rm -f service.pb.go
+	make service.pb.go
 

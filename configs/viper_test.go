@@ -28,4 +28,5 @@ func TestInitViperFromFile(t *testing.T) {
 	if !reflect.DeepEqual(viper.GetStringSlice("etcd.endpoints"), []string{"localhost:2379"}) {
 		t.Fail()
 	}
+	t.Log(viper.Get("raft"))
 }

@@ -1,13 +1,14 @@
 # github.com/BurntSushi/toml v0.3.1
 ## explicit
 github.com/BurntSushi/toml
+# github.com/Jille/grpc-multi-resolver v1.1.0
+## explicit; go 1.17
+github.com/Jille/grpc-multi-resolver
 # github.com/Jille/raft-grpc-example v0.0.0-20221116163510-ca5c7e145c0f
 ## explicit; go 1.13
-github.com/Jille/raft-grpc-example/proto
 # github.com/Jille/raft-grpc-leader-rpc v1.1.0
 ## explicit; go 1.13
 github.com/Jille/raft-grpc-leader-rpc/leaderhealth
-github.com/Jille/raft-grpc-leader-rpc/rafterrors
 # github.com/Jille/raft-grpc-transport v1.3.0
 ## explicit; go 1.13
 github.com/Jille/raft-grpc-transport

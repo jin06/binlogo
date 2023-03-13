@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+//import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/jin06/binlogo/pkg/proto";
+
+service EntryService {
+  rpc Get(GetRequest) returns (GetResponse) {}
+}
+
+message GetRequest {
+  string menu = 1;
+  string key = 2;
+}
+
+message GetResponse {
+  string menu = 1;
+  string key = 2;
+  string val = 3;
+}

@@ -19,3 +19,19 @@ etcd:
     - "localhost:2379"
   password:
   username:
+raft:
+  bootstrap: true
+  address: 0.0.0.0:39001
+  data_dir: './testdata'
+  nodes:
+    -
+      id: nodeA
+      address: '0.0.0.0:39001'
+    -
+      id: nodeB
+      address: '0.0.0.0:39002'
+    -
+      id: nodeC
+      address: '0.0.0.0:39002'
+
+
