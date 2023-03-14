@@ -6,6 +6,8 @@ option go_package = "github.com/jin06/binlogo/pkg/proto";
 
 service EntryService {
   rpc Get(GetRequest) returns (GetResponse) {}
+  rpc Set(SetRequest) returns (SetResponse) {}
+  rpc Delete(DelRequest) returns (DelResponse) {}
 }
 
 message GetRequest {
@@ -17,4 +19,24 @@ message GetResponse {
   string menu = 1;
   string key = 2;
   string val = 3;
+  int64 revision = 4;
+}
+
+message SetRequest {
+  string menu = 1;
+  string key = 2;
+  string val = 3;
+}
+
+message SetResponse {
+  bool ok = 1;
+}
+
+message DelRequest {
+  string menu = 1;
+  string key = 2;
+}
+
+message DelResponse {
+  bool ok = 1;
 }
