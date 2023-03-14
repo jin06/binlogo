@@ -26,9 +26,10 @@ type menu struct {
 }
 
 type Entry struct {
-	Menu  string
-	Key   string
-	Value []byte
+	Menu     string
+	Key      string
+	Value    []byte
+	Revision uint64
 }
 
 var validMenus = []string{
