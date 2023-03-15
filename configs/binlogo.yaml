@@ -22,7 +22,7 @@ etcd:
 raft:
   bootstrap: true
   address: 0.0.0.0:39001
-  data_dir: './testdata'
+  data_dir: './data'
   nodes:
     -
       id: nodeA

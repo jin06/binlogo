@@ -12,3 +12,4 @@ profile.out
 coverage.txt
 codecov.yml
 pkg/raft/testdata
+data/

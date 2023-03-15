@@ -9,7 +9,7 @@ import (
 
 func TestNewRaftNode(t *testing.T) {
 	ctx := context.Background()
-	//New(ctx,"nodeA",39001,"./testdata")
+	//New(ctx,"nodeA",39001,"./data")
 	nodes := []*raft.Server{
 		&raft.Server{raft.Voter, raft.ServerID("nodeA"), raft.ServerAddress("0.0.0.0:39001")},
 		&raft.Server{raft.Voter, raft.ServerID("nodeB"), raft.ServerAddress("0.0.0.0:39002")},
@@ -21,7 +21,7 @@ func TestNewRaftNode(t *testing.T) {
 		raft.ServerID(id),
 		raft.ServerAddress("0.0.0.0:39001"),
 	}
-	rn, err := NewRaftNode(ctx, myServer, "./testdata/"+id, nodes, true )
+	rn, err := NewRaftNode(ctx, myServer, "./data/"+id, nodes, true )
 	if err != nil {
 		t.Error(err)
 	}
@@ -43,7 +43,7 @@ func TestNewRaftNode2(t *testing.T) {
 		raft.ServerID(id),
 		raft.ServerAddress("0.0.0.0:39002"),
 	}
-	rn, err := NewRaftNode(ctx, myServer, "./testdata/"+id, nodes, false )
+	rn, err := NewRaftNode(ctx, myServer, "./data/"+id, nodes, false )
 	if err != nil {
 		t.Error(err)
 	}
@@ -65,7 +65,7 @@ func TestNewRaftNode3(t *testing.T) {
 		raft.ServerID(id),
 		raft.ServerAddress("0.0.0.0:39003"),
 	}
-	rn, err := NewRaftNode(ctx, myServer, "./testdata/"+id, nodes, false)
+	rn, err := NewRaftNode(ctx, myServer, "./data/"+id, nodes, false)
 	if err != nil {
 		t.Error(err)
 	}
