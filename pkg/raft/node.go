@@ -93,7 +93,6 @@ func NewRaftNode(ctx context.Context, myServer raft.Server, dir string, raftServ
 	raftadmin.Register(rn.S, rn.R)
 	reflection.Register(rn.S)
 
-
 	go func(ctx context.Context) {
 		if err := rn.S.Serve(sock); err != nil {
 			logrus.Fatalln("raft grpc server error, ", err)

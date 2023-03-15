@@ -52,7 +52,7 @@ func (es *EntryService) Delete(ctx context.Context, request *proto.DelRequest) (
 func (es *EntryService) Get(ctx context.Context, req *proto.GetRequest) (resp *proto.GetResponse, err error) {
 	mu := req.Menu
 	key := req.Key
-	entry, err := es.cache.GetEntry(mu, key)
+	entry := es.cache.GetEntry(mu, key)
 	resp = &proto.GetResponse{
 		Menu: entry.Menu,
 		Key:  entry.Key,

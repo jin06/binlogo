@@ -2,6 +2,8 @@ package cache
 
 import (
 	"encoding/json"
+	"errors"
+	"fmt"
 	"io"
 	"sync"
 )
@@ -16,7 +18,7 @@ func Default() *CacheManager {
 }
 
 type CacheManager struct {
-	data  map[string]map[string][]byte
+	data  map[string]map[string]Entry
 	menus map[string]*menu
 	sync.RWMutex
 }
@@ -30,6 +32,7 @@ type Entry struct {
 	Key      string
 	Value    []byte
 	Revision uint64
+	Delete   bool
 }
 
 var validMenus = []string{
@@ -43,13 +46,13 @@ const Scheduler = "scheduler"
 
 func NewCacheManager() *CacheManager {
 	cm := &CacheManager{
-		map[string]map[string][]byte{},
+		map[string]map[string]Entry{},
 		map[string]*menu{},
 		sync.RWMutex{},
 	}
 
 	for _, v := range validMenus {
-		cm.data[v] = map[string][]byte{}
+		cm.data[v] = map[string]Entry{}
 		cm.menus[v] = &menu{
 			sync.RWMutex{},
 		}
@@ -67,7 +70,7 @@ func (c *CacheManager) Marshal() ([]byte, error) {
 
 // UnMarshal deserializes cache data
 func (c *CacheManager) UnMarshal(serialized io.ReadCloser) error {
-	var newData map[string]map[string][]byte
+	var newData map[string]map[string]Entry
 	if err := json.NewDecoder(serialized).Decode(newData); err != nil {
 		return err
 	}
@@ -79,38 +82,48 @@ func (c *CacheManager) UnMarshal(serialized io.ReadCloser) error {
 	return nil
 }
 
-func (c *CacheManager) Set(m string, key string, val []byte) error {
-
-	c.menus[m].Lock()
-	defer c.menus[m].Unlock()
-	c.data[m][key] = val
-	return nil
-}
-
-func (c *CacheManager) Get(menu string, key string) []byte {
-	if _, ok := c.menus[menu]; !ok {
-		return nil
-	}
-
+func (c *CacheManager) GetEntry(menu string, key string) (e *Entry) {
 	c.menus[menu].RLock()
 	defer c.menus[menu].RUnlock()
-	return c.data[menu][key]
+	if !c.check(menu, key) {
+		return
+	}
+	e = &Entry{}
+	*e = c.data[menu][key]
+	return
+}
+
+func (c *CacheManager) GetEntries(menu string) (list *map[string]Entry) {
+	c.menus[menu].RLock()
+	defer c.menus[menu].RUnlock()
+	_, ok := c.data[menu]
+	if !ok {
+		return
+	}
+	list = &map[string]Entry{}
+
+	*list = c.data[menu]
+	return
 }
 
 func (c *CacheManager) SetEntry(e Entry) (err error) {
-	return c.Set(e.Menu, e.Key, e.Value)
-}
-
-func (c *CacheManager) GetEntry(menu string, key string) (e *Entry, err error) {
-	b := c.Get(menu, key)
-	e = &Entry{}
-	err = json.Unmarshal(b, e)
+	c.menus[e.Menu].Lock()
+	defer c.menus[e.Menu].Unlock()
+	if old, has := c.data[e.Menu][e.Key]; has {
+		if e.Revision <= old.Revision {
+			err = errors.New(fmt.Sprintf("Revision conflict, current revision is %d, request revision is %d. Menu: %s, Key: %s", old.Revision, e.Revision, e.Menu, e.Key))
+			return
+		}
+	}
+	c.data[e.Menu][e.Key] = e
 	return
 }
 
-func (c *CacheManager) check(m string, key string) (ok bool, err error) {
-	if _, ok = c.menus[m]; !ok {
+func (c *CacheManager) check(m string, key string) (ok bool) {
+	if _, ok = c.data[m]; !ok {
 		return
 	}
+	_, ok = c.data[m][key]
 	return
+
 }

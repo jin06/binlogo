@@ -24,10 +24,9 @@ func (f *FSM) Apply(logEntry *raft.Log) interface{} {
 	e := cache.Entry{
 	}
 	if err := json.Unmarshal(logEntry.Data, &e); err != nil {
-		//panic("Failed unmarshaling Raft log entry. This is a bug.")
 		return err
 	}
-	ret := f.cm.Set(e.Menu, e.Key, e.Value)
+	ret := f.cm.SetEntry(e)
 	fmt.Println("apply", logEntry.Data)
 	logrus.Printf("fms.Apply(), logEntry:%s, ret:%v\n", logEntry.Data, ret)
 	return ret
