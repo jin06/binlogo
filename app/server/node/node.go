@@ -106,27 +106,61 @@ func (n *Node) Run(ctx context.Context) (err error) {
 		}
 		cancel()
 	}()
-	err = n.startRaftNode(myCtx)
+
+	err = n.runLeaderDuty(myCtx)
 	if err != nil {
 		return
 	}
-	err = n.refreshNode()
+
+	err = n.runNodeDuty(myCtx)
 	if err != nil {
 		return
 	}
-	nodeCtx := n._mustRun(myCtx)
-	n._leaderRun(myCtx)
+	//err = n.startRaftNode(myCtx)
+	//if err != nil {
+	//	return
+	//}
+	//err = n.refreshNode()
+	//if err != nil {
+	//	return
+	//}
+	//nodeCtx := n._mustRun(myCtx)
+	//n._leaderRun(myCtx)
 
 	select {
 	case <-ctx.Done():
 		{
 			return
 		}
-	case <-nodeCtx.Done():
+	}
+}
+
+func (n *Node) runLeaderDuty(ctx context.Context) (err error) {
+	subCtx, cancel := context.WithCancel(ctx)
+	defer func() {
+		cancel()
+	}()
+	select {
+	case <-ctx.Done():
 		{
 			return
 		}
 	}
+	return
+}
+
+func (n *Node) runNodeDuty(ctx context.Context) (err error) {
+	subCtx, cancel := context.WithCancel(ctx)
+	defer func() {
+		cancel()
+	}()
+	select {
+	case <-ctx.Done():
+		{
+			return
+		}
+	}
+	return
 }
 
 // Role returns current role
@@ -256,6 +290,7 @@ func (n *Node) _mustRun(ctx context.Context) (resCtx context.Context) {
 }
 
 var a bool
+
 func (n *Node) startRaftNode(ctx context.Context) error {
 	if a {
 		return nil
@@ -273,8 +308,8 @@ func (n *Node) startRaftNode(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	logrus.Infof("raft nodes configure: %v",nodes)
-	for _,v := range nodes {
+	logrus.Infof("raft nodes configure: %v", nodes)
+	for _, v := range nodes {
 		logrus.Infoln(v)
 	}
 
@@ -298,7 +333,7 @@ func (n *Node) startRaftNode(ctx context.Context) error {
 			//af := n.raftNode.R.Apply(b,time.Second)
 			//fmt.Println(af.Error())
 
-			<- time.Tick(time.Second)
+			<-time.Tick(time.Second)
 			fmt.Println(n.raftNode.R.LastIndex())
 			fmt.Println(n.raftNode.R.LeaderWithID())
 			fmt.Println(n.raftNode.R.AppliedIndex())
