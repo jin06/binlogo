@@ -98,7 +98,7 @@ func NewRaftNode(ctx context.Context, myServer raft.Server, dir string, raftServ
 			logrus.Fatalln("raft grpc server error, ", err)
 		}
 	}(ctx)
-	go rn.doLeader(ctx)
+	//go rn.doLeader(ctx)
 
 	return rn, err
 }
