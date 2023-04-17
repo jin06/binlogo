@@ -139,8 +139,10 @@ func (n *Node) runLeaderDuty(ctx context.Context) {
 			case isLeader := <-ch:
 				{
 					if isLeader {
+						n.leaderRun(ctx, role.LEADER)
 						logrus.Infoln("I'm leader!")
 					} else {
+						n.leaderRun(ctx, role.FOLLOWER)
 						logrus.Infoln("I'm not leader ")
 					}
 				}

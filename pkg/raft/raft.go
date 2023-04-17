@@ -37,6 +37,15 @@ func NewRaft(c *raft.Config, fsm raft.FSM, baseDir string, trans raft.Transport)
 
 	r, err := raft.NewRaft(c, fsm, ldb, sdb, fss, trans)
 
+	//tch := make(chan raft.Observation, 10000)
+	//testOb := raft.NewObserver(tch, false, nil)
+	//r.RegisterObserver(testOb)
+	//go func() {
+	//	for v := range tch {
+	//		fmt.Println(v)
+	//	}
+	//}()
+
 	if err != nil {
 		return nil, fmt.Errorf("raft.NewRaft: %v", err)
 	}
