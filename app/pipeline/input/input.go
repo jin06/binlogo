@@ -28,6 +28,16 @@ type Input struct {
 	node         *node.Node
 	// for notify this input proess is closed
 	stopped       chan struct{}
+	exitErr       error
+}
+
+func (r *Input) Wait() {
+	<- r.stopped
+	return
+}
+
+func (r *Input) Err() error {
+	return r.exitErr
 }
 
 // Run Input start working
@@ -43,6 +53,8 @@ func (r *Input) Run(ctx context.Context) (err error) {
 				r.canal.Close()
 			}
 			cancel()
+			// set exit error, close stopped channel for notifying input's staus (used by his father goroutine)
+			r.exitErr = err 
 			close(r.stopped)
 		}()
 		if r.canal == nil {
