@@ -109,17 +109,21 @@ func (m *Manager) dispatch() {
 			if !isExist {
 				newIns := newInstance(pName, m.node.Name)
 				m.mappingIns[pName] = newIns
-				go m.mappingIns[pName].start(m.ctx)
-			} else {
-				if m.mappingIns[pName].StartTime().Add(5 * time.Second).Before(time.Now()) {
-					go m.mappingIns[pName].start(m.ctx)
-				}
+				//go m.mappingIns[pName].start(m.ctx)
+				go func() {
+					ins := m.mappingIns[pName]
+					runErr := ins.start(m.ctx)
+					logrus.WithField("pipeline name", pName).WithField("error", runErr).Warn("pipeline exist")
+					m.mutex.Lock()
+					delete(m.mappingIns, pName)
+					m.mutex.Unlock()
+				}()
 			}
 		}
 		if !shouldRun {
 			if isExist {
 				m.mappingIns[pName].stop()
-				delete(m.mappingIns, pName)
+				//delete(m.mappingIns, pName)
 			}
 		}
 	}

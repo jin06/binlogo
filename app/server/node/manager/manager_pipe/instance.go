@@ -23,24 +23,16 @@ type instance struct {
 	pipeInfo  *pipeline2.Pipeline
 	pipeReg   *register.Register
 	cancel    context.CancelFunc
-	status    status
 	mutex     sync.Mutex
 	startTime time.Time
+	//stopped   chan struct{}
 }
-
-type status byte
-
-const (
-	STATUS_RUN  status = 2
-	STATUS_STOP status = 4
-)
 
 func newInstance(pipeName string, nodeName string) *instance {
 	ins := &instance{
 		pipeName:  pipeName,
 		nodeName:  nodeName,
 		mutex:     sync.Mutex{},
-		status:    STATUS_STOP,
 		startTime: time.Time{},
 	}
 	return ins
@@ -86,16 +78,12 @@ func (i *instance) init() (err error) {
 
 func (i *instance) start(c context.Context) (err error) {
 	i.startTime = time.Now()
-	if i.status == STATUS_RUN {
-		return
-	}
-	i.status = STATUS_RUN
 	defer func() {
-		i.status = STATUS_STOP
 		if err != nil {
 			event.Event(event2.NewErrorPipeline(i.pipeName, "Pipeline instance stopped error: "+err.Error()))
 		}
 		event.Event(event2.NewInfoPipeline(i.pipeName, "Pipeline instance stopped"))
+		//close(i.stopped)
 	}()
 	err = i.init()
 	if err != nil {
@@ -133,12 +121,12 @@ func (i *instance) start(c context.Context) (err error) {
 
 func (i *instance) stop() {
 	i.startTime = time.Time{}
-	if i.status == STATUS_STOP {
-		return
-	}
-	defer func() {
-		i.status = STATUS_STOP
-	}()
+	//if i.status == STATUS_STOP {
+	//	return
+	//}
+	//defer func() {
+	//	i.status = STATUS_STOP
+	//}()
 	i.cancel()
 	logrus.Info("pipeline instance stop: ", i.pipeName)
 	return
