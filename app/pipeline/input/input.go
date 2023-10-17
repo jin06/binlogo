@@ -26,6 +26,8 @@ type Input struct {
 	ctx          context.Context
 	pipe         *pipeline.Pipeline
 	node         *node.Node
+	// for notify this input proess is closed
+	stopped       chan struct{}
 }
 
 // Run Input start working
@@ -41,6 +43,7 @@ func (r *Input) Run(ctx context.Context) (err error) {
 				r.canal.Close()
 			}
 			cancel()
+			close(r.stopped)
 		}()
 		if r.canal == nil {
 			err = r.prepareCanal()
