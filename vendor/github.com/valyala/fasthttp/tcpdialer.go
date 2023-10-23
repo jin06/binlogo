@@ -127,7 +127,7 @@ type Resolver interface {
 
 // TCPDialer contains options to control a group of Dial calls.
 type TCPDialer struct {
-	// Concurrency controls the maximum number of concurrent Dails
+	// Concurrency controls the maximum number of concurrent Dials
 	// that can be performed using this object.
 	// Setting this to 0 means unlimited.
 	//
@@ -358,8 +358,8 @@ type tcpAddrEntry struct {
 	addrs    []net.TCPAddr
 	addrsIdx uint32
 
+	pending     int32
 	resolveTime time.Time
-	pending     bool
 }
 
 // DefaultDNSCacheDuration is the duration for caching resolved TCP addresses
@@ -384,9 +384,11 @@ func (d *TCPDialer) tcpAddrsClean() {
 func (d *TCPDialer) getTCPAddrs(addr string, dualStack bool) ([]net.TCPAddr, uint32, error) {
 	item, exist := d.tcpAddrsMap.Load(addr)
 	e, ok := item.(*tcpAddrEntry)
-	if exist && ok && e != nil && !e.pending && time.Since(e.resolveTime) > d.DNSCacheDuration {
-		e.pending = true
-		e = nil
+	if exist && ok && e != nil && time.Since(e.resolveTime) > d.DNSCacheDuration {
+		// Only let one goroutine re-resolve at a time.
+		if atomic.SwapInt32(&e.pending, 1) == 0 {
+			e = nil
+		}
 	}
 
 	if e == nil {
@@ -394,8 +396,9 @@ func (d *TCPDialer) getTCPAddrs(addr string, dualStack bool) ([]net.TCPAddr, uin
 		if err != nil {
 			item, exist := d.tcpAddrsMap.Load(addr)
 			e, ok = item.(*tcpAddrEntry)
-			if exist && ok && e != nil && e.pending {
-				e.pending = false
+			if exist && ok && e != nil {
+				// Set pending to 0 so another goroutine can retry.
+				atomic.StoreInt32(&e.pending, 0)
 			}
 			return nil, 0, err
 		}

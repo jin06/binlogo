@@ -26,6 +26,7 @@ func RunNode(c context.Context) (resCtx context.Context, err error) {
 		Version:    configs.VERSITON,
 		CreateTime: time.Now(),
 		Role:       node.Role{Master: true, Admin: true, Worker: true},
+		Port:       configs.NodePort,
 	}
 	nModel.IP = configs.NodeIP
 	n, err := dao_node.GetNode(nModel.Name)
