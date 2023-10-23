@@ -15,6 +15,7 @@ type Node struct {
 	IP         net.IP    `json:"ip"`
 	Version    string    `json:"version"`
 	CreateTime time.Time `json:"create_time"`
+	Port       int       `json:"port"`
 }
 
 // NewNode returns a new node

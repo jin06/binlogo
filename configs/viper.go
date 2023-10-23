@@ -72,6 +72,7 @@ func initViperFromEnv() {
 func initConst() {
 	ENV = Env(viper.GetString("env"))
 	NodeName = viper.GetString("node.name")
+	NodePort = viper.GetInt("node.port")
 	NodeIP, _ = ip.LocalIp()
 }
 
