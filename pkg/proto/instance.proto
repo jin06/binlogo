@@ -1,0 +1,34 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/jin06/binlogo/pkg/proto";
+
+service InstanceService {
+  rpc Get(InsGetReq) returns(InsGetResp) {}
+  rpc List(InsListReq) returns(InsListResp) {}
+
+}
+
+message Instance {
+  string PipelineName = 1;
+  string NodeName = 2;
+  google.protobuf.Timestamp CreateTime = 3;
+}
+
+
+message InsGetReq {
+  string Name = 1;
+}
+
+message InsGetResp {
+  Instance Instance = 1;
+}
+
+message InsListReq {
+
+}
+
+message InsListResp {
+
+}

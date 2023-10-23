@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/jin06/binlogo/pkg/proto";
+
+service NodeService {
+  rpc Get(NodeGetReq) returns(NodeGetResp) {}
+}
+
+message NodeGetReq {
+  string Name = 1;
+}
+
+message NodeGetResp {
+  string Name = 1;
+  int32 Role = 2;
+  string IP = 3;
+  string version = 4;
+  google.protobuf.Timestamp CreateTime = 5;
+  int32 port = 6;
+}
