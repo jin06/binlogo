@@ -12,3 +12,6 @@ var NodeName string
 
 // NodeIP current node's ip
 var NodeIP net.IP
+
+// NodePort current node's port
+var NodePort int
