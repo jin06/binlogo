@@ -29,8 +29,11 @@ func List(c *gin.Context) {
 		if v.IsDelete {
 			continue
 		}
+		if v.Output == nil {
+			v.Output = pipeline2.EmptyOutput()
+		}
 		if v.Output.Sender.Http == nil {
-			v.Output.Sender.Http = &pipeline2.Http{}
+			v.Output.Sender.Http = pipeline2.EmptyHttp()
 		}
 		items = append(items, &pipeline.Item{Pipeline: v})
 	}

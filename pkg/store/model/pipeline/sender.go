@@ -70,3 +70,8 @@ type RocketMQ struct {
 	AccessKey  string `json:"access_key"`
 	SecretKey  string `json:"secret_key"`
 }
+
+// EmptyHttp return a new empty Http object
+func EmptyHttp() *Http {
+	return &Http{}
+}

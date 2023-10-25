@@ -33,7 +33,7 @@ configuration. Here are part of advantages:
 * Open up your browser to http://127.0.0.1:9999/console to view the console website
 
 * Create Pipeline:
-
+[config.go](configs%2Fconfig.go)
 > Follow the steps.
 
 ![avatar](/docs/assets/pic/create_pipe_step1.en.png)
