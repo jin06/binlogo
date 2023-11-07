@@ -7,4 +7,5 @@ import (
 // Sender interface for sender
 type Sender interface {
 	Send(ch *message2.Message) (bool, error)
+	Close() error
 }

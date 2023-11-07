@@ -47,3 +47,10 @@ func (r *Redis) Send(msg *message2.Message) (ok bool, err error) {
 	}
 	return
 }
+
+func (r *Redis) Close() error {
+	if r.Client != nil {
+		return r.Client.Close()
+	}
+	return nil
+}

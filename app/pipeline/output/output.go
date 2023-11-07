@@ -252,3 +252,7 @@ func (o *Output) syncRecord() (err error) {
 	err = dao_pipe.UpdateRecord(o.record)
 	return
 }
+
+func (o *Output) close() error {
+	return o.Sender.Close()
+}

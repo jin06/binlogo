@@ -38,3 +38,7 @@ func (r *RocketMQ) Send(msg *message2.Message) (ok bool, err error) {
 	}
 	return
 }
+
+func (r *RocketMQ) Close() error {
+	return nil
+}

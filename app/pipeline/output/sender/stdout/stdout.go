@@ -36,3 +36,7 @@ func (s *Stdout) Send(msg *message2.Message) (bool, error) {
 	}
 	return true, nil
 }
+
+func (s *Stdout) Close() error {
+	return nil
+}
