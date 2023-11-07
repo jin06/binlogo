@@ -2,16 +2,17 @@ package scheduler
 
 import (
 	"context"
+	"fmt"
+	"github.com/jin06/binlogo/pkg/watcher"
 	"sync"
 	"time"
 
-	"go.etcd.io/etcd/api/v3/mvccpb"
 	"github.com/jin06/binlogo/pkg/event"
 	"github.com/jin06/binlogo/pkg/store/dao/dao_sche"
 	"github.com/jin06/binlogo/pkg/store/model/pipeline"
 	"github.com/jin06/binlogo/pkg/store/model/scheduler"
-	"github.com/jin06/binlogo/pkg/watcher/scheduler_binding"
 	"github.com/sirupsen/logrus"
+	"go.etcd.io/etcd/api/v3/mvccpb"
 )
 
 // Scheduler schedule the pipeline.
@@ -57,15 +58,16 @@ func (s *Scheduler) _schedule(ctx context.Context) {
 		}
 		s.Stop()
 	}()
-	//wa, err := scheduler_binding.New()
-	//if err != nil {
-	//	return
-	//}
-	//waCh, err := wa.WatchEtcd(ctx, false)
-	waCh, err := scheduler_binding.Watch(ctx, dao_sche.SchedulerPrefix(), "pipeline_bind")
+	key := fmt.Sprintf("%s/%s", dao_sche.SchedulerPrefix(), "pipeline_bind")
+	w, err := watcher.New(watcher.WithHandler(watcher.WrapSchedulerBinding()), watcher.WithKey(key))
 	if err != nil {
 		return
 	}
+	waCh, err := w.WatchEtcd(ctx)
+	if err != nil {
+		return
+	}
+	defer w.Close()
 	schedulePipes(nil)
 	for {
 		select {

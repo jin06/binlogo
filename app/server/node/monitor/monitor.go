@@ -3,12 +3,6 @@ package monitor
 import (
 	"context"
 	"sync"
-
-	"github.com/jin06/binlogo/pkg/store/dao/dao_node"
-	"github.com/jin06/binlogo/pkg/store/dao/dao_pipe"
-	"github.com/jin06/binlogo/pkg/watcher"
-	"github.com/jin06/binlogo/pkg/watcher/node"
-	"github.com/jin06/binlogo/pkg/watcher/pipeline"
 )
 
 // Monitor monitor the operation of pipelines, nodes and other resources
@@ -120,33 +114,6 @@ func (m *Monitor) Stop(ctx context.Context) {
 	m.cancel()
 	m.status = STATUS_STOP
 	return
-}
-
-func (m *Monitor) newNodeWatcherCh(ctx context.Context) (ch chan *watcher.Event, err error) {
-	//wa, err := node.New(dao_node.NodePrefix())
-	//if err != nil {
-	//	return
-	//}
-	//ch, err = wa.WatchEtcdList(ctx)
-	return node.WatchList(ctx, dao_node.NodePrefix())
-}
-
-func (m *Monitor) newNodeRegWatcherCh(ctx context.Context) (ch chan *watcher.Event, err error) {
-	//nodeRegWatcher, err := node.New(dao_node.NodeRegisterPrefix())
-	//if err != nil {
-	//	return
-	//}
-	//ch, err = nodeRegWatcher.WatchEtcdList(ctx)
-	return node.WatchList(ctx, dao_node.NodeRegisterPrefix())
-}
-
-func (m *Monitor) newPipeWatcherCh(ctx context.Context) (ch chan *watcher.Event, err error) {
-	//pipeWatcher, err := pipeline.New(dao_pipe.PipelinePrefix())
-	//if err != nil {
-	//	return
-	//}
-	//ch, err = pipeWatcher.WatchEtcdList(ctx)
-	return pipeline.WatchList(ctx, dao_pipe.PipelinePrefix())
 }
 
 // GetStatus get monitor status

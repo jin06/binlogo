@@ -2,20 +2,21 @@ package election
 
 import (
 	"context"
-	"sync"
-
 	"github.com/jin06/binlogo/pkg/node/role"
 	"github.com/jin06/binlogo/pkg/store/model/node"
 	"github.com/sirupsen/logrus"
+	"sync"
 )
 
 // Manager is election cycle manager
 type Manager struct {
-	ctx      context.Context
-	mutex    sync.Mutex
-	optNode  *node.Node
-	election *Election
-	roleCh   chan role.Role
+	ctx       context.Context
+	mutex     sync.Mutex
+	optNode   *node.Node
+	election  *Election
+	roleCh    chan role.Role
+	cancel    context.CancelFunc
+	closeOnce sync.Once
 }
 
 // NewManager returns a new manager
@@ -31,67 +32,54 @@ func NewManager(optNode *node.Node) (m *Manager) {
 
 // Run election cycle
 func (m *Manager) Run(ctx context.Context) {
-	myCtx, cancel := context.WithCancel(ctx)
-	m.ctx = myCtx
+	m.ctx, m.cancel = context.WithCancel(ctx)
 	go func() {
 		defer func() {
 			if r := recover(); r != nil {
 				logrus.Errorln("election manager panic, ", r)
+				panic(r)
 			}
-			cancel()
+			m.close()
 		}()
 		for {
-			en := New(
+			election := New(
 				OptionNode(m.optNode),
 				OptionTTL(5),
 			)
 
-			m.election = en
-			cCtx, cCancel := context.WithCancel(myCtx)
-			en.Run(cCtx)
+			m.election = election
+			election.Run(m.ctx)
 			go func() {
 				defer func() {
 					if r := recover(); r != nil {
 						logrus.Errorln("election manager panic, ", r)
 					}
-					cCancel()
+					election.close()
 				}()
 				for {
 					select {
-					case <-myCtx.Done():
+					case <-m.ctx.Done():
 						{
 							return
 						}
-					case <-en.Context().Done():
+					case <-election.context().Done():
 						{
 							return
 						}
-					case r, ok := <-en.RoleCh:
+					case r, ok := <-election.RoleCh:
 						{
 							if !ok {
 								return
 							}
-							if r == m.election.Role() {
+							if r == m.election.getRole() {
 								m.roleCh <- r
 							}
 						}
 					}
 				}
 			}()
-			select {
-			case <-myCtx.Done():
-				{
-					return
-				}
-			case <-ctx.Done():
-				{
-					return
-				}
-			case <-en.Context().Done():
-				{
-					break
-				}
-			}
+			<-election.context().Done()
+			break
 		}
 	}()
 	return
@@ -107,10 +95,18 @@ func (m *Manager) Role() role.Role {
 	if m.election == nil {
 		return role.FOLLOWER
 	}
-	return m.election.Role()
+	return m.election.getRole()
 }
 
 // RoleCh return role chan
 func (m *Manager) RoleCh() chan role.Role {
 	return m.roleCh
+}
+
+func (m *Manager) close() error {
+	m.closeOnce.Do(func() {
+		m.cancel()
+		m.election.close()
+	})
+	return nil
 }

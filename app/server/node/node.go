@@ -62,7 +62,7 @@ func (n NodeMode) String() string {
 }
 
 // New return a new node
-func New(opts ...Option) (node *Node, err error) {
+func New(opts ...Option) (node *Node) {
 	options := &Options{}
 	node = &Node{
 		Options: options,
@@ -70,7 +70,7 @@ func New(opts ...Option) (node *Node, err error) {
 	for _, v := range opts {
 		v(options)
 	}
-	err = node.init()
+	node.init()
 	return
 }
 
@@ -107,16 +107,14 @@ func (n *Node) Run(ctx context.Context) (err error) {
 		return
 	}
 	nodeCtx := n._mustRun(myCtx)
-	n._leaderRun(myCtx)
+	leaderCtx := n._leaderRun(myCtx)
 	select {
 	case <-ctx.Done():
-		{
-			return
-		}
+		return
 	case <-nodeCtx.Done():
-		{
-			return
-		}
+		return
+	case <-leaderCtx.Done():
+		return
 	}
 }
 
@@ -127,8 +125,10 @@ func (n *Node) Role() role.Role {
 }
 
 // _leaderRun run when node is leader
-func (n *Node) _leaderRun(ctx context.Context) {
+func (n *Node) _leaderRun(ctx context.Context) context.Context {
+	resCtx, cancel := context.WithCancel(ctx)
 	go func() {
+		defer cancel()
 		for {
 			select {
 			case <-ctx.Done():
@@ -146,6 +146,7 @@ func (n *Node) _leaderRun(ctx context.Context) {
 			}
 		}
 	}()
+	return resCtx
 }
 
 func (n *Node) leaderRun(ctx context.Context, r role.Role) {

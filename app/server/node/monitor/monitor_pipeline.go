@@ -2,13 +2,14 @@ package monitor
 
 import (
 	"context"
+	"github.com/jin06/binlogo/pkg/watcher"
 	"time"
 
-	"go.etcd.io/etcd/api/v3/mvccpb"
 	"github.com/jin06/binlogo/pkg/store/dao/dao_pipe"
 	"github.com/jin06/binlogo/pkg/store/dao/dao_sche"
 	"github.com/jin06/binlogo/pkg/store/model/pipeline"
 	"github.com/sirupsen/logrus"
+	"go.etcd.io/etcd/api/v3/mvccpb"
 )
 
 func (m *Monitor) monitorPipe(ctx context.Context) (resCtx context.Context, err error) {
@@ -18,10 +19,17 @@ func (m *Monitor) monitorPipe(ctx context.Context) (resCtx context.Context, err 
 			cancel()
 		}
 	}()
-	ch, err := m.newPipeWatcherCh(ctx)
+	key := dao_pipe.PipelinePrefix()
+	w, err := watcher.New(watcher.WithKey(key), watcher.WithHandler(watcher.WrapPipeline(key, "")))
 	if err != nil {
 		return
 	}
+	//ch, err := m.newPipeWatcherCh(ctx)
+	ch, err := w.WatchEtcdList(ctx)
+	if err != nil {
+		return
+	}
+
 	m.checkAllPipelineBind()
 	m.checkAllPipelineDelete()
 	go func() {
@@ -31,6 +39,7 @@ func (m *Monitor) monitorPipe(ctx context.Context) (resCtx context.Context, err 
 			}
 			cancel()
 		}()
+		defer w.Close()
 		for {
 			select {
 			case <-time.Tick(time.Second * 120):

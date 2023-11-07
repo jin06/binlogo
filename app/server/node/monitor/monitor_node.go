@@ -4,12 +4,12 @@ import (
 	"context"
 	"time"
 
-	"go.etcd.io/etcd/api/v3/mvccpb"
 	"github.com/jin06/binlogo/pkg/store/dao/dao_node"
 	"github.com/jin06/binlogo/pkg/store/dao/dao_sche"
 	nodeModel "github.com/jin06/binlogo/pkg/store/model/node"
 	"github.com/jin06/binlogo/pkg/watcher"
 	"github.com/sirupsen/logrus"
+	"go.etcd.io/etcd/api/v3/mvccpb"
 )
 
 func (m *Monitor) monitorNode(ctx context.Context) (resCtx context.Context, err error) {
@@ -19,14 +19,38 @@ func (m *Monitor) monitorNode(ctx context.Context) (resCtx context.Context, err 
 			cancel()
 		}
 	}()
-	ch, err := m.newNodeWatcherCh(ctx)
+	key := dao_node.NodePrefix()
+
+	nodeWatcher, err := watcher.New(watcher.WithKey(key), watcher.WithHandler(watcher.WrapNode(key, "")))
 	if err != nil {
 		return
 	}
-	regCh, err := m.newNodeRegWatcherCh(ctx)
+
+	ch, err := nodeWatcher.WatchEtcdList(ctx)
 	if err != nil {
 		return
 	}
+	defer func() {
+		if err != nil {
+			nodeWatcher.Close()
+		}
+	}()
+
+	regKey := dao_node.NodeRegisterPrefix()
+	regWatcher, err := watcher.New(watcher.WithKey(regKey), watcher.WithHandler(watcher.WrapNode(regKey, "")))
+	if err != nil {
+		return
+	}
+
+	regCh, err := regWatcher.WatchEtcdList(ctx)
+	if err != nil {
+		return
+	}
+	defer func() {
+		if err != nil {
+			regWatcher.Close()
+		}
+	}()
 
 	err = m.checkAllNode()
 	if err != nil {
@@ -39,6 +63,10 @@ func (m *Monitor) monitorNode(ctx context.Context) (resCtx context.Context, err 
 				logrus.Errorln("monitor node panic, ", r)
 			}
 			cancel()
+		}()
+		defer func() {
+			nodeWatcher.Close()
+			regWatcher.Close()
 		}()
 		for {
 			select {

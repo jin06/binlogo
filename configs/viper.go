@@ -23,6 +23,7 @@ func initViperFromFile(file string) {
 		file = "./configs/binlogo.yaml"
 	}
 	//fmt.Println("init config from ", file)
+	logrus.Info("config file path: ", file)
 	viper.SetConfigFile(file)
 	if err := viper.ReadInConfig(); err != nil {
 		logrus.Error(err.Error())

@@ -2,15 +2,15 @@ package monitor
 
 import (
 	"context"
+	"github.com/jin06/binlogo/pkg/watcher"
 	"time"
 
-	"go.etcd.io/etcd/api/v3/mvccpb"
 	"github.com/jin06/binlogo/pkg/store/dao"
 	"github.com/jin06/binlogo/pkg/store/dao/dao_node"
 	"github.com/jin06/binlogo/pkg/store/dao/dao_sche"
 	"github.com/jin06/binlogo/pkg/store/model/node"
-	"github.com/jin06/binlogo/pkg/watcher/node_status"
 	"github.com/sirupsen/logrus"
+	"go.etcd.io/etcd/api/v3/mvccpb"
 )
 
 func (m *Monitor) monitorStatus(ctx context.Context) (resCtx context.Context, err error) {
@@ -20,15 +20,20 @@ func (m *Monitor) monitorStatus(ctx context.Context) (resCtx context.Context, er
 			cancel()
 		}
 	}()
-	//watcher, err := node_status.New(dao_node.StatusPrefix())
-	//if err != nil {
-	//	return
-	//}
-	//ch, err := watcher.WatchEtcdList(ctx)
-	ch, err := node_status.WatchList(ctx, dao_node.StatusPrefix())
+	key := dao_node.StatusPrefix()
+	w, err := watcher.New(watcher.WithKey(key), watcher.WithHandler(watcher.WrapNodeStatus(key, "")))
 	if err != nil {
 		return
 	}
+	ch, err := w.WatchEtcdList(ctx)
+	if err != nil {
+		return
+	}
+	defer func() {
+		if err != nil {
+			w.Close()
+		}
+	}()
 	err = checkAllNodeStatus()
 	if err != nil {
 		return
@@ -40,6 +45,7 @@ func (m *Monitor) monitorStatus(ctx context.Context) (resCtx context.Context, er
 			}
 			cancel()
 		}()
+		defer w.Close()
 		for {
 			select {
 			case <-ctx.Done():

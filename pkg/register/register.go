@@ -3,11 +3,13 @@ package register
 import (
 	"context"
 	"encoding/json"
+	"fmt"
+	"go.etcd.io/etcd/api/v3/v3rpc/rpctypes"
+	"sync"
 	"time"
 
 	"github.com/jin06/binlogo/pkg/etcdclient"
 	"github.com/sirupsen/logrus"
-	"go.etcd.io/etcd/api/v3/v3rpc/rpctypes"
 	clientv3 "go.etcd.io/etcd/client/v3"
 )
 
@@ -33,33 +35,34 @@ type Register struct {
 	registerData           interface{}
 	registerCreateRevision int64
 	ctx                    context.Context
+	cancel                 context.CancelFunc
+	closeOnce              sync.Once
 }
 
 func (r *Register) initClient() (err error) {
-	if r.client != nil {
-		er := r.client.Close()
-		if er != nil {
-			logrus.Errorln(er)
-		}
-	}
+	//if r.client != nil {
+	//	er := r.client.Close()
+	//	if er != nil {
+	//		logrus.Errorln(er)
+	//	}
+	//}
 	r.client, err = etcdclient.New()
 	return
 }
 
 // Run start register
 func (r *Register) Run(ctx context.Context) {
-	myCtx, cancel := context.WithCancel(ctx)
-	r.ctx = myCtx
+	logrus.Info("register run ")
+	r.ctx, r.cancel = context.WithCancel(ctx)
 	go func() {
 		defer func() {
 			if re := recover(); re != nil {
-				logrus.Errorln("register panic, ", r)
+				logrus.Errorln("register panic, ", re)
 			}
-			cancel()
+			r.close()
 		}()
 		var err error
-		err = r.initClient()
-		if err != nil {
+		if r.client, err = etcdclient.New(); err != nil {
 			logrus.Errorln(err)
 			return
 		}
@@ -76,25 +79,19 @@ func (r *Register) Run(ctx context.Context) {
 			logrus.Errorln("Register end: ", r.registerKey)
 		}()
 
+		keepTicker := time.NewTicker(time.Second)
+		defer keepTicker.Stop()
+		watchTicker := time.NewTicker(time.Second * 5)
+		defer watchTicker.Stop()
 		for {
 			select {
+			case <-r.ctx.Done():
+				return
 			case <-ctx.Done():
 				{
-					//err = r.revoke()
-					//if err != nil {
-					//	logrus.Errorln(err)
-					//}
 					return
 				}
-			case <-time.Tick(time.Second):
-				{
-					err = r.keepOnce()
-					if err == rpctypes.ErrLeaseNotFound {
-						return
-						//break LOOP
-					}
-				}
-			case <-time.Tick(time.Second * 5):
+			case <-watchTicker.C:
 				{
 					wOk, wErr := r.watch()
 					if wErr != nil {
@@ -103,11 +100,19 @@ func (r *Register) Run(ctx context.Context) {
 					}
 					if !wOk {
 						return
-						//break LOOP
+					}
+				}
+			case <-keepTicker.C:
+				{
+					err = r.keepOnce()
+					if err != nil {
+						fmt.Println(err)
+					}
+					if err == rpctypes.ErrLeaseNotFound {
+						return
 					}
 				}
 			}
-
 		}
 	}()
 }
@@ -166,7 +171,7 @@ func (r *Register) watch() (ok bool, err error) {
 	if res.Kvs[0].CreateRevision == r.registerCreateRevision {
 		ok = true
 	}
-	logrus.Debug(res.Kvs[0].CreateRevision)
+	//logrus.Debug(res.Kvs[0].CreateRevision)
 	logrus.Debug(r.registerCreateRevision)
 	return
 }
@@ -174,4 +179,12 @@ func (r *Register) watch() (ok bool, err error) {
 // Context returns register's context
 func (r *Register) Context() context.Context {
 	return r.ctx
+}
+
+func (r *Register) close() error {
+	r.closeOnce.Do(func() {
+		r.cancel()
+		r.client.Close()
+	})
+	return nil
 }

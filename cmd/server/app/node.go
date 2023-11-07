@@ -46,13 +46,11 @@ func RunNode(c context.Context) (resCtx context.Context, err error) {
 		logrus.Error(err)
 		return
 	}
-	var _node *node2.Node
-	if _node, err = node2.New(node2.OptionNode(nModel)); err != nil {
-		return
-	}
 	go func() {
+		logrus.Info("run node")
 		cancel()
 		for {
+			_node := node2.New(node2.OptionNode(nModel))
 			ctx, _ := context.WithCancel(c)
 			ch := make(chan error, 1)
 			go func() {
