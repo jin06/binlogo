@@ -49,6 +49,8 @@ func (m *Manager) Run(ctx context.Context) {
 	if err = m.scanPipelines(nil); err != nil {
 		logrus.Error(err)
 	}
+	stx, cancel := context.WithCancel(ctx)
+	defer cancel()
 	for {
 		select {
 		case <-ctx.Done():
@@ -60,7 +62,7 @@ func (m *Manager) Run(ctx context.Context) {
 				if serr := m.scanPipelines(nil); serr != nil {
 					logrus.Error(serr)
 				}
-				m.dispatch(ctx)
+				m.dispatch(stx)
 			}
 		}
 	}
@@ -101,17 +103,19 @@ func (m *Manager) dispatch(ctx context.Context) {
 		_, isExist := m.mappingIns[pName]
 		if shouldRun {
 			if !isExist {
-				newIns := newInstance(pName, m.node.Name)
-				m.mappingIns[pName] = newIns
-				//go m.mappingIns[pName].start(m.ctx)
+				ins := newInstance(pName, m.node.Name)
+				m.mappingIns[pName] = ins
 				go func() {
-					ins := m.mappingIns[pName]
 					runErr := ins.start(ctx)
 					logrus.WithField("pipeline name", pName).WithField("error", runErr).Warn("pipeline exist")
 					m.mutex.Lock()
+					defer m.mutex.Unlock()
 					delete(m.mappingIns, pName)
-					m.mutex.Unlock()
 				}()
+				select {
+				case <-ins.started:
+				case <-ins.stopped:
+				}
 			}
 		}
 		if !shouldRun {

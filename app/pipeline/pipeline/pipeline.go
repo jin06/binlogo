@@ -21,7 +21,6 @@ type Pipeline struct {
 	Filter   *filter2.Filter
 	OutChan  *OutChan
 	Options  Options
-	cancel   context.CancelFunc
 	runMutex sync.Mutex
 	status   status
 }

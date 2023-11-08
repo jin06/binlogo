@@ -27,6 +27,8 @@ type instance struct {
 	startTime time.Time
 	stopping  chan struct{}
 	stopOnce  sync.Once
+	started   chan struct{}
+	stopped   chan struct{}
 	//stopped   chan struct{}
 }
 
@@ -37,6 +39,8 @@ func newInstance(pipeName string, nodeName string) *instance {
 		mutex:     sync.Mutex{},
 		startTime: time.Time{},
 		stopping:  make(chan struct{}),
+		started:   make(chan struct{}),
+		stopped:   make(chan struct{}),
 	}
 	return ins
 }
@@ -79,7 +83,7 @@ func (i *instance) init() (err error) {
 	return
 }
 
-func (i *instance) start(c context.Context) (err error) {
+func (i *instance) start(ctx context.Context) (err error) {
 	i.startTime = time.Now()
 	defer func() {
 		if r := recover(); r != nil {
@@ -89,23 +93,25 @@ func (i *instance) start(c context.Context) (err error) {
 			event.Event(event2.NewErrorPipeline(i.pipeName, "Pipeline instance stopped error: "+err.Error()))
 		}
 		event.Event(event2.NewInfoPipeline(i.pipeName, "Pipeline instance stopped"))
+		close(i.stopped)
 	}()
 	if err = i.init(); err != nil {
 		return
 	}
-	ctx, cancel := context.WithCancel(c)
+	stx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
 	go func() {
-		i.pipeReg.Run(ctx)
+		i.pipeReg.Run(stx)
 		i.stop()
 	}()
 	go func() {
-		i.pipeIns.Run(ctx)
+		i.pipeIns.Run(stx)
 		i.stop()
 	}()
 	logrus.Info("pipeline instance start: ", i.pipeName)
 	event.Event(event2.NewInfoPipeline(i.pipeName, "Pipeline instance start success"))
+	close(i.started)
 
 	select {
 	case <-ctx.Done():
