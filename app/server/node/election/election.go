@@ -29,9 +29,11 @@ type Election struct {
 	eleLock     sync.Mutex
 	roleMutex   sync.Mutex
 	RoleCh      chan role.Role
-	ctx         context.Context
 	closeOnce   sync.Once
-	cancel      context.CancelFunc
+	// stopped
+	// the channel "stopped" would be closed if election running process quit
+	//
+	stopped chan struct{}
 }
 
 // New returns a new Election
@@ -42,6 +44,7 @@ func New(opts ...Option) (e *Election) {
 		role:    role.FOLLOWER,
 		RoleCh:  make(chan role.Role, 1000),
 		eleLock: sync.Mutex{},
+		stopped: make(chan struct{}),
 	}
 	for _, v := range opts {
 		v(e)
@@ -56,11 +59,8 @@ func New(opts ...Option) (e *Election) {
 
 // Run start election process
 func (e *Election) Run(ctx context.Context) {
-	e.ctx, e.cancel = context.WithCancel(ctx)
-	go func() {
-		defer e.close()
-		e.campaign(e.ctx)
-	}()
+	defer e.close()
+	e.campaign(ctx)
 }
 
 func (e *Election) campaign(ctx context.Context) {
@@ -69,50 +69,37 @@ func (e *Election) campaign(ctx context.Context) {
 	defer func() {
 		if r := recover(); r != nil {
 			logrus.Errorln("election panic, ", r)
-			panic(r)
 		}
-		//e.setRole(role.FOLLOWER)
-		//if err != nil {
-		//	logrus.Error("Election failed: ", err)
-		//}
-		//errR := e.resign(e.ctx)
-		//if errR != nil {
-		//	logrus.Error(errR)
-		//}
+		if err != nil {
+			logrus.WithError(err).Errorln("election process quit unexpected")
+		}
 		logrus.Info("Election cycle end")
 	}()
 	client, err := etcdclient.New()
 	if err != nil {
 		return
 	}
-	sen, err := concurrency.NewSession(client, concurrency.WithTTL(e.ttl))
-	if err != nil {
+	if e.session, err = concurrency.NewSession(client, concurrency.WithTTL(e.ttl)); err != nil {
 		return
 	}
-	e.session = sen
-	e.election = concurrency.NewElection(
-		sen,
-		e.prefix,
-	)
+	e.election = concurrency.NewElection(e.session, e.prefix)
 
 	logrus.Info("Run for election")
 	errCh := make(chan error, 1)
 	go func() {
-		errCh <- e.election.Campaign(e.ctx, e.campaignVal)
+		errCh <- e.election.Campaign(ctx, e.campaignVal)
 	}()
 
-	key := fmt.Sprintf("%s/%s/%x", dao_cluster.ElectionPrefix(), e.prefix, sen.Lease())
+	key := fmt.Sprintf("%s/%s/%x", dao_cluster.ElectionPrefix(), e.prefix, e.session.Lease())
 	w, err := watcher.New(watcher.WithKey(key), watcher.WithHandler(watcher.WrapStrHandler()))
 	if err != nil {
 		return
 	}
-	ch, err := w.WatchEtcd(e.ctx)
+	ch, err := w.WatchEtcd(ctx)
 	if err != nil {
 		return
 	}
-	defer func() {
-		w.Close()
-	}()
+	defer w.Close()
 	for {
 		var b bool
 		select {
@@ -140,7 +127,7 @@ func (e *Election) campaign(ctx context.Context) {
 			}
 		case <-time.Tick(time.Minute):
 			{
-				s, er := dao_cluster.GetElection(fmt.Sprintf("%x", sen.Lease()))
+				s, er := dao_cluster.GetElection(fmt.Sprintf("%x", e.session.Lease()))
 				if er != nil {
 					return
 				}
@@ -166,7 +153,7 @@ func (e *Election) campaign(ctx context.Context) {
 			{
 				return
 			}
-		case <-sen.Done():
+		case <-e.session.Done():
 			{
 				return
 			}
@@ -212,16 +199,17 @@ func (e *Election) resign(ctx context.Context) (err error) {
 	return
 }
 
-// Context returns Election context
-func (e *Election) context() context.Context {
-	return e.ctx
-}
-
 func (e *Election) close() (err error) {
 	e.closeOnce.Do(func() {
-		err = e.session.Close()
+		if e.session != nil {
+			err = e.session.Close()
+		}
 		close(e.RoleCh)
-		e.cancel()
+		close(e.stopped)
 	})
 	return
+}
+
+func (e *Election) Stopped() chan struct{} {
+	return e.stopped
 }

@@ -3,7 +3,6 @@ package register
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"go.etcd.io/etcd/api/v3/v3rpc/rpctypes"
 	"sync"
 	"time"
@@ -16,7 +15,8 @@ import (
 // New returns a new *Register
 func New(opts ...Option) (r *Register) {
 	r = &Register{
-		ttl: 5,
+		ttl:     5,
+		stopped: make(chan struct{}),
 	}
 	//r.client = etcdclient.Default()
 	for _, v := range opts {
@@ -34,93 +34,81 @@ type Register struct {
 	registerKey            string
 	registerData           interface{}
 	registerCreateRevision int64
-	ctx                    context.Context
-	cancel                 context.CancelFunc
+	stopped                chan struct{}
 	closeOnce              sync.Once
 }
 
-func (r *Register) initClient() (err error) {
-	//if r.client != nil {
-	//	er := r.client.Close()
-	//	if er != nil {
-	//		logrus.Errorln(er)
-	//	}
-	//}
-	r.client, err = etcdclient.New()
+func (r *Register) init() (err error) {
+	logrus.Info("init register")
+	if r.client, err = etcdclient.New(); err != nil {
+		return
+	}
 	return
 }
 
 // Run start register
-func (r *Register) Run(ctx context.Context) {
+func (r *Register) Run(ctx context.Context) (err error) {
 	logrus.Info("register run ")
-	r.ctx, r.cancel = context.WithCancel(ctx)
-	go func() {
-		defer func() {
-			if re := recover(); re != nil {
-				logrus.Errorln("register panic, ", re)
-			}
-			r.close()
-		}()
-		var err error
-		if r.client, err = etcdclient.New(); err != nil {
-			logrus.Errorln(err)
-			return
+	defer func() {
+		if re := recover(); re != nil {
+			logrus.Errorln("register panic, ", re)
 		}
-		err = r.reg()
 		if err != nil {
-			logrus.Errorln(err)
-			return
+			logrus.WithError(err).Errorln("register process quit unexpectedly")
 		}
-		defer func() {
-			errR := r.revoke()
-			if errR != nil {
-				logrus.Errorln(errR)
-			}
-			logrus.Errorln("Register end: ", r.registerKey)
-		}()
+		r.close()
+	}()
+	if err = r.init(); err != nil {
+		return
+	}
+	if err = r.reg(ctx); err != nil {
+		logrus.Errorln(err)
+		return
+	}
+	defer func() {
+		errR := r.revoke(ctx)
+		if errR != nil {
+			logrus.Errorln(errR)
+		}
+		logrus.Errorln("Register end: ", r.registerKey)
+	}()
 
-		keepTicker := time.NewTicker(time.Second)
-		defer keepTicker.Stop()
-		watchTicker := time.NewTicker(time.Second * 5)
-		defer watchTicker.Stop()
-		for {
-			select {
-			case <-r.ctx.Done():
+	keepTicker := time.NewTicker(time.Second)
+	defer keepTicker.Stop()
+	watchTicker := time.NewTicker(time.Second * 5)
+	defer watchTicker.Stop()
+	for {
+		select {
+		case <-ctx.Done():
+			{
 				return
-			case <-ctx.Done():
-				{
+			}
+		case <-watchTicker.C:
+			{
+				wOk, wErr := r.watch(ctx)
+				if wErr != nil {
+					logrus.Errorln(wErr)
 					return
 				}
-			case <-watchTicker.C:
-				{
-					wOk, wErr := r.watch()
-					if wErr != nil {
-						logrus.Errorln(wErr)
-						return
-					}
-					if !wOk {
-						return
-					}
+				if !wOk {
+					return
 				}
-			case <-keepTicker.C:
-				{
-					err = r.keepOnce()
-					if err != nil {
-						fmt.Println(err)
-					}
-					if err == rpctypes.ErrLeaseNotFound {
-						return
-					}
+			}
+		case <-keepTicker.C:
+			{
+				err = r.keepOnce(ctx)
+				if err == rpctypes.ErrLeaseNotFound {
+					return
 				}
 			}
 		}
-	}()
+	}
 }
 
-func (r *Register) reg() (err error) {
+func (r *Register) reg(ctx context.Context) (err error) {
 	//r.client, _ = etcdclient.New()
 	r.lease = clientv3.NewLease(r.client)
-	rep, err := r.lease.Grant(r.ctx, r.ttl)
+	rep, err := r.lease.Grant(ctx, r.ttl)
 	if err != nil {
 		return
 	}
@@ -130,7 +118,7 @@ func (r *Register) reg() (err error) {
 	if err != nil {
 		return
 	}
-	txn := r.client.Txn(r.ctx).
+	txn := r.client.Txn(ctx).
 		If(clientv3.Compare(clientv3.CreateRevision(r.registerKey), "=", int64(0))).
 		Then(clientv3.OpPut(r.registerKey, string(b), clientv3.WithLease(r.leaseID)))
 	res, err := txn.Commit()
@@ -143,8 +131,8 @@ func (r *Register) reg() (err error) {
 	return
 }
 
-func (r *Register) keepOnce() (err error) {
-	_, err = r.lease.KeepAliveOnce(r.ctx, r.leaseID)
+func (r *Register) keepOnce(ctx context.Context) (err error) {
+	_, err = r.lease.KeepAliveOnce(ctx, r.leaseID)
 
 	if err != nil {
 		return
@@ -153,14 +141,14 @@ func (r *Register) keepOnce() (err error) {
 	return
 }
 
-func (r *Register) revoke() (err error) {
-	_, err = r.client.Revoke(r.ctx, r.leaseID)
+func (r *Register) revoke(ctx context.Context) (err error) {
+	_, err = r.client.Revoke(ctx, r.leaseID)
 	return
 }
 
-func (r *Register) watch() (ok bool, err error) {
+func (r *Register) watch(ctx context.Context) (ok bool, err error) {
 	var res *clientv3.GetResponse
-	res, err = r.client.Get(r.ctx, r.registerKey)
+	res, err = r.client.Get(ctx, r.registerKey)
 	if err != nil {
 		//logrus.Errorln(err)
 		return
@@ -176,15 +164,16 @@ func (r *Register) watch() (ok bool, err error) {
 	return
 }
 
-// Context returns register's context
-func (r *Register) Context() context.Context {
-	return r.ctx
-}
-
 func (r *Register) close() error {
 	r.closeOnce.Do(func() {
-		r.cancel()
-		r.client.Close()
+		if r.client != nil {
+			r.client.Close()
+		}
+		close(r.stopped)
 	})
 	return nil
+}
+
+func (r *Register) Stopped() chan struct{} {
+	return r.stopped
 }

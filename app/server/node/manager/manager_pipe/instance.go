@@ -25,6 +25,8 @@ type instance struct {
 	cancel    context.CancelFunc
 	mutex     sync.Mutex
 	startTime time.Time
+	stopping  chan struct{}
+	stopOnce  sync.Once
 	//stopped   chan struct{}
 }
 
@@ -34,6 +36,7 @@ func newInstance(pipeName string, nodeName string) *instance {
 		nodeName:  nodeName,
 		mutex:     sync.Mutex{},
 		startTime: time.Time{},
+		stopping:  make(chan struct{}),
 	}
 	return ins
 }
@@ -79,57 +82,45 @@ func (i *instance) init() (err error) {
 func (i *instance) start(c context.Context) (err error) {
 	i.startTime = time.Now()
 	defer func() {
+		if r := recover(); r != nil {
+			logrus.Errorln("instance run panic, ", r)
+		}
 		if err != nil {
 			event.Event(event2.NewErrorPipeline(i.pipeName, "Pipeline instance stopped error: "+err.Error()))
 		}
 		event.Event(event2.NewInfoPipeline(i.pipeName, "Pipeline instance stopped"))
-		//close(i.stopped)
 	}()
-	err = i.init()
-	if err != nil {
+	if err = i.init(); err != nil {
 		return
 	}
 	ctx, cancel := context.WithCancel(c)
-	defer func() {
-		cancel()
+	defer cancel()
+
+	go func() {
+		i.pipeReg.Run(ctx)
+		i.stop()
 	}()
-	i.cancel = cancel
-	i.pipeReg.Run(ctx)
-	i.pipeIns.Run(ctx)
+	go func() {
+		i.pipeIns.Run(ctx)
+		i.stop()
+	}()
 	logrus.Info("pipeline instance start: ", i.pipeName)
 	event.Event(event2.NewInfoPipeline(i.pipeName, "Pipeline instance start success"))
 
 	select {
-	case <-c.Done():
-		{
-			return
-		}
 	case <-ctx.Done():
-		{
-			return
-		}
-	case <-i.pipeIns.Context().Done():
-		{
-			return
-		}
-	case <-i.pipeReg.Context().Done():
-		{
-			return
-		}
+		return
+	case <-i.stopping:
+		return
 	}
 }
 
 func (i *instance) stop() {
-	i.startTime = time.Time{}
-	//if i.status == STATUS_STOP {
-	//	return
-	//}
-	//defer func() {
-	//	i.status = STATUS_STOP
-	//}()
-	i.cancel()
-	logrus.Info("pipeline instance stop: ", i.pipeName)
-	return
+	i.stopOnce.Do(func() {
+		i.startTime = time.Time{}
+		close(i.stopping)
+		logrus.Info("pipeline instance stop: ", i.pipeName)
+	})
 }
 
 // StartTime returns instance start time

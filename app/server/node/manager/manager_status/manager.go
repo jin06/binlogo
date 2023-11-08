@@ -17,7 +17,6 @@ type Manager struct {
 	Node      *node.Node
 	syncMutex sync.Mutex
 	nodeMutex sync.Mutex
-	ctx       context.Context
 }
 
 // NewManager returns a new Manager
@@ -32,39 +31,33 @@ func NewManager(n *node.Node) *Manager {
 
 // Run start working
 func (m *Manager) Run(ctx context.Context) {
-	myCtx, cancel := context.WithCancel(ctx)
-	m.ctx = myCtx
-	go func() {
-		defer func() {
-			if r := recover(); r != nil {
-				logrus.Errorln("manager status panic, ", r)
+	defer func() {
+		if r := recover(); r != nil {
+			logrus.Errorln("manager status panic, ", r)
+		}
+	}()
+	var err error
+	for {
+		select {
+		case <-ctx.Done():
+			{
+				return
 			}
-			cancel()
-		}()
-		var err error
-		for {
-			select {
-			case <-ctx.Done():
-				{
-					return
+		case <-time.Tick(time.Second * 10):
+			//case <-time.Tick(time.Second * 1):
+			{
+				if err = m.syncStatus(); err != nil {
+					logrus.Error("Sync status failed: ", err)
 				}
-			case <-time.Tick(time.Second * 10):
-				//case <-time.Tick(time.Second * 1):
-				{
-					if err = m.syncStatus(); err != nil {
-						logrus.Error("Sync status failed: ", err)
-					}
-				}
-			case <-time.Tick(time.Minute):
-				{
-					if err = m.syncIP(); err != nil {
-						logrus.Error("Sync node ip failed: ", err)
-					}
+			}
+		case <-time.Tick(time.Minute):
+			{
+				if err = m.syncIP(); err != nil {
+					logrus.Error("Sync node ip failed: ", err)
 				}
 			}
 		}
-	}()
-	return
+	}
 }
 
 func (m *Manager) syncStatus() (err error) {
@@ -93,9 +86,4 @@ func (m *Manager) syncIP() (err error) {
 		m.Node.IP = nip
 	}
 	return
-}
-
-// Context retuns Manager context
-func (m *Manager) Context() context.Context {
-	return m.ctx
 }

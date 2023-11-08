@@ -19,7 +19,8 @@ type Manager struct {
 	mappingIns map[string]*instance
 	node       *node.Node
 	mutex      sync.Mutex
-	ctx        context.Context
+	stopped    chan struct{}
+	closeOnce  sync.Once
 }
 
 // New returns a new Manager
@@ -28,6 +29,7 @@ func New(n *node.Node) (m *Manager) {
 		mapping:    map[string]bool{},
 		mappingIns: map[string]*instance{},
 		mutex:      sync.Mutex{},
+		stopped:    make(chan struct{}),
 	}
 	m.node = n
 	logrus.Debug("new pipeline manager ")
@@ -37,39 +39,31 @@ func New(n *node.Node) (m *Manager) {
 
 // Run start woking
 func (m *Manager) Run(ctx context.Context) {
-	myCtx, cancel := context.WithCancel(ctx)
-	m.ctx = myCtx
-	go func() {
-		defer func() {
-			if r := recover(); r != nil {
-				logrus.Errorln("election manager panic, ", r)
-			}
-			cancel()
-		}()
-		if err := m.scanPipelines(nil); err != nil {
-			logrus.Error(err)
+	var err error
+	defer func() {
+		if r := recover(); r != nil {
+			logrus.Errorln("pipeline manager panic, ", r)
 		}
-		for {
-			select {
-			case <-ctx.Done():
-				{
-					return
-				}
-			case <-time.Tick(time.Second * 1):
-				{
-					if err := m.scanPipelines(nil); err != nil {
-						logrus.Error(err)
-					}
-					m.dispatch()
-				}
-				//case <-time.Tick(time.Second * 1):
-				//	{
-				//		m.dispatch()
-				//	}
-			}
-		}
+		m.close()
 	}()
-	return
+	if err = m.scanPipelines(nil); err != nil {
+		logrus.Error(err)
+	}
+	for {
+		select {
+		case <-ctx.Done():
+			{
+				return
+			}
+		case <-time.Tick(time.Second * 1):
+			{
+				if serr := m.scanPipelines(nil); serr != nil {
+					logrus.Error(serr)
+				}
+				m.dispatch(ctx)
+			}
+		}
+	}
 }
 
 // scanPipelines scan pipeline bind, find pipelines that should run in this node
@@ -100,7 +94,7 @@ func (m *Manager) scanPipelines(pb *scheduler.PipelineBind) (err error) {
 	return
 }
 
-func (m *Manager) dispatch() {
+func (m *Manager) dispatch(ctx context.Context) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 	for pName, shouldRun := range m.mapping {
@@ -112,7 +106,7 @@ func (m *Manager) dispatch() {
 				//go m.mappingIns[pName].start(m.ctx)
 				go func() {
 					ins := m.mappingIns[pName]
-					runErr := ins.start(m.ctx)
+					runErr := ins.start(ctx)
 					logrus.WithField("pipeline name", pName).WithField("error", runErr).Warn("pipeline exist")
 					m.mutex.Lock()
 					delete(m.mappingIns, pName)
@@ -129,7 +123,12 @@ func (m *Manager) dispatch() {
 	}
 }
 
-// Context returns Manager ctx
-func (m *Manager) Context() context.Context {
-	return m.ctx
+func (m *Manager) close() {
+	m.closeOnce.Do(func() {
+		close(m.stopped)
+	})
+}
+
+func (m *Manager) Stopped() chan struct{} {
+	return m.stopped
 }
