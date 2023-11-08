@@ -61,12 +61,14 @@ func (r *Register) Run(ctx context.Context) (err error) {
 	if err = r.init(); err != nil {
 		return
 	}
-	if err = r.reg(ctx); err != nil {
+	stx, cancel := context.WithCancel(ctx)
+	defer cancel()
+	if err = r.reg(stx); err != nil {
 		logrus.Errorln(err)
 		return
 	}
 	defer func() {
-		errR := r.revoke(ctx)
+		errR := r.revoke(stx)
 		if errR != nil {
 			logrus.Errorln(errR)
 		}
@@ -85,7 +87,7 @@ func (r *Register) Run(ctx context.Context) (err error) {
 			}
 		case <-watchTicker.C:
 			{
-				wOk, wErr := r.watch(ctx)
+				wOk, wErr := r.watch(stx)
 				if wErr != nil {
 					logrus.Errorln(wErr)
 					return
@@ -96,7 +98,7 @@ func (r *Register) Run(ctx context.Context) (err error) {
 			}
 		case <-keepTicker.C:
 			{
-				err = r.keepOnce(ctx)
+				err = r.keepOnce(stx)
 				if err == rpctypes.ErrLeaseNotFound {
 					return
 				}
