@@ -3,6 +3,7 @@ package pipeline
 import (
 	"context"
 	"errors"
+	"github.com/sirupsen/logrus"
 	"sync"
 
 	filter2 "github.com/jin06/binlogo/app/pipeline/filter"
@@ -113,12 +114,11 @@ func (p *Pipeline) initOutput() (err error) {
 
 // Run pipeline start working
 func (p *Pipeline) Run(ctx context.Context) {
-	p.runMutex.Lock()
-	defer p.runMutex.Unlock()
+	logrus.Info("pipeline stream run: ", p.Options.Pipeline.Name)
+	defer func() {
+		logrus.Info("pipeline stream stopped: ", p.Options.Pipeline.Name)
+	}()
 
-	if p.status == STATUS_RUN {
-		return
-	}
 	//logrus.Debug("mysql position", p.Input.Options.Position)
 	stx, cancel := context.WithCancel(ctx)
 	defer cancel()

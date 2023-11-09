@@ -18,64 +18,57 @@ import (
 // Scheduler schedule the pipeline.
 // allocate the pipeline to the appropriate node for operation
 type Scheduler struct {
-	lock    sync.Mutex
-	status  string
-	runLock sync.Mutex
-	cancel  context.CancelFunc
+	lock     sync.Mutex
+	stopOnce sync.Once
+	stopping chan struct{}
+	Exit     bool
 }
 
-const (
-	SCHEDULER_RUN  = "run"
-	SCHEDULER_STOP = "stop"
-)
-
-// Run start working
-func (s *Scheduler) Run(ctx context.Context) (err error) {
-	s.runLock.Lock()
-	defer s.runLock.Unlock()
-	if s.status == SCHEDULER_RUN {
-		return
+// New returns a new Scheduler
+func New() (s *Scheduler) {
+	s = &Scheduler{
+		stopping: make(chan struct{}),
 	}
-	myCtx, cancel := context.WithCancel(ctx)
-	defer func() {
-		if err != nil {
-			cancel()
-		} else {
-			s.status = SCHEDULER_RUN
-		}
-	}()
-	s.cancel = cancel
-	go s._schedule(myCtx)
-	logrus.Debug("scheduler.run")
 	return
 }
 
-func (s *Scheduler) _schedule(ctx context.Context) {
+// Run start working
+func (s *Scheduler) Run(ctx context.Context) (err error) {
+	logrus.Info("scheduler run")
 	defer func() {
-		r := recover()
-		if r != nil {
-			logrus.Errorln("schedule error, ", r)
-		}
-		s.Stop()
+		s.Exit = true
+		logrus.Info("scheduler stop")
 	}()
+	s.schedule(ctx)
+	return
+}
+
+func (s *Scheduler) schedule(ctx context.Context) {
+	stx, cancel := context.WithCancel(ctx)
+	defer cancel()
 	key := fmt.Sprintf("%s/%s", dao_sche.SchedulerPrefix(), "pipeline_bind")
 	w, err := watcher.New(watcher.WithHandler(watcher.WrapSchedulerBinding()), watcher.WithKey(key))
-	if err != nil {
-		return
-	}
-	waCh, err := w.WatchEtcd(ctx)
-	if err != nil {
-		return
-	}
 	defer w.Close()
+	if err != nil {
+		return
+	}
+	waCh, err := w.WatchEtcd(stx)
+	if err != nil {
+		return
+	}
 	schedulePipes(nil)
+	ticker := time.NewTicker(time.Second * 60)
+	defer ticker.Stop()
 	for {
 		select {
+		case <-s.stopping:
+			return
 		case <-ctx.Done():
-			{
+			return
+		case ev, whOK := <-waCh:
+			if !whOK {
 				return
 			}
-		case ev := <-waCh:
 			{
 				if ev.Event.Type == mvccpb.PUT {
 					if val, ok := ev.Data.(*scheduler.PipelineBind); ok {
@@ -83,23 +76,22 @@ func (s *Scheduler) _schedule(ctx context.Context) {
 					}
 				}
 			}
-		case <-time.Tick(time.Second * 60):
-			{
-				schedulePipes(nil)
-			}
+		case <-ticker.C:
+			schedulePipes(nil)
 		}
 	}
 }
 
 // Stop stop working
 func (s *Scheduler) Stop() {
-	s.runLock.Lock()
-	defer s.runLock.Unlock()
-	if s.status == SCHEDULER_STOP {
-		return
-	}
-	s.cancel()
+	s.stop()
 	return
+}
+
+func (s *Scheduler) stop() {
+	s.stopOnce.Do(func() {
+		close(s.stopping)
+	})
 }
 
 func scheduleOne(p *pipeline.Pipeline) (err error) {
@@ -112,15 +104,6 @@ func scheduleOne(p *pipeline.Pipeline) (err error) {
 	if err != nil {
 		return
 	}
-	return
-}
-
-// New returns a new Scheduler
-func New() (s *Scheduler) {
-	s = &Scheduler{}
-	s.runLock = sync.Mutex{}
-	s.status = SCHEDULER_STOP
-	s.cancel = func() {}
 	return
 }
 
@@ -154,8 +137,4 @@ func schedulePipes(pb *scheduler.PipelineBind) {
 			event.EventInfoPipeline(v.Name, "SCHEDULING SUCCESS")
 		}
 	}
-}
-
-func (s *Scheduler) Status() string {
-	return s.status
 }

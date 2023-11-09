@@ -9,9 +9,7 @@ import (
 
 // Manager is election cycle manager
 type Manager struct {
-	mutex     sync.Mutex
 	optNode   *node.Node
-	election  *Election
 	roleCh    chan role.Role
 	cancel    context.CancelFunc
 	closeOnce sync.Once
@@ -21,7 +19,6 @@ type Manager struct {
 // NewManager returns a new manager
 func NewManager(optNode *node.Node) (m *Manager) {
 	m = &Manager{
-		mutex:   sync.Mutex{},
 		optNode: optNode,
 		roleCh:  make(chan role.Role, 1000),
 		stopped: make(chan struct{}),
@@ -32,13 +29,15 @@ func NewManager(optNode *node.Node) (m *Manager) {
 // Run election cycle
 func (m *Manager) Run(ctx context.Context) {
 	defer m.close()
+	stx, cancel := context.WithCancel(ctx)
+	defer cancel()
 	for {
 		election := New(
 			OptionNode(m.optNode),
 			OptionTTL(5),
 		)
 
-		go election.Run(ctx)
+		go election.Run(stx)
 		for {
 			select {
 			case <-ctx.Done():
@@ -54,22 +53,13 @@ func (m *Manager) Run(ctx context.Context) {
 					if !ok {
 						break
 					}
-					if r == election.getRole() {
-						m.roleCh <- r
-					}
+
+					m.roleCh <- r
 				}
 			}
 		}
 		election.close()
 	}
-}
-
-// Role returns role
-func (m *Manager) Role() role.Role {
-	if m.election == nil {
-		return role.FOLLOWER
-	}
-	return m.election.getRole()
 }
 
 // RoleCh return role chan

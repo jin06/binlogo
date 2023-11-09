@@ -48,7 +48,7 @@ func (r *Register) init() (err error) {
 
 // Run start register
 func (r *Register) Run(ctx context.Context) (err error) {
-	logrus.Info("register run ")
+	logrus.WithField("key", r.registerKey).Info("register run")
 	defer func() {
 		if re := recover(); re != nil {
 			logrus.Errorln("register panic, ", re)
@@ -56,6 +56,7 @@ func (r *Register) Run(ctx context.Context) (err error) {
 		if err != nil {
 			logrus.WithError(err).Errorln("register process quit unexpectedly")
 		}
+		logrus.WithField("key", r.registerKey).Info("register stopped")
 		r.close()
 	}()
 	if err = r.init(); err != nil {

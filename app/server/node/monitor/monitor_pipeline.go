@@ -12,81 +12,69 @@ import (
 	"go.etcd.io/etcd/api/v3/mvccpb"
 )
 
-func (m *Monitor) monitorPipe(ctx context.Context) (resCtx context.Context, err error) {
-	resCtx, cancel := context.WithCancel(ctx)
-	defer func() {
-		if err != nil {
-			cancel()
-		}
-	}()
+func (m *Monitor) monitorPipe(ctx context.Context) (err error) {
+	logrus.Info("monitor pipeline run ")
+	defer logrus.Info("monitor pipeline stop")
+	stx, cancel := context.WithCancel(ctx)
+	defer cancel()
 	key := dao_pipe.PipelinePrefix()
 	w, err := watcher.New(watcher.WithKey(key), watcher.WithHandler(watcher.WrapPipeline(key, "")))
+	defer w.Close()
 	if err != nil {
 		return
 	}
 	//ch, err := m.newPipeWatcherCh(ctx)
-	ch, err := w.WatchEtcdList(ctx)
+	ch, err := w.WatchEtcdList(stx)
 	if err != nil {
 		return
 	}
 
 	m.checkAllPipelineBind()
 	m.checkAllPipelineDelete()
-	go func() {
-		defer func() {
-			if r := recover(); r != nil {
-				logrus.Errorln("monitor pipeline panic, ", r)
+	ticker := time.NewTicker(time.Second * 120)
+	for {
+		select {
+		case <-ticker.C:
+			{
+				m.checkAllPipelineBind()
+				m.checkAllPipelineDelete()
 			}
-			cancel()
-		}()
-		defer w.Close()
-		for {
-			select {
-			case <-time.Tick(time.Second * 120):
-				{
-					m.checkAllPipelineBind()
-					m.checkAllPipelineDelete()
-				}
-			case <-ctx.Done():
-				{
+		case <-ctx.Done():
+			return
+		case n, chOK := <-ch:
+			{
+				if !chOK {
 					return
 				}
-			case n, ok := <-ch:
-				{
-					if !ok {
-						return
-					}
-					if n.Event.Type == mvccpb.DELETE {
-						if val, ok := n.Data.(*pipeline.Pipeline); ok {
-							_, err1 := dao_sche.DeletePipelineBind(val.Name)
-							if err1 != nil {
-								logrus.Error("Delete pipeline bind failed: ", err1)
-							}
+				if n.Event.Type == mvccpb.DELETE {
+					if val, ok := n.Data.(*pipeline.Pipeline); ok {
+						_, err1 := dao_sche.DeletePipelineBind(val.Name)
+						if err1 != nil {
+							logrus.Error("Delete pipeline bind failed: ", err1)
 						}
 					}
-					if n.Event.Type == mvccpb.PUT {
-						if val, ok1 := n.Data.(*pipeline.Pipeline); ok1 {
-							if val.IsDelete {
-								m.deletePipeline(val)
-								continue
+				}
+				if n.Event.Type == mvccpb.PUT {
+					if val, ok1 := n.Data.(*pipeline.Pipeline); ok1 {
+						if val.IsDelete {
+							m.deletePipeline(val)
+							continue
+						}
+						if val.ExpectRun() {
+							err1 := dao_sche.UpdatePipelineBindIfNotExist(val.Name, "")
+							if err1 != nil {
+								logrus.Error("Update pipeline bind failed ", err1)
 							}
-							if val.ExpectRun() {
-								err1 := dao_sche.UpdatePipelineBindIfNotExist(val.Name, "")
-								if err1 != nil {
-									logrus.Error("Update pipeline bind failed ", err1)
-								}
-							} else {
-								if _, err1 := dao_sche.DeletePipelineBind(val.Name); err1 != nil {
-									logrus.Errorln(err1)
-								}
+						} else {
+							if _, err1 := dao_sche.DeletePipelineBind(val.Name); err1 != nil {
+								logrus.Errorln(err1)
 							}
 						}
 					}
 				}
 			}
 		}
-	}()
-	return
+	}
 }
 
 func (m *Monitor) checkAllPipelineBind() {

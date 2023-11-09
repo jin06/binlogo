@@ -3,6 +3,7 @@ package manager_event
 import (
 	"context"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/jin06/binlogo/app/server/node/manager"
@@ -14,60 +15,47 @@ import (
 
 // Manager is event manager
 type Manager struct {
-	cancel context.CancelFunc
 	*manager.Base
+	Exit     bool
+	stopOnce sync.Once
+	stopping chan struct{}
 }
 
 // New returns a new Manager
 func New() (m *Manager) {
 	m = &Manager{
-		nil, &manager.Base{Status: manager.STOP},
+		Base:     &manager.Base{Status: manager.STOP},
+		Exit:     false,
+		stopping: make(chan struct{}),
 	}
 	return
 }
 
 // Run start working when become a leader
 func (m *Manager) Run(ctx context.Context) (err error) {
-	m.Lock()
-	defer m.Unlock()
-	if m.Status == manager.START {
-		return
-	}
-	myCtx, cancel := context.WithCancel(ctx)
-	m.cancel = cancel
-	m.Status = manager.START
-	go func() {
-		defer func() {
-			if r := recover(); r != nil {
-				logrus.Errorln("event manager panic, ", r)
+	defer func() {
+		m.Exit = true
+	}()
+
+	ticker := time.NewTicker(time.Hour * 60)
+	defer ticker.Stop()
+	for {
+		select {
+		case <-m.stopping:
+			return
+		case <-ctx.Done():
+			{
+				return
 			}
-			m.Lock()
-			defer m.Unlock()
-			cancel()
-			m.Status = manager.STOP
-		}()
-		// go m.cleanHistoryEvent()
-		for {
-			select {
-			case <-myCtx.Done():
-				{
-					return
-				}
-			case <-ctx.Done():
-				{
-					return
-				}
-			case <-time.Tick(time.Hour * 60):
-				{
-					err1 := m.cleanHistoryEvent()
-					if err1 != nil {
-						logrus.Errorln("Clean event error: ", err1)
-					}
+		case <-ticker.C:
+			{
+				err1 := m.cleanHistoryEvent()
+				if err1 != nil {
+					logrus.Errorln("Clean event error: ", err1)
 				}
 			}
 		}
-	}()
-	return
+	}
 }
 
 func (m *Manager) cleanHistoryEvent() (err error) {
@@ -102,15 +90,11 @@ func (m *Manager) cleanHistoryEvent() (err error) {
 
 // Stop stop working when lost leader
 func (m *Manager) Stop() {
-	m.Lock()
-	defer m.Unlock()
-	if m.Status == manager.STOP {
-		return
-	}
-	//if m.cancel != nil {
-	//	m.cancel()
-	//}
-	m.cancel()
-	m.Status = manager.STOP
-	return
+	m.stop()
+}
+
+func (m *Manager) stop() {
+	m.stopOnce.Do(func() {
+		close(m.stopping)
+	})
 }

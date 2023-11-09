@@ -29,6 +29,7 @@ type instance struct {
 	stopOnce  sync.Once
 	started   chan struct{}
 	stopped   chan struct{}
+	exit      bool
 	//stopped   chan struct{}
 }
 
@@ -85,15 +86,18 @@ func (i *instance) init() (err error) {
 
 func (i *instance) start(ctx context.Context) (err error) {
 	i.startTime = time.Now()
+	logrus.Info("pipeline instance start: ", i.pipeName)
 	defer func() {
 		if r := recover(); r != nil {
 			logrus.Errorln("instance run panic, ", r)
 		}
+		logrus.Info("pipeline instance stopped: ", i.pipeName)
 		if err != nil {
 			event.Event(event2.NewErrorPipeline(i.pipeName, "Pipeline instance stopped error: "+err.Error()))
 		}
 		event.Event(event2.NewInfoPipeline(i.pipeName, "Pipeline instance stopped"))
 		close(i.stopped)
+		i.exit = true
 	}()
 	if err = i.init(); err != nil {
 		return
@@ -109,7 +113,6 @@ func (i *instance) start(ctx context.Context) (err error) {
 		i.pipeIns.Run(stx)
 		i.stop()
 	}()
-	logrus.Info("pipeline instance start: ", i.pipeName)
 	event.Event(event2.NewInfoPipeline(i.pipeName, "Pipeline instance start success"))
 	close(i.started)
 
@@ -125,7 +128,6 @@ func (i *instance) stop() {
 	i.stopOnce.Do(func() {
 		i.startTime = time.Time{}
 		close(i.stopping)
-		logrus.Info("pipeline instance stop: ", i.pipeName)
 	})
 }
 

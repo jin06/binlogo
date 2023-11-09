@@ -100,28 +100,21 @@ func (m *Manager) dispatch(ctx context.Context) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 	for pName, shouldRun := range m.mapping {
-		_, isExist := m.mappingIns[pName]
+		//logrus.Debug(pName, shouldRun)
+		ins, isExist := m.mappingIns[pName]
 		if shouldRun {
-			if !isExist {
-				ins := newInstance(pName, m.node.Name)
-				m.mappingIns[pName] = ins
+			if !isExist || ins.exit {
+				m.mappingIns[pName] = newInstance(pName, m.node.Name)
 				go func() {
-					runErr := ins.start(ctx)
-					logrus.WithField("pipeline name", pName).WithField("error", runErr).Warn("pipeline exist")
-					m.mutex.Lock()
-					defer m.mutex.Unlock()
-					delete(m.mappingIns, pName)
+					m.mappingIns[pName].start(ctx)
 				}()
-				select {
-				case <-ins.started:
-				case <-ins.stopped:
-				}
+				<-m.mappingIns[pName].started
 			}
 		}
 		if !shouldRun {
 			if isExist {
 				m.mappingIns[pName].stop()
-				//delete(m.mappingIns, pName)
+				delete(m.mappingIns, pName)
 			}
 		}
 	}

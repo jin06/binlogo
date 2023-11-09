@@ -204,6 +204,7 @@ func (e *Election) close() (err error) {
 		if e.session != nil {
 			err = e.session.Close()
 		}
+		e.setRole(role.FOLLOWER)
 		close(e.RoleCh)
 		close(e.stopped)
 	})

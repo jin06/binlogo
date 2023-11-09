@@ -22,9 +22,10 @@ type Handler func(*clientv3.Event) (*Event, error)
 
 // New returns a new General watcher with handler
 func New(opts ...Option) (w *General, err error) {
-	w = &General{}
-	w.options = NewOptions(opts...)
-	w.ch = make(chan *Event, 1000)
+	w = &General{
+		options: NewOptions(opts...),
+		ch:      make(chan *Event, 1000),
+	}
 	return
 }
 

@@ -4,11 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"sync"
-	"time"
-
 	"github.com/jin06/binlogo/app/server/node/election"
-	"github.com/jin06/binlogo/app/server/node/manager"
 	"github.com/jin06/binlogo/app/server/node/manager/manager_event"
 	"github.com/jin06/binlogo/app/server/node/manager/manager_pipe"
 	"github.com/jin06/binlogo/app/server/node/manager/manager_status"
@@ -19,6 +15,8 @@ import (
 	"github.com/jin06/binlogo/pkg/store/dao/dao_node"
 	"github.com/jin06/binlogo/pkg/store/model/node"
 	"github.com/sirupsen/logrus"
+	"sync"
+	"time"
 )
 
 // Node represents a node instance
@@ -137,78 +135,62 @@ func (n *Node) Run(ctx context.Context) (err error) {
 	}
 }
 
-// Role returns current role
-func (n *Node) Role() role.Role {
-	return n.electionManager.Role()
-	//return n.election.Role()
-}
-
 // _leaderRun run when node is leader
 func (n *Node) _leaderRun(ctx context.Context) {
 	stx, cancel := context.WithCancel(ctx)
 	defer cancel()
+	curRole := role.FOLLOWER
+	ticker := time.NewTicker(time.Second)
+	defer ticker.Stop()
 	for {
 		select {
 		case <-ctx.Done():
+			return
+		case <-n.electionManager.Stopped():
+			return
+		case r, ok := <-n.electionManager.RoleCh():
 			{
-				return
+				if !ok {
+					return
+				}
+				curRole = r
 			}
-		case r := <-n.electionManager.RoleCh():
-			{
-				n.leaderRun(stx, r)
-			}
-		case <-time.Tick(time.Second * 3):
-			{
-				n.leaderRun(stx, n.Role())
-			}
+		case <-ticker.C:
 		}
+		n.leaderRun(stx, curRole)
 	}
 }
 
 func (n *Node) leaderRun(ctx context.Context, r role.Role) {
-	//if r == "" {
-	//	r = n.Role()
-	//}
-	switch r {
-	case role.LEADER:
-		{
-			var err error
-			if n.Scheduler == nil || n.Scheduler.Status() == scheduler.SCHEDULER_STOP {
-				n.Scheduler = scheduler.New()
-				err = n.Scheduler.Run(ctx)
-				if err != nil {
-					return
-				}
-			}
-			if n.monitor == nil || n.monitor.Status() == monitor.STATUS_STOP {
-				n.monitor, err = monitor.NewMonitor()
-				if err != nil {
-					return
-				}
-				err = n.monitor.Run(ctx)
-				if err != nil {
-					return
-				}
-			}
-			if n.eventManager == nil || n.eventManager.Status == manager.STOP {
-				n.eventManager = manager_event.New()
-				err = n.eventManager.Run(ctx)
-				if err != nil {
-					return
-				}
-			}
+	n.leaderRunMutex.Lock()
+	defer n.leaderRunMutex.Unlock()
+	//logrus.Debug("node run leader ", r)
+	if r == role.FOLLOWER {
+		if n.Scheduler != nil {
+			n.Scheduler.Stop()
+			n.Scheduler = nil
 		}
-	default:
-		{
-			if n.Scheduler != nil {
-				n.Scheduler.Stop()
-			}
-			if n.monitor != nil {
-				n.monitor.Stop(ctx)
-			}
-			if n.eventManager != nil {
-				n.eventManager.Stop()
-			}
+		if n.monitor != nil {
+			n.monitor.Stop()
+			n.monitor = nil
+		}
+		if n.eventManager != nil {
+			n.eventManager.Stop()
+			n.eventManager = nil
+		}
+	}
+	if r == role.LEADER {
+		if n.Scheduler == nil || n.Scheduler.Exit {
+			n.Scheduler = scheduler.New()
+			go n.Scheduler.Run(ctx)
+		}
+		if n.monitor == nil || n.monitor.Exit {
+			n.monitor = monitor.NewMonitor()
+			go n.monitor.Run(ctx)
+		}
+		if n.eventManager == nil || n.eventManager.Exit {
+			n.eventManager = manager_event.New()
+			go n.eventManager.Run(ctx)
 		}
 	}
 }
@@ -243,9 +225,7 @@ func (n *Node) _mustRun(ctx context.Context) {
 }
 
 func (n *Node) stop() {
-	n.stopOnce.Do(
-		func() {
-			close(n.stopping)
-		},
-	)
+	n.stopOnce.Do(func() {
+		close(n.stopping)
+	})
 }
