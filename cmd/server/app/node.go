@@ -23,7 +23,7 @@ func RunNode(c context.Context) (resCtx context.Context, err error) {
 	}()
 	nModel := &node.Node{
 		Name:       configs.NodeName,
-		Version:    configs.VERSITON,
+		Version:    configs.Version,
 		CreateTime: time.Now(),
 		Role:       node.Role{Master: true, Admin: true, Worker: true},
 	}

@@ -34,11 +34,15 @@
 # docker push jin06/binlogo:1.0.41
 
 .PHONY: build
+app = github.com/jin06/binlogo
 version = 1.0.99
+compileTime = $(shell date)
+goVersion = $(shell go version)
 output = bin/$(version)
 darwinDir = $(output)/binlogo-v$(version)-darwin-amd64
 windowsDir = $(output)/binlogo-v$(version)-windows-amd64
 linuxDir = $(output)/binlogo-v$(version)-linux-amd64
+buildArgs = -ldflags="-X '$(app)/configs.Version=$(version)' -X '$(app)/configs.BuildTime=$(compileTime)' -X '$(app)/configs.GoVersion=$(goVersion)'" cmd/server/binlogo.go
 build:
 	mkdir -p $(darwinDir)/configs
 	cp configs/binlogo.yaml $(darwinDir)/configs/binlogo.yaml
@@ -46,9 +50,9 @@ build:
 	cp configs/binlogo.yaml $(windowsDir)/configs/binlogo.yaml
 	mkdir -p $(linuxDir)/configs
 	cp configs/binlogo.yaml $(linuxDir)/configs/binlogo.yaml
-	CGO_ENABLE=0 GOOS=darwin GOARCH=amd64 go build -o $(darwinDir)/binlogo  -ldflags="-X 'configs.Version=$(version)'"   cmd/server/binlogo.go
-	CGO_ENABLE=0 GOOS=windows GOARCH=amd64 go build -o $(windowsDir)/binlogo  -ldflags="-X 'configs.Version=$(version)'" cmd/server/binlogo.go
-	CGO_ENABLE=0 GOOS=linux GOARCH=amd64 go build -o $(linuxDir)/binlogo  -ldflags="-X 'configs.Version=$(version)'" cmd/server/binlogo.go
+	CGO_ENABLE=0 GOOS=darwin GOARCH=amd64 go build -o $(darwinDir)/binlogo $(buildArgs)
+	CGO_ENABLE=0 GOOS=windows GOARCH=amd64 go build -o $(windowsDir)/binlogo $(buildArgs)
+	CGO_ENABLE=0 GOOS=linux GOARCH=amd64 go build -o $(linuxDir)/binlogo $(buildArgs)
 	zip -q -r -o $(output)/binlogo-v$(version)-darwin-amd64.zip $(darwinDir)
 	zip -q -r -o $(output)/binlogo-v$(version)-windows-amd64.zip $(windowsDir)
 	tar -zcvf $(output)/binlogo-v$(version)-linux-amd64.tar.gz $(linuxDir)
@@ -61,3 +65,4 @@ docker:
 	docker tag jin06/binlogo jin06/binlogo:$(version)
 	docker push jin06/binlogo:$(version)
 
+	CGO_ENABLE=0 GOOS=darwin GOARCH=amd64 go build -o ./ -ldflags="-X 'configs.BuildTime=Thu Nov  9 14:42:13 CST 2023'"   cmd/server/binlogo.go

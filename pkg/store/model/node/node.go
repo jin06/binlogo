@@ -21,7 +21,7 @@ type Node struct {
 func NewNode(name string) *Node {
 	return &Node{
 		Name:       name,
-		Version:    configs.VERSITON,
+		Version:    configs.Version,
 		CreateTime: time.Now(),
 	}
 }
