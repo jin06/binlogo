@@ -29,7 +29,6 @@ FROM alpine:3.10 as final
 #ENV CONSOLE_LISTEN="0.0.0.0"
 #ENV CONSOLE_PORT="9999"
 #ENV CLUSTER_NAME="cluster"
-
 COPY --from=builder /binlogo/binlogo /binlogo/binlogo
 COPY --from=builder /binlogo/configs/binlogo_docker.yaml /binlogo/configs/binlogo.yaml
 COPY --from=builder /binlogo/assets /binlogo/assets

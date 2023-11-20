@@ -35,10 +35,10 @@
 
 .PHONY: build
 app = github.com/jin06/binlogo
-version = 1.0.99
+version = $version
 compileTime = $(shell date)
 goVersion = $(shell go version)
-output = bin/$(version)
+output = upload/$(version)
 darwinDir = $(output)/binlogo-v$(version)-darwin-amd64
 windowsDir = $(output)/binlogo-v$(version)-windows-amd64
 linuxDir = $(output)/binlogo-v$(version)-linux-amd64

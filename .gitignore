@@ -6,6 +6,7 @@ configs/*test*.yaml
 _output
 binlogo
 bin/
+upload/
 .DS_Store
 scripts/codecov-token
 profile.out
