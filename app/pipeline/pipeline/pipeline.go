@@ -3,6 +3,7 @@ package pipeline
 import (
 	"context"
 	"errors"
+	"github.com/sirupsen/logrus"
 	"sync"
 
 	filter2 "github.com/jin06/binlogo/app/pipeline/filter"
@@ -11,7 +12,6 @@ import (
 	output2 "github.com/jin06/binlogo/app/pipeline/output"
 	"github.com/jin06/binlogo/pkg/event"
 	event2 "github.com/jin06/binlogo/pkg/store/model/event"
-	"github.com/sirupsen/logrus"
 )
 
 // Pipeline for handle message
@@ -22,10 +22,8 @@ type Pipeline struct {
 	Filter   *filter2.Filter
 	OutChan  *OutChan
 	Options  Options
-	cancel   context.CancelFunc
 	runMutex sync.Mutex
 	status   status
-	ctx      context.Context
 }
 
 type status byte
@@ -116,59 +114,46 @@ func (p *Pipeline) initOutput() (err error) {
 
 // Run pipeline start working
 func (p *Pipeline) Run(ctx context.Context) {
-	p.runMutex.Lock()
-	defer p.runMutex.Unlock()
-	if p.status == STATUS_RUN {
+	logrus.Info("pipeline stream run: ", p.Options.Pipeline.Name)
+	defer func() {
+		logrus.Info("pipeline stream stopped: ", p.Options.Pipeline.Name)
+	}()
+
+	//logrus.Debug("mysql position", p.Input.Options.Position)
+	stx, cancel := context.WithCancel(ctx)
+	defer cancel()
+	var err error
+	if err = p.Input.Run(stx); err != nil {
+		event.Event(event2.NewErrorPipeline(p.Options.Pipeline.Name, "Start error: "+err.Error()))
 		return
 	}
-	//logrus.Debug("mysql position", p.Input.Options.Position)
-	myCtx, cancel := context.WithCancel(ctx)
-	p.ctx = myCtx
-	go func() {
-		var err error
-		defer func() {
-			if r := recover(); r != nil {
-				logrus.Errorln("pipeline run panic, ", r)
+	if err = p.Filter.Run(stx); err != nil {
+		event.Event(event2.NewErrorPipeline(p.Options.Pipeline.Name, "Start error: "+err.Error()))
+		return
+	}
+	if err = p.Output.Run(stx); err != nil {
+		event.Event(event2.NewErrorPipeline(p.Options.Pipeline.Name, "Start error: "+err.Error()))
+		return
+	}
+	event.Event(event2.NewInfoPipeline(p.Options.Pipeline.Name, "Start succeeded"))
+	for {
+		select {
+		case <-ctx.Done():
+			{
+				return
 			}
-			cancel()
-		}()
-		if err = p.Input.Run(myCtx); err != nil {
-			event.Event(event2.NewErrorPipeline(p.Options.Pipeline.Name, "Start error: "+err.Error()))
-			return
-		}
-		if err = p.Filter.Run(myCtx); err != nil {
-			event.Event(event2.NewErrorPipeline(p.Options.Pipeline.Name, "Start error: "+err.Error()))
-			return
-		}
-		if err = p.Output.Run(myCtx); err != nil {
-			event.Event(event2.NewErrorPipeline(p.Options.Pipeline.Name, "Start error: "+err.Error()))
-			return
-		}
-		event.Event(event2.NewInfoPipeline(p.Options.Pipeline.Name, "Start succeeded"))
-		for {
-			select {
-			case <-ctx.Done():
-				{
-					return
-				}
-			case <-p.Input.Context().Done():
-				{
-					return
-				}
-			case <-p.Filter.Context().Done():
-				{
-					return
-				}
-			case <-p.Output.Context().Done():
-				{
-					return
-				}
+		case <-p.Input.Context().Done():
+			{
+				return
+			}
+		case <-p.Filter.Context().Done():
+			{
+				return
+			}
+		case <-p.Output.Context().Done():
+			{
+				return
 			}
 		}
-	}()
-}
-
-// Context return pipeline's context use for cancel
-func (p *Pipeline) Context() context.Context {
-	return p.ctx
+	}
 }

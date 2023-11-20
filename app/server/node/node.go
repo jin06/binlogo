@@ -4,11 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"sync"
-	"time"
-
 	"github.com/jin06/binlogo/app/server/node/election"
-	"github.com/jin06/binlogo/app/server/node/manager"
 	"github.com/jin06/binlogo/app/server/node/manager/manager_event"
 	"github.com/jin06/binlogo/app/server/node/manager/manager_pipe"
 	"github.com/jin06/binlogo/app/server/node/manager/manager_status"
@@ -19,6 +15,8 @@ import (
 	"github.com/jin06/binlogo/pkg/store/dao/dao_node"
 	"github.com/jin06/binlogo/pkg/store/model/node"
 	"github.com/sirupsen/logrus"
+	"sync"
+	"time"
 )
 
 // Node represents a node instance
@@ -37,6 +35,11 @@ type Node struct {
 	leaderRunMutex  sync.Mutex
 	pipeManager     *manager_pipe.Manager
 	eventManager    *manager_event.Manager
+	// this channel watch all child process.
+	// NOTED THIS: any process exist will call close(done) means 'one quit, all quit'
+	// why? cos of all processes is essential, this simplified design is easy to impl, also well for debugging
+	stopping chan struct{}
+	stopOnce sync.Once
 }
 
 type NodeMode byte
@@ -62,21 +65,27 @@ func (n NodeMode) String() string {
 }
 
 // New return a new node
-func New(opts ...Option) (node *Node, err error) {
+func New(opts ...Option) (node *Node) {
 	options := &Options{}
 	node = &Node{
-		Options: options,
+		Options:  options,
+		stopping: make(chan struct{}),
 	}
 	for _, v := range opts {
 		v(options)
 	}
-	err = node.init()
 	return
 }
 
-func (n *Node) init() (err error) {
-	logrus.Debug("---->", n.Options.Node)
-	return
+func (n *Node) init() {
+	n.Register = register.New(
+		register.WithTTL(5),
+		register.WithKey(dao_node.NodeRegisterPrefix()+"/"+n.Options.Node.Name),
+		register.WithData(n.Options.Node),
+	)
+	n.electionManager = election.NewManager(n.Options.Node)
+	n.pipeManager = manager_pipe.New(n.Options.Node)
+	n.StatusManager = manager_status.NewManager(n.Options.Node)
 }
 
 func (n *Node) refreshNode() (err error) {
@@ -95,153 +104,128 @@ func (n *Node) refreshNode() (err error) {
 
 // Run start working
 func (n *Node) Run(ctx context.Context) (err error) {
-	myCtx, cancel := context.WithCancel(ctx)
+	stx, cancel := context.WithCancel(ctx)
 	defer func() {
 		if re := recover(); re != nil {
 			err = errors.New(fmt.Sprintf("panic %v", re))
 		}
 		cancel()
 	}()
-	err = n.refreshNode()
-	if err != nil {
+	if err = n.refreshNode(); err != nil {
 		return
 	}
-	nodeCtx := n._mustRun(myCtx)
-	n._leaderRun(myCtx)
+
+	n.init()
+
+	go func() {
+		n._mustRun(stx)
+		n.stop()
+	}()
+
+	go func() {
+		n._leaderRun(stx)
+		n.stop()
+	}()
+
 	select {
 	case <-ctx.Done():
-		{
-			return
-		}
-	case <-nodeCtx.Done():
-		{
-			return
-		}
+		return
+	case <-n.stopping:
+		return
 	}
-}
-
-// Role returns current role
-func (n *Node) Role() role.Role {
-	return n.electionManager.Role()
-	//return n.election.Role()
 }
 
 // _leaderRun run when node is leader
 func (n *Node) _leaderRun(ctx context.Context) {
-	go func() {
-		for {
-			select {
-			case <-ctx.Done():
-				{
+	stx, cancel := context.WithCancel(ctx)
+	defer cancel()
+	curRole := role.FOLLOWER
+	ticker := time.NewTicker(time.Second)
+	defer ticker.Stop()
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-n.electionManager.Stopped():
+			return
+		case r, ok := <-n.electionManager.RoleCh():
+			{
+				if !ok {
 					return
 				}
-			case r := <-n.electionManager.RoleCh():
-				{
-					n.leaderRun(ctx, r)
-				}
-			case <-time.Tick(time.Second * 3):
-				{
-					n.leaderRun(ctx, n.Role())
-				}
+				curRole = r
 			}
+		case <-ticker.C:
 		}
-	}()
+		n.leaderRun(stx, curRole)
+	}
 }
 
 func (n *Node) leaderRun(ctx context.Context, r role.Role) {
-	//if r == "" {
-	//	r = n.Role()
-	//}
-	switch r {
-	case role.LEADER:
-		{
-			var err error
-			if n.Scheduler == nil || n.Scheduler.Status() == scheduler.SCHEDULER_STOP {
-				n.Scheduler = scheduler.New()
-				err = n.Scheduler.Run(ctx)
-				if err != nil {
-					return
-				}
-			}
-			if n.monitor == nil || n.monitor.Status() == monitor.STATUS_STOP {
-				n.monitor, err = monitor.NewMonitor()
-				if err != nil {
-					return
-				}
-				err = n.monitor.Run(ctx)
-				if err != nil {
-					return
-				}
-			}
-			if n.eventManager == nil || n.eventManager.Status == manager.STOP {
-				n.eventManager = manager_event.New()
-				err = n.eventManager.Run(ctx)
-				if err != nil {
-					return
-				}
-			}
+	n.leaderRunMutex.Lock()
+	defer n.leaderRunMutex.Unlock()
+	//logrus.Debug("node run leader ", r)
+	if r == role.FOLLOWER {
+		if n.Scheduler != nil {
+			n.Scheduler.Stop()
+			n.Scheduler = nil
 		}
-	default:
-		{
-			if n.Scheduler != nil {
-				n.Scheduler.Stop()
-			}
-			if n.monitor != nil {
-				n.monitor.Stop(ctx)
-			}
-			if n.eventManager != nil {
-				n.eventManager.Stop()
-			}
+		if n.monitor != nil {
+			n.monitor.Stop()
+			n.monitor = nil
+		}
+		if n.eventManager != nil {
+			n.eventManager.Stop()
+			n.eventManager = nil
+		}
+	}
+	if r == role.LEADER {
+		if n.Scheduler == nil || n.Scheduler.Exit {
+			n.Scheduler = scheduler.New()
+			go n.Scheduler.Run(ctx)
+		}
+		if n.monitor == nil || n.monitor.Exit {
+			n.monitor = monitor.NewMonitor()
+			go n.monitor.Run(ctx)
+		}
+		if n.eventManager == nil || n.eventManager.Exit {
+			n.eventManager = manager_event.New()
+			go n.eventManager.Run(ctx)
 		}
 	}
 }
 
 // _mustRun run manager that every node must run
 // such as election, node register, node status
-func (n *Node) _mustRun(ctx context.Context) (resCtx context.Context) {
-	resCtx, cancel := context.WithCancel(ctx)
-	n.Register = register.New(
-		register.WithTTL(5),
-		register.WithKey(dao_node.NodeRegisterPrefix()+"/"+n.Options.Node.Name),
-		register.WithData(n.Options.Node),
-	)
-	n.Register.Run(resCtx)
-	//n.election = election.New(
-	//	election.OptionNode(n.Options.Node),
-	//	election.OptionTTL(5),
-	//)
-	//n.election.Run(ctx)
-	n.electionManager = election.NewManager(n.Options.Node)
-	n.electionManager.Run(resCtx)
-	n.pipeManager = manager_pipe.New(n.Options.Node)
-	n.pipeManager.Run(resCtx)
-	n.StatusManager = manager_status.NewManager(n.Options.Node)
-	n.StatusManager.Run(resCtx)
+func (n *Node) _mustRun(ctx context.Context) {
+	stx, cancel := context.WithCancel(ctx)
+	defer cancel()
 	go func() {
-		defer cancel()
-		select {
-		case <-ctx.Done():
-			{
-				return
-			}
-		case <-n.Register.Context().Done():
-			{
-				return
-			}
-			//case <-n.election.Context().Done():
-		case <-n.electionManager.Context().Done():
-			{
-				return
-			}
-		case <-n.pipeManager.Context().Done():
-			{
-				return
-			}
-		case <-n.StatusManager.Context().Done():
-			{
-				return
-			}
+		if err := n.Register.Run(stx); err != nil {
+			logrus.WithError(err).Errorln("node register exit")
 		}
+		n.stop()
 	}()
-	return
+	go func() {
+		n.electionManager.Run(stx)
+		n.stop()
+	}()
+	go func() {
+		n.pipeManager.Run(stx)
+		n.stop()
+	}()
+	go func() {
+		n.StatusManager.Run(stx)
+		n.stop()
+	}()
+	select {
+	case <-ctx.Done():
+	case <-n.stopping:
+	}
+}
+
+func (n *Node) stop() {
+	n.stopOnce.Do(func() {
+		close(n.stopping)
+	})
 }

@@ -1,4 +1,7 @@
 package configs
 
-// VERSITON version of binlogo
-const VERSITON = "1.0.41"
+var Version string
+
+var BuildTime string
+
+var GoVersion string

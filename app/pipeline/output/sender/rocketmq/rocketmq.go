@@ -28,7 +28,7 @@ func (r *RocketMQ) Send(msg *message2.Message) (ok bool, err error) {
 	content, _ := msg.JsonContent()
 	req := mq_http_sdk.PublishMessageRequest{
 		MessageBody: content,
-		MessageTag:  "bilogo",
+		MessageTag:  "binlogo",
 		Properties:  map[string]string{},
 		ShardingKey: msg.Content.Head.Database + "_" + msg.Content.Head.Table,
 	}
@@ -37,4 +37,8 @@ func (r *RocketMQ) Send(msg *message2.Message) (ok bool, err error) {
 		ok = true
 	}
 	return
+}
+
+func (r *RocketMQ) Close() error {
+	return nil
 }

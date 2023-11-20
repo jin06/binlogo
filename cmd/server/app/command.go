@@ -19,7 +19,9 @@ func NewCommand() (cmd *cobra.Command) {
 		Short: "version",
 		Long:  "version",
 		Run: func(cmd *cobra.Command, args []string) {
-			fmt.Println("binlogo version: " + configs.VERSITON)
+			fmt.Println("Version: " + configs.Version)
+			fmt.Println("Build Time: " + configs.BuildTime)
+			fmt.Println("Go Version: " + configs.GoVersion)
 		},
 	}
 

@@ -25,6 +25,11 @@ type instance struct {
 	cancel    context.CancelFunc
 	mutex     sync.Mutex
 	startTime time.Time
+	stopping  chan struct{}
+	stopOnce  sync.Once
+	started   chan struct{}
+	stopped   chan struct{}
+	exit      bool
 	//stopped   chan struct{}
 }
 
@@ -34,6 +39,9 @@ func newInstance(pipeName string, nodeName string) *instance {
 		nodeName:  nodeName,
 		mutex:     sync.Mutex{},
 		startTime: time.Time{},
+		stopping:  make(chan struct{}),
+		started:   make(chan struct{}),
+		stopped:   make(chan struct{}),
 	}
 	return ins
 }
@@ -76,60 +84,51 @@ func (i *instance) init() (err error) {
 	return
 }
 
-func (i *instance) start(c context.Context) (err error) {
+func (i *instance) start(ctx context.Context) (err error) {
 	i.startTime = time.Now()
+	logrus.Info("pipeline instance start: ", i.pipeName)
 	defer func() {
+		if r := recover(); r != nil {
+			logrus.Errorln("instance run panic, ", r)
+		}
+		logrus.Info("pipeline instance stopped: ", i.pipeName)
 		if err != nil {
 			event.Event(event2.NewErrorPipeline(i.pipeName, "Pipeline instance stopped error: "+err.Error()))
 		}
 		event.Event(event2.NewInfoPipeline(i.pipeName, "Pipeline instance stopped"))
-		//close(i.stopped)
+		close(i.stopped)
+		i.exit = true
 	}()
-	err = i.init()
-	if err != nil {
+	if err = i.init(); err != nil {
 		return
 	}
-	ctx, cancel := context.WithCancel(c)
-	defer func() {
-		cancel()
+	stx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
+	go func() {
+		i.pipeReg.Run(stx)
+		i.stop()
 	}()
-	i.cancel = cancel
-	i.pipeReg.Run(ctx)
-	i.pipeIns.Run(ctx)
-	logrus.Info("pipeline instance start: ", i.pipeName)
+	go func() {
+		i.pipeIns.Run(stx)
+		i.stop()
+	}()
 	event.Event(event2.NewInfoPipeline(i.pipeName, "Pipeline instance start success"))
+	close(i.started)
 
 	select {
-	case <-c.Done():
-		{
-			return
-		}
 	case <-ctx.Done():
-		{
-			return
-		}
-	case <-i.pipeIns.Context().Done():
-		{
-			return
-		}
-	case <-i.pipeReg.Context().Done():
-		{
-			return
-		}
+		return
+	case <-i.stopping:
+		return
 	}
 }
 
 func (i *instance) stop() {
-	i.startTime = time.Time{}
-	//if i.status == STATUS_STOP {
-	//	return
-	//}
-	//defer func() {
-	//	i.status = STATUS_STOP
-	//}()
-	i.cancel()
-	logrus.Info("pipeline instance stop: ", i.pipeName)
-	return
+	i.stopOnce.Do(func() {
+		i.startTime = time.Time{}
+		close(i.stopping)
+	})
 }
 
 // StartTime returns instance start time

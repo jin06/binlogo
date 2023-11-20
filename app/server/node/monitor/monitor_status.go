@@ -2,83 +2,75 @@ package monitor
 
 import (
 	"context"
+	"github.com/jin06/binlogo/pkg/watcher"
 	"time"
 
-	"go.etcd.io/etcd/api/v3/mvccpb"
 	"github.com/jin06/binlogo/pkg/store/dao"
 	"github.com/jin06/binlogo/pkg/store/dao/dao_node"
 	"github.com/jin06/binlogo/pkg/store/dao/dao_sche"
 	"github.com/jin06/binlogo/pkg/store/model/node"
-	"github.com/jin06/binlogo/pkg/watcher/node_status"
 	"github.com/sirupsen/logrus"
+	"go.etcd.io/etcd/api/v3/mvccpb"
 )
 
-func (m *Monitor) monitorStatus(ctx context.Context) (resCtx context.Context, err error) {
-	resCtx, cancel := context.WithCancel(ctx)
-	defer func() {
-		if err != nil {
-			cancel()
-		}
-	}()
-	//watcher, err := node_status.New(dao_node.StatusPrefix())
-	//if err != nil {
-	//	return
-	//}
-	//ch, err := watcher.WatchEtcdList(ctx)
-	ch, err := node_status.WatchList(ctx, dao_node.StatusPrefix())
+func (m *Monitor) monitorStatus(ctx context.Context) (err error) {
+	logrus.Info("monitor status run ")
+	defer logrus.Info("monitor status stop")
+	stx, cancel := context.WithCancel(ctx)
+	defer cancel()
+	key := dao_node.StatusPrefix()
+	w, err := watcher.New(watcher.WithKey(key), watcher.WithHandler(watcher.WrapNodeStatus(key, "")))
+	defer w.Close()
 	if err != nil {
 		return
 	}
-	err = checkAllNodeStatus()
+	ch, err := w.WatchEtcdList(stx)
 	if err != nil {
 		return
 	}
-	go func() {
-		defer func() {
-			if r := recover(); r != nil {
-				logrus.Errorln("monitor status panic", r)
+	if err = checkAllNodeStatus(); err != nil {
+		return
+	}
+	ticker := time.NewTicker(time.Minute)
+
+	defer ticker.Stop()
+	for {
+		select {
+		case <-ctx.Done():
+			{
+				return
 			}
-			cancel()
-		}()
-		for {
-			select {
-			case <-ctx.Done():
-				{
+		case <-ticker.C:
+			{
+				er := checkAllNodeStatus()
+				if er != nil {
+					logrus.Errorln(er)
+				}
+			}
+		case e, chOK := <-ch:
+			{
+				if !chOK {
 					return
 				}
-			case <-time.Tick(60 * time.Second):
-				{
-					er := checkAllNodeStatus()
-					if er != nil {
-						logrus.Errorln(er)
+				if val, ok := e.Data.(*node.Status); ok {
+					if e.Event.Type == mvccpb.DELETE {
+						err1 := removePipelineBindIfBindNode(val.NodeName)
+						if err1 != nil {
+							logrus.Errorln(err1)
+						}
 					}
-				}
-			case e, ok1 := <-ch:
-				{
-					if !ok1 {
-						return
-					}
-					if val, ok := e.Data.(*node.Status); ok {
-						if e.Event.Type == mvccpb.DELETE {
+					if e.Event.Type == mvccpb.PUT {
+						if val.Ready == false {
 							err1 := removePipelineBindIfBindNode(val.NodeName)
 							if err1 != nil {
 								logrus.Errorln(err1)
 							}
 						}
-						if e.Event.Type == mvccpb.PUT {
-							if val.Ready == false {
-								err1 := removePipelineBindIfBindNode(val.NodeName)
-								if err1 != nil {
-									logrus.Errorln(err1)
-								}
-							}
-						}
 					}
 				}
 			}
 		}
-	}()
-	return
+	}
 }
 
 func checkAllNodeStatus() (err error) {

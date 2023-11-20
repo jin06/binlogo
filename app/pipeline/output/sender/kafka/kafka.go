@@ -70,3 +70,10 @@ type kafkaKey struct {
 	database string `json:"database"`
 	table    string `json:"table"`
 }
+
+func (s *Kafka) Close() error {
+	if s.SyncProducer != nil {
+		return s.SyncProducer.Close()
+	}
+	return nil
+}

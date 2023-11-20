@@ -77,3 +77,10 @@ func (r *RabbitMQ) Send(msg *message2.Message) (ok bool, err error) {
 	}
 	return
 }
+
+func (r *RabbitMQ) Close() error {
+	if r.Connection != nil {
+		return r.Connection.Close()
+	}
+	return nil
+}

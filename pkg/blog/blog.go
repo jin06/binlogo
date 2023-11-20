@@ -7,6 +7,7 @@ import (
 
 func init() {
 	logrus.SetLevel(logrus.DebugLevel)
+	logrus.SetFormatter(&formatter{})
 }
 
 // Env sets log level
@@ -25,7 +26,6 @@ func Env(env configs.Env) {
 			logrus.SetReportCaller(true)
 		}
 	}
-	logrus.SetFormatter(&formatter{})
 	logrus.SetLevel(level)
 	logrus.Info("Set log level to: ", level.String())
 	return

@@ -59,3 +59,7 @@ func (h *Http) doSend(msg *message2.Message) (ok bool, err error) {
 	}
 	return
 }
+
+func (h *Http) Close() error {
+	return nil
+}

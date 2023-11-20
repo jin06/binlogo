@@ -4,73 +4,81 @@ import (
 	"context"
 	"time"
 
-	"go.etcd.io/etcd/api/v3/mvccpb"
 	"github.com/jin06/binlogo/pkg/store/dao/dao_node"
 	"github.com/jin06/binlogo/pkg/store/dao/dao_sche"
 	nodeModel "github.com/jin06/binlogo/pkg/store/model/node"
 	"github.com/jin06/binlogo/pkg/watcher"
 	"github.com/sirupsen/logrus"
+	"go.etcd.io/etcd/api/v3/mvccpb"
 )
 
-func (m *Monitor) monitorNode(ctx context.Context) (resCtx context.Context, err error) {
-	resCtx, cancel := context.WithCancel(ctx)
-	defer func() {
-		if err != nil {
-			cancel()
-		}
-	}()
-	ch, err := m.newNodeWatcherCh(ctx)
+func (m *Monitor) monitorNode(ctx context.Context) (err error) {
+	logrus.Info("monitor node run ")
+	defer logrus.Info("monitor node stop")
+	stx, cancel := context.WithCancel(ctx)
+	defer cancel()
+	key := dao_node.NodePrefix()
+
+	nodeWatcher, err := watcher.New(watcher.WithKey(key), watcher.WithHandler(watcher.WrapNode(key, "")))
+	defer nodeWatcher.Close()
 	if err != nil {
 		return
 	}
-	regCh, err := m.newNodeRegWatcherCh(ctx)
+	ch, err := nodeWatcher.WatchEtcdList(stx)
 	if err != nil {
 		return
 	}
 
-	err = m.checkAllNode()
+	regKey := dao_node.NodeRegisterPrefix()
+	regWatcher, err := watcher.New(watcher.WithKey(regKey), watcher.WithHandler(watcher.WrapNode(regKey, "")))
+	defer regWatcher.Close()
 	if err != nil {
 		return
 	}
 
-	go func() {
-		defer func() {
-			if r := recover(); r != nil {
-				logrus.Errorln("monitor node panic, ", r)
+	regCh, err := regWatcher.WatchEtcdList(ctx)
+	if err != nil {
+		return
+	}
+
+	if er := m.checkAllNode(); er != nil {
+		logrus.Error("Check all node bind error: ", er)
+	}
+
+	ticker := time.NewTicker(time.Second * 120)
+
+	for {
+		select {
+		case <-ctx.Done():
+			{
+				return
 			}
-			cancel()
-		}()
-		for {
-			select {
-			case <-ctx.Done():
-				{
+		case e, chOK := <-ch:
+			{
+				if !chOK {
 					return
 				}
-			case e := <-ch:
-				{
-					if e.Event.Type == mvccpb.DELETE {
-					}
+				if e.Event.Type == mvccpb.DELETE {
 				}
-			case e, ok := <-regCh:
-				{
-					if !ok {
-						return
-					}
-					er := handleEventRegNode(e)
-					if er != nil {
-						logrus.Errorln(er)
-					}
+			}
+		case e, ok := <-regCh:
+			{
+				if !ok {
+					return
 				}
-			case <-time.Tick(time.Second * 120):
-				{
-					if er := m.checkAllNode(); er != nil {
-						logrus.Error("Check all node bind error: ", er)
-					}
+				er := handleEventRegNode(e)
+				if er != nil {
+					logrus.Errorln(er)
+				}
+			}
+		case <-ticker.C:
+			{
+				if er := m.checkAllNode(); er != nil {
+					logrus.Error("Check all node bind error: ", er)
 				}
 			}
 		}
-	}()
-	return
+	}
 }
 
 func (m *Monitor) checkAllNode() (err error) {
