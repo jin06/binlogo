@@ -70,8 +70,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./upload/binlogo-darwin-amd64.zip
-          asset_name: binlogo-${{github.ref}}-darwin-amd64.zip
+          asset_path: ./upload/binlogo-v${{DOCKER_METADATA_OUTPUT_VERSION}}-darwin-amd64.zip
+          asset_name: binlogo-v${{DOCKER_METADATA_OUTPUT_VERSION}}-darwin-amd64.zip
           asset_content_type: application/zip
 
       - name: Upload Release Asset
@@ -80,8 +80,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./upload/binlogo-${{github.ref}}-windows-amd64.zip
-          asset_name: binlogo-windows-amd64.zip
+          asset_path: ./upload/binlogo-v${{DOCKER_METADATA_OUTPUT_VERSION}}-windows-amd64.zip
+          asset_name: binlogo-v${{DOCKER_METADATA_OUTPUT_VERSION}}-windows-amd64.zip
           asset_content_type: application/zip
 
       - name: Upload Release Asset
@@ -90,6 +90,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./upload/binlogo-${{github.ref}}-linux-amd64.tar.gz
-          asset_name: binlogo-linux-amd64.tar.gz
+          asset_path: ./upload/binlogo-v${{DOCKER_METADATA_OUTPUT_VERSION}}-linux-amd64.tar.gz
+          asset_name: binlogo-v${{DOCKER_METADATA_OUTPUT_VERSION}}-linux-amd64.tar.gz
           asset_content_type: application/gzip
