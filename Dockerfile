@@ -8,13 +8,11 @@ ENV GO111MODULE=on \
     GOOS=linux \
     GOARCH=amd64
 
-ARG version="unknown"
-
 WORKDIR /binlogo
 
 COPY . .
 
-RUN go build ./cmd/server/binlogo.go -ldflags="-X 'configs.Version=$version'"
+RUN go build  -ldflags="-X 'configs.Version=${version}'" ./cmd/server/binlogo.go
 
 FROM alpine:3.10 as final
 
