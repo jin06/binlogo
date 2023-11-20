@@ -37,7 +37,9 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
-            version=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}
+            # version=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}
+            version=1.0.99-beta
+
 
       - name: Set up Go
         uses: actions/setup-go@v3
