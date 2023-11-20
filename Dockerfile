@@ -3,7 +3,7 @@ FROM golang:1.21.4-alpine3.18 as builder
 LABEL maintainer="jinlog<jinlong4696@163.com>"
 
 ENV GO111MODULE=on \
-    GOPROXY=https://goproxy.cn,https://goproxy.io,direct \
+#    GOPROXY=https://goproxy.cn,https://goproxy.io,direct \
     CGO_ENABLED=0 \
     GOOS=linux \
     GOARCH=amd64
@@ -12,11 +12,11 @@ WORKDIR /binlogo
 
 COPY . .
 
-ARG version
+ARG version="unknown"
 ENV app=github.com/jin06/binlogo
-RUN compileTime=`date`
+ENV version=$version
 
-RUN go build  -ldflags="-X '$app/configs.Version=$version' -X '$app/configs.BuildTime=$compileTime' -X '$app/configs.GoVersion=$goVersion'" ./cmd/server/binlogo.go
+RUN go build  -ldflags="-X '$app/configs.Version=$version' -X '$app/configs.BuildTime=$(date)' -X '$app/configs.GoVersion=$(go version)'" ./cmd/server/binlogo.go
 
 RUN ./binlogo version
 
