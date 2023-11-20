@@ -45,7 +45,7 @@ jobs:
 
       - name: Build
         run: |  
-          make build version=${{version]}}
+          make build version=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] ]}}
 
       - name: Create Release
         id: create_release
