@@ -53,9 +53,9 @@ build:
 	CGO_ENABLE=0 GOOS=darwin GOARCH=amd64 go build -o $(darwinDir)/binlogo $(buildArgs)
 	CGO_ENABLE=0 GOOS=windows GOARCH=amd64 go build -o $(windowsDir)/binlogo $(buildArgs)
 	CGO_ENABLE=0 GOOS=linux GOARCH=amd64 go build -o $(linuxDir)/binlogo $(buildArgs)
-	zip -q -r -o $(output)/binlogo-v$(version)-darwin-amd64.zip $(darwinDir)
-	zip -q -r -o $(output)/binlogo-v$(version)-windows-amd64.zip $(windowsDir)
-	tar -zcvf $(output)/binlogo-v$(version)-linux-amd64.tar.gz $(linuxDir)
+	zip -q -r -o $(output)/binlogo-darwin-amd64.zip $(darwinDir)
+	zip -q -r -o $(output)/binlogo-windows-amd64.zip $(windowsDir)
+	tar -zcvf $(output)/binlogo-linux-amd64.tar.gz $(linuxDir)
 
 .PHONY: docker
 version = 1.0.99
