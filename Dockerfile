@@ -1,4 +1,4 @@
-FROM golang:1.18-alpine as builder
+FROM golang:1.21.4-alpine3.18 as builder
 
 LABEL maintainer="jinlog<jinlong4696@163.com>"
 

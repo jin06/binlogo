@@ -65,4 +65,3 @@ docker:
 	docker tag jin06/binlogo jin06/binlogo:$(version)
 	docker push jin06/binlogo:$(version)
 
-	CGO_ENABLE=0 GOOS=darwin GOARCH=amd64 go build -o ./ -ldflags="-X 'configs.BuildTime=Thu Nov  9 14:42:13 CST 2023'"   cmd/server/binlogo.go
