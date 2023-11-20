@@ -68,10 +68,11 @@ jobs:
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          version: v${{DOCKER_METADATA_OUTPUT_VERSION}}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./upload/binlogo-v${{DOCKER_METADATA_OUTPUT_VERSION}}-darwin-amd64.zip
-          asset_name: binlogo-v${{DOCKER_METADATA_OUTPUT_VERSION}}-darwin-amd64.zip
+          asset_path: ./upload/binlogo-$version-darwin-amd64.zip
+          asset_name: binlogo-$version-darwin-amd64.zip
           asset_content_type: application/zip
 
       - name: Upload Release Asset
