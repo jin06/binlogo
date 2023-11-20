@@ -59,7 +59,7 @@ build:
 	tar -zcvf $(baseOutput)/binlogo-linux-amd64.tar.gz $(linuxDir)
 
 .PHONY: docker
-version = 1.0.99
+version = $version
 docker:
 	docker build -t jin06/binlogo . --build-arg version=$(version)
 	docker push jin06/binlogo
