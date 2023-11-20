@@ -15,7 +15,7 @@ COPY . .
 ARG VERSION
 ENV app=github.com/jin06/binlogo
 
-RUN go build  -ldflags="-X '$app/configs.Version=${VERSION}' -X '$app/configs.BuildTime=$(date)' -X '$app/configs.GoVersion=$(go env GOVERSION)'" ./cmd/server/binlogo.go
+RUN go build  -ldflags="-X '$app/configs.Version=$VERSION' -X '$app/configs.BuildTime=$(date)' -X '$app/configs.GoVersion=$(go env GOVERSION)'" ./cmd/server/binlogo.go
 
 RUN ./binlogo version
 
