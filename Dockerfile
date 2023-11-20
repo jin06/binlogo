@@ -14,7 +14,7 @@ COPY . .
 
 ARG version
 ENV app=github.com/jin06/binlogo
-RUN -e compileTime="$(date)"
+RUN bash -l -c 'export compileTime="$(date)"
 
 RUN go build  -ldflags="-X '$app/configs.Version=$version' -X '$app/configs.BuildTime=$compileTime' -X '$app/configs.GoVersion=$goVersion'" ./cmd/server/binlogo.go
 
