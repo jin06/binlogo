@@ -14,7 +14,7 @@ Binlogo是一个基于MySQL的binlog开发的数据同步中间件。同步binlo
 
 * 安装Binlogo. Binlogo的下载地址: [Download Address](https://github.com/jin06/binlogo/releases)
 
-* 数据格式： [Binlogo输出的数据格式](/docs/1.0.*/message-format.md)
+* 数据格式： [Binlogo输出的数据格式](/docs/wiki/message-format.md)
 
 * 启动Binlogo
   * 配置文件：解压下载的程序，在程序目录configs中有配置文件： ${binlogo-path}/configs/binlogo.yaml
@@ -93,20 +93,20 @@ Binlogo是一个基于MySQL的binlog开发的数据同步中间件。同步binlo
 
 ### Kubernetes
 
-- [文档](/docs/1.0.*/zh/instanll-kubernetes.md)
+- [文档](/docs/wiki/zh/instanll-kubernetes.md)
 
 ### 其他输出端
 
-* [HTTP](/docs/1.0.*/zh/configure-http-output.md)
-* [RabbitMQ](/docs/1.0.*/zh/configure-rabbitmq-outupt.md)
-* [Kafka](/docs/1.0.*/zh/configure-kafka-output.md)
-* [Redis](/docs/1.0.*/zh/configure-redis-outupt.md)
-* [AliCloud RocketMQ](/docs/1.0.*/zh/configure-rocketmq-outupt.md)
+* [HTTP](/docs/wiki/zh/configure-http-output.md)
+* [RabbitMQ](/docs/wiki/zh/configure-rabbitmq-outupt.md)
+* [Kafka](/docs/wiki/zh/configure-kafka-output.md)
+* [Redis](/docs/wiki/zh/configure-redis-outupt.md)
+* [AliCloud RocketMQ](/docs/wiki/zh/configure-rocketmq-outupt.md)
 
 ### 文档
 
-* [docs link](https://github.com/jin06/binlogo/wiki)
+* [docs link](/docs/wiki)
 
 ### 建议&问题反馈
 * 欢迎提交bug或需求: [GitHub Issue](https://github.com/jin06/binlogo/issues)
-* 如果有疑问可以直接联系我: jinlong4696@163.com
+* 如果有疑问可以直接联系我: jlonmyway@gmail.com

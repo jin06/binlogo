@@ -96,22 +96,22 @@ configuration. Here are part of advantages:
 
 ### Kubernetes
 
-- [doc](/docs/1.0.*/en/install-kubernetes.md)
+- [doc](/docs/wiki/instanll-kubernetes.md)
 
 
 ### Other outputs
 
-* [HTTP](/docs/1.0.*/en/configure-http-output.md)
-* [RabbitMQ](/docs/1.0.*/en/configure-rabbitmq-outupt.md)
-* [Kafka](/docs/1.0.*/en/configure-kafka-output.md)
-* [Redis](/docs/1.0.*/en/configure-redis-outupt.md)
-* [AliCloud RocketMQ](/docs/1.0.*/en/configure-rocketmq-outupt.md)
+* [HTTP](/docs/wiki/configure-http-output.md)
+* [RabbitMQ](/docs/wiki/configure-rabbitmq-outupt.md)
+* [Kafka](/docs/wiki/configure-kafka-output.md)
+* [Redis](/docs/wiki/configure-redis-outupt.md)
+* [AliCloud RocketMQ](/docs/wiki/configure-rocketmq-outupt.md)
 
 ### Docs
 
-* [Documents Address](https://github.com/jin06/binlogo/wiki)
+* [docs link](/docs/wiki)
 
 ### Questions
 
 * To Report bug: [GitHub Issue](https://github.com/jin06/binlogo/issues)
-* Contact author: jinlong4696@163.com
+* Contact author: jlonmyway@gmail.com
