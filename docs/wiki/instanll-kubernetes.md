@@ -1,7 +1,7 @@
 Install binlogo on kubernetes
 ============
 
-- K8s related configuration [Address](docs/kubernetes)
+- K8s related configuration [Address](../kubernetes)
 - Modify the configuration to your own needs, and then manually or use the command
   > kubectl apply -f ./docs/kubernetes/
 
