@@ -5,4 +5,4 @@
 
 - Configure pipeline to rocketmq
 
-![avatar](/docs/assets/pic/config_output_rocketmq.png)
+![avatar](/docs/wiki/assets/pic/config_output_rocketmq.png)

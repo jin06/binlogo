@@ -23,7 +23,7 @@ Binlogo是一个基于MySQL的binlog开发的数据同步中间件。同步binlo
     
   * 修改node名称（如果node名称为空，会自动获取本机的hostname）
     
-  ![avatar](/docs/assets/pic/edit_config_step1.en.png)
+  ![avatar](/docs/wiki/assets/pic/edit_config_step1.en.png)
 
   * > $ ./binlogo server --config ./configs/binlogo.yaml
 
@@ -33,32 +33,32 @@ Binlogo是一个基于MySQL的binlog开发的数据同步中间件。同步binlo
 
 > 按照以下步骤就可以创建一个流水线，GTID模式需要MySQL已经开启了GTID。
 
-![avatar](/docs/assets/pic/create_pipe_step1.en.png)
+![avatar](/docs/wiki/assets/pic/create_pipe_step1.en.png)
 
-![avatar](/docs/assets/pic/create_pipe_step2.en.png)
+![avatar](/docs/wiki/assets/pic/create_pipe_step2.en.png)
 
 * 运行流水线：
 
 > 在流水线列表中点击运行按钮，或在流水线详情中运行。
 
-![avatar](/docs/assets/pic/run_pipeline_step1.en.png)
+![avatar](/docs/wiki/assets/pic/run_pipeline_step1.en.png)
 
 * 在详情中观测流水线的运行状况
 
 > 以下是一些流水线详情中的信息，流水线当前状态、同步到的binlog位置，一些流水线的事件等。
 
 
-![avatar](/docs/assets/pic/pipeline_condition_step1.en.png)
+![avatar](/docs/wiki/assets/pic/pipeline_condition_step1.en.png)
 
-![avatar](/docs/assets/pic/pipeline_condition_step2.en.png)
+![avatar](/docs/wiki/assets/pic/pipeline_condition_step2.en.png)
 
 * 观察输出，这里演示的就直接输出到标准输出。
 
 > 在MySQL中进行一些增删改的操作，在程序的标准输出中看看变化。
 
-![avatar](/docs/assets/pic/output_step1.en.png)
+![avatar](/docs/wiki/assets/pic/output_step1.en.png)
 
-![avatar](/docs/assets/pic/output_step2.en.png)
+![avatar](/docs/wiki/assets/pic/output_step2.en.png)
 
 * 配置输出到kafka，下面一些kafka的建议配置
 
@@ -72,9 +72,9 @@ Binlogo是一个基于MySQL的binlog开发的数据同步中间件。同步binlo
 >   * enable.idempotence=true
 >   * retries=3 or larger one
 
-![avatar](/docs/assets/pic/output_kafka_step1.en.png)
+![avatar](/docs/wiki/assets/pic/output_kafka_step1.en.png)
 
-![avatar](/docs/assets/pic/output_kafka_step2.en.png)
+![avatar](/docs/wiki/assets/pic/output_kafka_step2.en.png)
 
 ### Docker
 
@@ -89,7 +89,7 @@ Binlogo是一个基于MySQL的binlog开发的数据同步中间件。同步binlo
 > 以下是我测试时使用docker启动的一个集群
 >
 
-![avatar](/docs/assets/pic/docker_step1.en.png)
+![avatar](/docs/wiki/assets/pic/docker_step1.en.png)
 
 ### Kubernetes
 

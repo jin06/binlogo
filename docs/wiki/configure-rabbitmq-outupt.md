@@ -5,19 +5,19 @@
 
 - Configure pipeline to RabbitMQ
 
-![avatar](/docs/assets/pic/config_output_rabbit.en.png)
+![avatar](/docs/wiki/assets/pic/config_output_rabbit.en.png)
 
 - Create message queues directly in your code
 
 > [RabbitMQ Consumer Example Code](https://github.com/jin06/binlogo/tree/master/examples/rabbitmq/main.go)
 
-![avatar](/docs/assets/pic/config_output_rabbit2.png)
+![avatar](/docs/wiki/assets/pic/config_output_rabbit2.png)
 
 - Or creating message queues and viewing messages in rabbitmq
 
-![avatar](/docs/assets/pic/config_output_rabbit3.png)
+![avatar](/docs/wiki/assets/pic/config_output_rabbit3.png)
 
-![avatar](/docs/assets/pic/config_output_rabbit4.png)
+![avatar](/docs/wiki/assets/pic/config_output_rabbit4.png)
 
 
 

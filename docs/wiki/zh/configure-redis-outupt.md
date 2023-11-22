@@ -6,7 +6,7 @@
 
 >  username一般不需要配置，Redis6.0及以上的版本中有用户名的概念 
 > 
-![avatar](/docs/assets/pic/config_output_redis.png)
+![avatar](/docs/wiki/assets/pic/config_output_redis.png)
 
 - [Redis 消费者示例代码](https://github.com/jin06/binlogo/tree/master/examples/redis/main.go)
 

@@ -26,7 +26,7 @@ configuration. Here are part of advantages:
 * Start binlogo.
     * Edit config. ${binlogo-path}/configs/binlogo.yaml
 
-      ![avatar](/docs/assets/pic/edit_config_step1.en.png)
+      ![avatar](/docs/wiki/assets/pic/edit_config_step1.en.png)
 
     * > $ ./binlogo server --config ./configs/binlogo.yaml
 
@@ -36,32 +36,32 @@ configuration. Here are part of advantages:
 [config.go](configs%2Fconfig.go)
 > Follow the steps.
 
-![avatar](/docs/assets/pic/create_pipe_step1.en.png)
+![avatar](/docs/wiki/assets/pic/create_pipe_step1.en.png)
 
-![avatar](/docs/assets/pic/create_pipe_step2.en.png)
+![avatar](/docs/wiki/assets/pic/create_pipe_step2.en.png)
 
 * Run pipeline.
 
 > Click button to run the pipeline instance.
 
-![avatar](/docs/assets/pic/run_pipeline_step1.en.png)
+![avatar](/docs/wiki/assets/pic/run_pipeline_step1.en.png)
 
 * Operation condition.
 
 > You can see the operation condition of pipeline.
 
 
-![avatar](/docs/assets/pic/pipeline_condition_step1.en.png)
+![avatar](/docs/wiki/assets/pic/pipeline_condition_step1.en.png)
 
-![avatar](/docs/assets/pic/pipeline_condition_step2.en.png)
+![avatar](/docs/wiki/assets/pic/pipeline_condition_step2.en.png)
 
 * See the output
 
 > Insert some into mysql, watch the ouput on stdout.
 
-![avatar](/docs/assets/pic/output_step1.en.png)
+![avatar](/docs/wiki/assets/pic/output_step1.en.png)
 
-![avatar](/docs/assets/pic/output_step2.en.png)
+![avatar](/docs/wiki/assets/pic/output_step2.en.png)
 
 * Configuration output to Kafka
 
@@ -75,9 +75,9 @@ configuration. Here are part of advantages:
 >   * enable.idempotence=true
 >   * retries=3 or larger one
 
-![avatar](/docs/assets/pic/output_kafka_step1.en.png)
+![avatar](/docs/wiki/assets/pic/output_kafka_step1.en.png)
 
-![avatar](/docs/assets/pic/output_kafka_step2.en.png)
+![avatar](/docs/wiki/assets/pic/output_kafka_step2.en.png)
 
 ### Docker
 
@@ -92,7 +92,7 @@ configuration. Here are part of advantages:
 > I started five nodes with docker. The following is a screenshot
 >
 
-![avatar](/docs/assets/pic/docker_step1.en.png)
+![avatar](/docs/wiki/assets/pic/docker_step1.en.png)
 
 ### Kubernetes
 

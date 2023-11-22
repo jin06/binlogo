@@ -5,19 +5,19 @@
 
 - 配置流水线到RabbitMQ
 
-![avatar](/docs/assets/pic/config_output_rabbit.en.png)
+![avatar](/docs/wiki/assets/pic/config_output_rabbit.en.png)
 
 - 在代码中直接创建消息队列
 
 > [RabbitMQ 消费者示例代码](https://github.com/jin06/binlogo/tree/master/examples/rabbitmq/main.go)
 
-![avatar](/docs/assets/pic/config_output_rabbit2.png)
+![avatar](/docs/wiki/assets/pic/config_output_rabbit2.png)
 
 - 也可以在RabbitMQ创建消息队列和查看消息
 
-![avatar](/docs/assets/pic/config_output_rabbit3.png)
+![avatar](/docs/wiki/assets/pic/config_output_rabbit3.png)
 
-![avatar](/docs/assets/pic/config_output_rabbit4.png)
+![avatar](/docs/wiki/assets/pic/config_output_rabbit4.png)
 
 
 

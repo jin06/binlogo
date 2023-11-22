@@ -1,6 +1,6 @@
 ### Configure pipeline to Kafka
 
-![avatar](/docs/assets/pic/config_output_kafka.png)
+![avatar](/docs/wiki/assets/pic/config_output_kafka.png)
 
 > Binlogo lists some important configurations. Users can configure high-performance or highly available Kafka according to their business
 

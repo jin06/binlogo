@@ -5,7 +5,7 @@
 
 - 配置流水线到RocketMQ
 
-![avatar](/docs/assets/pic/config_output_rocketmq.png)
+![avatar](/docs/wiki/assets/pic/config_output_rocketmq.png)
 
 
 

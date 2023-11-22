@@ -1,6 +1,6 @@
 ### 配置流水线到Kafka
 
-![avatar](/docs/assets/pic/config_output_kafka.png)
+![avatar](/docs/wiki/assets/pic/config_output_kafka.png)
 
 > binlogo列出了一些比较重要的配置，用户可以根据自己的业务配置高性能或者高可用的kafka
 

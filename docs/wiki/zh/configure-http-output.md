@@ -1,7 +1,7 @@
 
 ### 配置流水线输出到http接口
 
-![avatar](/docs/assets/pic/config_output_http.png)
+![avatar](/docs/wiki/assets/pic/config_output_http.png)
 
 
 ### 接口格式

@@ -1,6 +1,6 @@
 ### Configure pipeline output to HTTP
 
-![avatar](/docs/assets/pic/config_output_kafka.png)
+![avatar](/docs/wiki/assets/pic/config_output_kafka.png)
 
 ### Format
 

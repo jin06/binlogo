@@ -9,7 +9,7 @@
 > Generally, username does not need to be configured.
 > Redis 6.0 and above have the concept of username
 > 
-![avatar](/docs/assets/pic/config_output_redis.png)
+![avatar](/docs/wiki/assets/pic/config_output_redis.png)
 
 - [Redis Consumer Example Code](https://github.com/jin06/binlogo/tree/master/examples/redis/main.go)
 
