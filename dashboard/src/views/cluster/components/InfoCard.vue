@@ -9,7 +9,7 @@
       <div class="user-profile">
         <div class="box-center">
           <div class="user-name text-center">{{ bcluster.name }}</div>
-          <div class="user-role text-center text-muted">{{ $t('cluster.name' )}}</div>
+          <div class="user-role text-center text-muted">{{ $t('cluster.name' ) }}</div>
         </div>
       </div>
     </el-card>

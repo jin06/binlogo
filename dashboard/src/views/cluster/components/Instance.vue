@@ -2,7 +2,7 @@
 <script src="../../../lang/zh.js"></script>
 <template>
   <el-row>
-    <aside style="margin-bottom: 50px;margin-top: 20px">{{$t('cluster.instanceTip')}}</aside>
+    <aside style="margin-bottom: 50px;margin-top: 20px">{{ $t('cluster.instanceTip') }}</aside>
     <el-table :data="list" border fit highlight-current-row style="width: 100%;margin-bottom: 10px">
       <el-table-column width="auto" align="center" :label="$t('instance.create_time')">
         <template slot-scope="scope">

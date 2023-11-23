@@ -11,17 +11,17 @@
           <el-tabs v-model="activeName">
             <el-tab-pane key="election" :label="$t('cluster.tabMap.election.label')" name="election">
               <keep-alive>
-                <election type="election"></election>
+                <election type="election" />
               </keep-alive>
             </el-tab-pane>
             <el-tab-pane key="register" :label="$t('cluster.tabMap.register.label')" name="register">
               <keep-alive>
-                <register type="register"></register>
+                <register type="register" />
               </keep-alive>
             </el-tab-pane>
             <el-tab-pane key="instance" :label="$t('cluster.tabMap.instance.label')" name="instance">
               <keep-alive>
-                <instance type="instance"></instance>
+                <instance type="instance" />
               </keep-alive>
             </el-tab-pane>
           </el-tabs>
