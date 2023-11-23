@@ -37,15 +37,16 @@ func NewCommand() (cmd *cobra.Command) {
 			var nodeCtx context.Context
 			var err error
 			ctx := context.Background()
+			if err = RunConsole(ctx); err != nil {
+				fmt.Println(err.Error())
+				os.Exit(1)
+			}
 			if nodeCtx, err = RunNode(ctx); err != nil {
 				fmt.Println(err.Error())
 				os.Exit(1)
 			}
 			event.Event(event2.NewInfoNode("Run node success"))
-			if err = RunConsole(ctx); err != nil {
-				fmt.Println(err.Error())
-				os.Exit(1)
-			}
+
 			select {
 			case <-nodeCtx.Done():
 				{

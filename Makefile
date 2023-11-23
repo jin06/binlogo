@@ -66,3 +66,11 @@ docker:
 	docker tag jin06/binlogo jin06/binlogo:$(version)
 	docker push jin06/binlogo:$(version)
 
+.ONESHELL:
+
+dash:
+	sh -c "cd dashboard;NODE_OPTIONS="--openssl-legacy-provider" npm run build:prod"
+	sh -c "rm -fr assets/dist;mv dashboard/dist ./assets"
+
+
+
