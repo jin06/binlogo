@@ -240,6 +240,9 @@
         <el-form-item v-if="temp.pipeline.output.sender.type === 'elastic'" label="Password">
           <el-input v-model="temp.pipeline.output.sender.elastic.password" />
         </el-form-item>
+        <el-form-item v-if="temp.pipeline.output.sender.type === 'elastic'" label="Script">
+          <el-input v-model="temp.pipeline.output.sender.elastic.script" :autosize="{ minRows: 8, maxRows: 8}" type="textarea" />
+        </el-form-item>
         <el-divider content-position="center">Filter: <el-button size="small" @click="addFilter">{{ $t('pipeline_table.filter.addFilter') }}</el-button></el-divider>
         <el-form-item
           v-for="(filter, index) in temp.pipeline.filters"
