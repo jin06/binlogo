@@ -41,7 +41,6 @@ func initViperDefault() {
 	viper.SetDefault("console.port", CONSOLE_PORT)
 	viper.SetDefault("roles.api", true)
 	viper.SetDefault("roles.master", true)
-	viper.SetDefault("roles.workder", true)
 }
 
 // initViperFromEnv read config from env then whrite to viper
@@ -75,9 +74,6 @@ func initViperFromEnv() {
 	}
 	if val, found := syscall.Getenv("ROLES_MASTER"); found {
 		viper.Set("roles.master", val)
-	}
-	if val, found := syscall.Getenv("ROLES_WORKER"); found {
-		viper.Set("roles.worker", val)
 	}
 }
 

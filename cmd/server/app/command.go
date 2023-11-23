@@ -34,9 +34,9 @@ func NewCommand() (cmd *cobra.Command) {
 			Init(cfg)
 			promeths.Init()
 			RunEvent()
+			// panic(123)
 			var err error
 			ctx := context.Background()
-
 			exit := make(chan struct{})
 			closeOnce := sync.Once{}
 			go func() {

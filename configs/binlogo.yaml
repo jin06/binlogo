@@ -7,7 +7,6 @@ node:
 roles:
   api: true
   master: true
-  worker: true
 # console configs
 console:
   port: 9999
