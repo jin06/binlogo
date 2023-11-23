@@ -4,6 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"sync"
+	"time"
+
 	"github.com/jin06/binlogo/app/server/node/election"
 	"github.com/jin06/binlogo/app/server/node/manager/manager_event"
 	"github.com/jin06/binlogo/app/server/node/manager/manager_pipe"
@@ -15,8 +18,7 @@ import (
 	"github.com/jin06/binlogo/pkg/store/dao/dao_node"
 	"github.com/jin06/binlogo/pkg/store/model/node"
 	"github.com/sirupsen/logrus"
-	"sync"
-	"time"
+	"github.com/spf13/viper"
 )
 
 // Node represents a node instance
@@ -117,15 +119,19 @@ func (n *Node) Run(ctx context.Context) (err error) {
 
 	n.init()
 
-	go func() {
-		n._mustRun(stx)
-		n.stop()
-	}()
+	if viper.GetBool("roles.worker") {
+		go func() {
+			n._mustRun(stx)
+			n.stop()
+		}()
+	}
 
-	go func() {
-		n._leaderRun(stx)
-		n.stop()
-	}()
+	if viper.GetBool("roles.master") {
+		go func() {
+			n._leaderRun(stx)
+			n.stop()
+		}()
+	}
 
 	select {
 	case <-ctx.Done():

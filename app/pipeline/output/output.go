@@ -3,6 +3,7 @@ package output
 import (
 	"context"
 	"errors"
+	"github.com/jin06/binlogo/app/pipeline/output/sender/elastic"
 	"time"
 
 	message2 "github.com/jin06/binlogo/app/pipeline/message"
@@ -58,6 +59,8 @@ func (o *Output) init() (err error) {
 		o.Sender, err = kafka2.New(o.Options.Output.Sender.Kafka)
 	case pipeline.SENDER_TYPE_ROCKETMQ:
 		o.Sender, err = rocketmq.New(o.Options.Output.Sender.RocketMQ)
+	case pipeline.SENDER_TYPE_Elastic:
+		o.Sender, err = elastic.New(o.Options.Output.Sender.Elastic)
 	default:
 		o.Sender, err = stdout2.New()
 	}

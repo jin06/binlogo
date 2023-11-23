@@ -39,6 +39,9 @@ func initViperDefault() {
 	viper.SetDefault("cluster.name", CLUSTER_NAME)
 	viper.SetDefault("console.listen", CONSOLE_LISTEN)
 	viper.SetDefault("console.port", CONSOLE_PORT)
+	viper.SetDefault("roles.api", true)
+	viper.SetDefault("roles.master", true)
+	viper.SetDefault("roles.workder", true)
 }
 
 // initViperFromEnv read config from env then whrite to viper
@@ -66,6 +69,15 @@ func initViperFromEnv() {
 	}
 	if val, found := syscall.Getenv("ETCD_USERNAME"); found {
 		viper.Set("etcd.username", val)
+	}
+	if val, found := syscall.Getenv("ROLES_API"); found {
+		viper.Set("roles.api", val)
+	}
+	if val, found := syscall.Getenv("ROLES_MASTER"); found {
+		viper.Set("roles.master", val)
+	}
+	if val, found := syscall.Getenv("ROLES_WORKER"); found {
+		viper.Set("roles.worker", val)
 	}
 }
 

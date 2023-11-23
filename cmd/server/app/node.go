@@ -7,20 +7,16 @@ import (
 
 	node2 "github.com/jin06/binlogo/app/server/node"
 	"github.com/jin06/binlogo/configs"
+	"github.com/jin06/binlogo/pkg/event"
 	"github.com/jin06/binlogo/pkg/store/dao/dao_node"
+	event2 "github.com/jin06/binlogo/pkg/store/model/event"
 	"github.com/jin06/binlogo/pkg/store/model/node"
 	"github.com/sirupsen/logrus"
 )
 
 // RunNode run node.
-func RunNode(c context.Context) (resCtx context.Context, err error) {
+func RunNode(c context.Context) (err error) {
 	logrus.Info("init node")
-	resCtx, cancel := context.WithCancel(c)
-	defer func() {
-		if err != nil {
-			cancel()
-		}
-	}()
 	nModel := &node.Node{
 		Name:       configs.NodeName,
 		Version:    configs.Version,
@@ -46,32 +42,29 @@ func RunNode(c context.Context) (resCtx context.Context, err error) {
 		logrus.Error(err)
 		return
 	}
-	go func() {
-		logrus.Info("run node")
-		cancel()
-		for {
-			_node := node2.New(node2.OptionNode(nModel))
-			ctx, _ := context.WithCancel(c)
-			ch := make(chan error, 1)
-			go func() {
-				var nodeError error
-				defer func() {
-					if r := recover(); r != nil {
-						logrus.Errorln("run node panic, ", r)
-						nodeError = errors.New("panic")
-					}
-					ch <- nodeError
-				}()
-				logrus.WithField("node name", configs.NodeName).Info("Running node")
-				nodeError = _node.Run(ctx)
+	logrus.Info("run node")
+	event.Event(event2.NewInfoNode("Run node success"))
+	for {
+		_node := node2.New(node2.OptionNode(nModel))
+		ctx, _ := context.WithCancel(c)
+		ch := make(chan error, 1)
+		go func() {
+			var nodeError error
+			defer func() {
+				if r := recover(); r != nil {
+					logrus.Errorln("run node panic, ", r)
+					nodeError = errors.New("panic")
+				}
+				ch <- nodeError
 			}()
-			errNode := <-ch
-			if errNode != nil {
-				logrus.Errorln("run node error, ", errNode)
-			}
-			close(ch)
-			time.Sleep(time.Second * 5)
+			logrus.WithField("node name", configs.NodeName).Info("Running node")
+			nodeError = _node.Run(ctx)
+		}()
+		errNode := <-ch
+		if errNode != nil {
+			logrus.Errorln("run node error, ", errNode)
 		}
-	}()
-	return
+		close(ch)
+		time.Sleep(time.Second * 5)
+	}
 }

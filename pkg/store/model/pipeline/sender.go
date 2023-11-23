@@ -10,6 +10,7 @@ const SNEDER_TYPE_HTTP = "http"
 const SNEDER_TYPE_RABBITMQ = "rabbitMQ"
 const SENDER_TYPE_REDIS = "redis"
 const SENDER_TYPE_ROCKETMQ = "rocketMQ"
+const SENDER_TYPE_Elastic = "elastic"
 
 // Sender output configuration
 type Sender struct {
@@ -21,6 +22,8 @@ type Sender struct {
 	RabbitMQ *RabbitMQ `json:"rabbitMQ"`
 	Redis    *Redis    `json:"redis"`
 	RocketMQ *RocketMQ `json:"rocketMQ"`
+	// todo use interface for sender params
+	Elastic *Elastic `json:"elastic"`
 }
 
 // Kafka output configuration
@@ -69,6 +72,18 @@ type RocketMQ struct {
 	InstanceId string `json:"instance_id"`
 	AccessKey  string `json:"access_key"`
 	SecretKey  string `json:"secret_key"`
+}
+
+type Elastic struct {
+	// Endpoints is elastic addresses
+	Endpoints string `json:"endpoints"`
+	Index     string `json:"index"`
+	Type      string `json:"type"`
+	Username  string `json:"username"`
+	Password  string `json:"password"`
+	//TLSCA                    string `json:"tls_ca"`
+	//TLSClientCertificateFile string `json:"tls_client_certificate_file"`
+	//TLSClientKeyFile         string `json:"tls_client_key_file"`
 }
 
 // EmptyHttp return a new empty Http object

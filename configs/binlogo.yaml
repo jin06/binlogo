@@ -4,6 +4,10 @@ cluster:
 # node configs. Different node should have different name.
 node:
   name: node1
+roles:
+  api: true
+  master: true
+  worker: true
 # console configs
 console:
   port: 9999

@@ -15,6 +15,7 @@ import (
 )
 
 func router(g *gin.Engine) {
+	g.Use(corsMiddle())
 	g.GET("/metrics", gin.WrapH(promhttp.Handler()))
 	g.Use(mid.Cors)
 

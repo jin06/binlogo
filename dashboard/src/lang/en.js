@@ -285,7 +285,7 @@ export default {
             value: 'RocketMQ'
           },
           {
-            key: 'es',
+            key: 'elastic',
             value: 'ElasticSearch'
           }
         ]

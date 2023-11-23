@@ -225,6 +225,21 @@
         <el-form-item v-if="temp.pipeline.output.sender.type === 'rocketMQ'" label="SecretKey">
           <el-input v-model="temp.pipeline.output.sender.rocketMQ.secret_key" />
         </el-form-item>
+        <el-form-item v-if="temp.pipeline.output.sender.type === 'elastic'" label="Endpoints">
+          <el-input v-model="temp.pipeline.output.sender.elastic.endpoints" />
+        </el-form-item>
+        <el-form-item v-if="temp.pipeline.output.sender.type === 'elastic'" label="Index">
+          <el-input v-model="temp.pipeline.output.sender.elastic.index" />
+        </el-form-item>
+        <el-form-item v-if="temp.pipeline.output.sender.type === 'elastic'" label="Type">
+          <el-input v-model="temp.pipeline.output.sender.elastic.type" />
+        </el-form-item>
+        <el-form-item v-if="temp.pipeline.output.sender.type === 'elastic'" label="Username">
+          <el-input v-model="temp.pipeline.output.sender.elastic.username" />
+        </el-form-item>
+        <el-form-item v-if="temp.pipeline.output.sender.type === 'elastic'" label="Password">
+          <el-input v-model="temp.pipeline.output.sender.elastic.password" />
+        </el-form-item>
         <el-divider content-position="center">Filter: <el-button size="small" @click="addFilter">{{ $t('pipeline_table.filter.addFilter') }}</el-button></el-divider>
         <el-form-item
           v-for="(filter, index) in temp.pipeline.filters"
@@ -257,37 +272,17 @@
       </div>
     </el-dialog>
 
-    <el-dialog :visible.sync="dialogPvVisible" title="Reading statistics">
-      <el-table :data="pvData" border fit highlight-current-row style="width: 100%">
-        <el-table-column prop="key" label="Channel" />
-        <el-table-column prop="pv" label="Pv" />
-      </el-table>
-      <span slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="dialogPvVisible = false">{{ $t('table.confirm') }}</el-button>
-      </span>
-    </el-dialog>
   </div>
 </template>
 
 <script>
-import { fetchPv } from '@/api/article'
 import { fetchList, fetchUpdateStatus, fetchCreate, fetchUpdate, fetchDelete } from '@/api/pipeline'
 import waves from '@/directive/waves' // waves directive
-import { parseTime } from '@/utils'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
 
 export default {
   components: { Pagination },
   directives: { waves },
-  // filters: {
-  //   statusFilter(status) {
-  //     const statusMap = {
-  //       run: 'success',
-  //       stop: 'danger'
-  //     }
-  //     return statusMap[status]
-  //   }
-  // },
   data() {
     return {
       tableKey: 0,
@@ -321,71 +316,16 @@ export default {
         { value: true, label:true},
         { value: false, label: false}
       ],
-    sortOptions: [{ label: 'Time Ascending', key: '+id' }, { label: 'Time Descending', key: '-id' }],
+      sortOptions: [{ label: 'Time Ascending', key: '+id' }, { label: 'Time Descending', key: '-id' }],
       // statusOptions: ['published', 'draft', 'deleted'],
       showReviewer: false,
-      temp: {
-        pipeline: {
-          mysql: {
-            address: '',
-            port: '',
-            user: '',
-            password: '',
-            mode: 'gtid',
-            flavor: ''
-          },
-          remark: '',
-          alias_name: '',
-          name: '',
-          output: {
-            sender:{
-              type: 'kafka',
-              kafka: {
-                brokers: '',
-                topic: '',
-                require_acks: 1,
-                compression: 0,
-                retries: 3,
-                idepotent:false
-              },
-              stdout: null,
-              http: {
-                api: '',
-                retries: 3
-              },
-              rabbitMQ: {
-                url: '',
-                exchange_name: ''
-              },
-              redis: {
-                address:'',
-                username:'',
-                password:'',
-                list:''
-              },
-              rocketMQ: {
-                endpoint:'',
-                topic_name: '',
-                instance_id: '',
-                access_key: '',
-                secret_key: ''
-              }
-            }
-          },
-          filters: [{
-            "type": "black",
-            "rule": "mysql"
-          }]
-        }
-      },
+      temp: {},
       dialogFormVisible: false,
       dialogStatus: '',
       textMap: {
         update: 'Edit',
         create: "Create"
       },
-      dialogPvVisible: false,
-      pvData: [],
       rules: {
         pipeline:{
           name: [{ required: true, message: "name is required", trigger: 'change'}],
@@ -426,6 +366,7 @@ export default {
     }
   },
   created() {
+    this.resetTemp()
     this.getList()
   },
   methods: {
@@ -526,6 +467,13 @@ export default {
                 instance_id: '',
                 access_key: '',
                 secret_key: ''
+              },
+              elastic: {
+                endpoints: '',
+                username: '',
+                password: '',
+                index: '',
+                type: ''
               }
             }
           },
@@ -617,35 +565,6 @@ export default {
         });
       });
     },
-    // handleFetchPv(pv) {
-    //   fetchPv(pv).then(response => {
-    //     this.pvData = response.data.pvData
-    //     this.dialogPvVisible = true
-    //   })
-    // },
-    // handleDownload() {
-    //   this.downloadLoading = true
-    //   import('@/vendor/Export2Excel').then(excel => {
-    //     const tHeader = ['timestamp', 'title', 'type', 'importance', 'status']
-    //     const filterVal = ['timestamp', 'title', 'type', 'importance', 'status']
-    //     const data = this.formatJson(filterVal)
-    //     excel.export_json_to_excel({
-    //       header: tHeader,
-    //       data,
-    //       filename: 'table-list'
-    //     })
-    //     this.downloadLoading = false
-    //   })
-    // },
-    // formatJson(filterVal) {
-    //   return this.list.map(v => filterVal.map(j => {
-    //     if (j === 'timestamp') {
-    //       return parseTime(v[j])
-    //     } else {
-    //       return v[j]
-    //     }
-    //   }))
-    // },
     addFilter() {
       this.temp.pipeline.filters.push({
         type: '' ,

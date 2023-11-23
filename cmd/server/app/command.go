@@ -3,13 +3,13 @@ package app
 import (
 	"context"
 	"fmt"
-	"os"
+	"sync"
 
 	"github.com/jin06/binlogo/configs"
-	"github.com/jin06/binlogo/pkg/event"
 	"github.com/jin06/binlogo/pkg/promeths"
-	event2 "github.com/jin06/binlogo/pkg/store/model/event"
+
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 // NewCommand returns a new command for binlogo server
@@ -34,26 +34,30 @@ func NewCommand() (cmd *cobra.Command) {
 			Init(cfg)
 			promeths.Init()
 			RunEvent()
-			var nodeCtx context.Context
 			var err error
 			ctx := context.Background()
-			if err = RunConsole(ctx); err != nil {
-				fmt.Println(err.Error())
-				os.Exit(1)
-			}
-			if nodeCtx, err = RunNode(ctx); err != nil {
-				fmt.Println(err.Error())
-				os.Exit(1)
-			}
-			event.Event(event2.NewInfoNode("Run node success"))
 
-			select {
-			case <-nodeCtx.Done():
-				{
-					fmt.Println("node exit")
-					return
+			exit := make(chan struct{})
+			closeOnce := sync.Once{}
+			go func() {
+				if err = RunNode(ctx); err != nil {
+					fmt.Println(err.Error())
 				}
+				closeOnce.Do(func() {
+					close(exit)
+				})
+			}()
+			if viper.GetBool("roles.api") {
+				go func() {
+					if err = RunConsole(ctx); err != nil {
+						fmt.Println(err.Error())
+					}
+					closeOnce.Do(func() {
+						close(exit)
+					})
+				}()
 			}
+			<-exit
 		},
 	}
 

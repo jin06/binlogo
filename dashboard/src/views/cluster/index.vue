@@ -1,5 +1,3 @@
-<script src="../../api/instance.js"></script></script>
-<script src="../../../api/pipeline.js"></script>
 <template>
   <div class="app-container">
     <el-row :gutter="20">
@@ -33,14 +31,14 @@
 
 <script>
 import InfoCard from './components/InfoCard'
-import {fetchGet} from "@/api/cluster";
-import Election from "./components/Election";
-import Instance from "./components/Instance";
-import Register from "./components/Register";
+import { fetchGet } from '@/api/cluster'
+import Election from './components/Election'
+import Instance from './components/Instance'
+import Register from './components/Register'
 
 export default {
   name: 'Profile',
-  components: { InfoCard, Election, Instance, Register},
+  components: { InfoCard, Election, Instance, Register },
   data() {
     return {
       bcluster: {},
