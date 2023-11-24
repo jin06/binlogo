@@ -2,15 +2,16 @@ package elastic
 
 import (
 	"fmt"
+	"os"
+
 	"github.com/jin06/binlogo/app/pipeline/message"
 	"github.com/jin06/binlogo/pkg/store/model/pipeline"
-	"os"
 )
 
 type Elastic struct {
 }
 
-func New(cfg *pipeline.Elastic) (e *Elastic, err error) {
+func New(cfg pipeline.Elastic) (e *Elastic, err error) {
 	e = &Elastic{}
 	return
 }

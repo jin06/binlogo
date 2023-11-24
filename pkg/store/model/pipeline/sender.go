@@ -23,7 +23,7 @@ type Sender struct {
 	Redis    *Redis    `json:"redis"`
 	RocketMQ *RocketMQ `json:"rocketMQ"`
 	// todo use interface for sender params
-	Elastic *Elastic `json:"elastic"`
+	Elastic Elastic `json:"elastic"`
 }
 
 // Kafka output configuration

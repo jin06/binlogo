@@ -17,7 +17,6 @@ func EmptyOutput() *Output {
 			RabbitMQ: nil,
 			Redis:    nil,
 			RocketMQ: nil,
-			Elastic:  nil,
 		},
 	}
 }
