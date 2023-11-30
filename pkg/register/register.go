@@ -163,7 +163,7 @@ func (r *Register) watch(ctx context.Context) (ok bool, err error) {
 		ok = true
 	}
 	//logrus.Debug(res.Kvs[0].CreateRevision)
-	logrus.Debug(r.registerCreateRevision)
+	// logrus.Debug(r.registerCreateRevision)
 	return
 }
 

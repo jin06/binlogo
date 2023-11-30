@@ -119,12 +119,10 @@ func (n *Node) Run(ctx context.Context) (err error) {
 
 	n.init()
 
-	if viper.GetBool("roles.worker") {
-		go func() {
-			n._mustRun(stx)
-			n.stop()
-		}()
-	}
+	go func() {
+		n._mustRun(stx)
+		n.stop()
+	}()
 
 	if viper.GetBool("roles.master") {
 		go func() {
@@ -212,10 +210,12 @@ func (n *Node) _mustRun(ctx context.Context) {
 		}
 		n.stop()
 	}()
-	go func() {
-		n.electionManager.Run(stx)
-		n.stop()
-	}()
+	if viper.GetBool("roles.master") {
+		go func() {
+			n.electionManager.Run(stx)
+			n.stop()
+		}()
+	}
 	go func() {
 		n.pipeManager.Run(stx)
 		n.stop()
