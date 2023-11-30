@@ -91,11 +91,12 @@ func (r *Input) prepareCanal() (err error) {
 
 	addr := fmt.Sprintf("%s:%s", pipe.Mysql.Address, strconv.Itoa(int(pipe.Mysql.Port)))
 	cfg := &canal.Config{
-		Addr:     addr,
-		User:     pipe.Mysql.User,
-		Password: pipe.Mysql.Password,
-		ServerID: pipe.Mysql.ServerId,
-		Flavor:   pipe.Mysql.Flavor.YaString(),
+		Addr:                 addr,
+		User:                 pipe.Mysql.User,
+		Password:             pipe.Mysql.Password,
+		ServerID:             pipe.Mysql.ServerId,
+		Flavor:               pipe.Mysql.Flavor.YaString(),
+		MaxReconnectAttempts: 3,
 	}
 	r.canal, err = canal.NewCanal(cfg)
 	return
