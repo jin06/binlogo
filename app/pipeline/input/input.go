@@ -59,7 +59,7 @@ func (r *Input) Run(ctx context.Context) (err error) {
 			}
 		case <-r.canal.Ctx().Done():
 			{
-				break
+				return
 			}
 		}
 	}()

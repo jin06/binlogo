@@ -2,12 +2,13 @@ package manager_status
 
 import (
 	"errors"
+	"time"
+
 	"github.com/jin06/binlogo/pkg/store/dao/dao_node"
 	"github.com/jin06/binlogo/pkg/store/model/node"
 	"github.com/shirou/gopsutil/v3/cpu"
 	"github.com/shirou/gopsutil/v3/mem"
 	"github.com/sirupsen/logrus"
-	"time"
 )
 
 // NodeStatus reporting work
@@ -27,7 +28,7 @@ func NewNodeStatus(nodeName string) *NodeStatus {
 }
 
 func (ns *NodeStatus) syncNodeStatus() (err error) {
-	logrus.Infoln("Sync node status ")
+	// logrus.Infoln("Sync node status ")
 	err = ns.setStatus()
 	if err != nil {
 		return
