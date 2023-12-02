@@ -368,6 +368,9 @@ export default {
     rocket: {
       tips: '因为一般使用RocketMQ的都是直接使用阿里云的云服务, 所以这里直接提供了阿里云的配置,参考地址'
     },
+    tips: {
+      fix_pos_newest: '因为mysql删除了binlog文件导致无法同步时，是否使用最新的binlog位置信息?'
+    },
     actions: '操作',
     status: '状态',
     edit: '编辑',

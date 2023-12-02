@@ -264,6 +264,15 @@
             </el-col>
           </el-row>
         </el-form-item>
+        <el-divider content-position="center">Options</el-divider>
+        <el-form-item label="FixPosNewest">
+          <el-switch
+            v-model="temp.pipeline.fix_pos_newest"
+            active-color="#13ce66"
+          />
+          <br>
+          <span>{{ $t('pipeline_table.tips.fix_pos_newest') }}</span>
+        </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false">
@@ -480,6 +489,7 @@ export default {
               }
             }
           },
+          fix_pos_newest: false,
           filters: [{
             "type": "black",
             "rule": "mysql"
