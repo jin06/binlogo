@@ -358,6 +358,9 @@ export default {
     rocket: {
       tips: 'Because user generally uses Alibaba cloud services directly, rocketMQ of Alibaba cloud configurations and reference addresses are provided here'
     },
+    tips: {
+      fix_pos_newest: 'If this is true, binlogo will use the newest positon when could not find binlog file index'
+    },
     actions: 'Actions',
     status: 'Status',
     edit: 'Edit',

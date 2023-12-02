@@ -17,6 +17,8 @@ type Pipeline struct {
 	CreateTime time.Time `json:"create_time"`
 	Remark     string    `json:"remark"`
 	IsDelete   bool      `json:"is_delete"`
+	// If use newest posion to sync mysql replication when get mysql error 1236 (could not find binary log index)
+	FixPosNewest bool `json:"fix_pos_newest"`
 }
 
 // NewPipeline returns a new pipeline with default values
@@ -105,6 +107,7 @@ func WithPipeSafe(uPipe *Pipeline) OptionPipeline {
 		p.Filters = uPipe.Filters
 		p.Output = uPipe.Output
 		p.Remark = uPipe.Remark
+		p.FixPosNewest = uPipe.FixPosNewest
 	}
 }
 

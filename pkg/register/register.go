@@ -3,9 +3,10 @@ package register
 import (
 	"context"
 	"encoding/json"
-	"go.etcd.io/etcd/api/v3/v3rpc/rpctypes"
 	"sync"
 	"time"
+
+	"go.etcd.io/etcd/api/v3/v3rpc/rpctypes"
 
 	"github.com/jin06/binlogo/pkg/etcdclient"
 	"github.com/sirupsen/logrus"
@@ -54,7 +55,7 @@ func (r *Register) Run(ctx context.Context) (err error) {
 			logrus.Errorln("register panic, ", re)
 		}
 		if err != nil {
-			logrus.WithError(err).Errorln("register process quit unexpectedly")
+			logrus.WithField("err", err.Error()).Infoln("register process quit unexpectedly")
 		}
 		logrus.WithField("key", r.registerKey).Info("register stopped")
 		r.close()

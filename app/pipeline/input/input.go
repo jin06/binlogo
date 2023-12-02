@@ -91,47 +91,35 @@ func (r *Input) prepareCanal() (err error) {
 
 	addr := fmt.Sprintf("%s:%s", pipe.Mysql.Address, strconv.Itoa(int(pipe.Mysql.Port)))
 	cfg := &canal.Config{
-		Addr:     addr,
-		User:     pipe.Mysql.User,
-		Password: pipe.Mysql.Password,
-		ServerID: pipe.Mysql.ServerId,
-		Flavor:   pipe.Mysql.Flavor.YaString(),
+		Addr:                 addr,
+		User:                 pipe.Mysql.User,
+		Password:             pipe.Mysql.Password,
+		ServerID:             pipe.Mysql.ServerId,
+		Flavor:               pipe.Mysql.Flavor.YaString(),
+		MaxReconnectAttempts: 3,
 	}
 	r.canal, err = canal.NewCanal(cfg)
 	return
 }
 
 func (r *Input) runCanal() (err error) {
+	defer func() {
+		if err != nil {
+			logrus.Errorln("canal run failed with error, ", err.Error())
+		}
+	}()
 	record, err := dao_pipe.GetRecord(r.Options.PipeName)
 	if err != nil {
 		return
 	}
 	if r.pipe.Mysql.Mode == pipeline.MODE_GTID {
 		var canGTID mysql.GTIDSet
-		if record != nil {
-			if record.Pre != nil {
-				if record.Pre.GTIDSet != "" {
-					canGTID, err = mysql.ParseGTIDSet(r.pipe.Mysql.Flavor.YaString(), record.Pre.GTIDSet)
-					if err != nil {
-						return
-					}
-				}
-			}
-		}
-
-		if canGTID == nil {
-			canGTID, err = r.canal.GetMasterGTIDSet()
-			if err != nil {
+		if record != nil && record.Pre != nil && record.Pre.GTIDSet != "" {
+			if canGTID, err = mysql.ParseGTIDSet(r.pipe.Mysql.Flavor.YaString(), record.Pre.GTIDSet); err != nil {
 				return
 			}
-			err = dao_pipe.UpdateRecord(&pipeline.RecordPosition{
-				PipelineName: r.Options.PipeName,
-				Pre: &pipeline.Position{
-					GTIDSet:      canGTID.String(),
-					PipelineName: r.Options.PipeName,
-				},
-			})
-			if err != nil {
+		} else {
+			if canGTID, err = r.storeNewestGTID(); err != nil {
 				return
 			}
 		}
@@ -141,9 +129,25 @@ func (r *Input) runCanal() (err error) {
 		})
 		//go r.canal.StartFromGTID(canGTID)
 		go func() {
-			startErr := r.canal.StartFromGTID(canGTID)
-			if startErr != nil {
-				event.Event(event2.NewErrorPipeline(r.Options.PipeName, "Start mysql replication error: "+startErr.Error()))
+			var startErr error
+			defer func() {
+				if startErr != nil {
+					event.Event(event2.NewErrorPipeline(r.Options.PipeName, "Start mysql replication error: "+startErr.Error()))
+				}
+			}()
+			if startErr = r.canal.StartFromGTID(canGTID); startErr != nil {
+				logrus.WithField("mode", "GTID").Errorln(startErr.Error())
+				errCode := mysql.ErrorCode(startErr.Error())
+				if errCode == 1236 && r.pipe.FixPosNewest {
+					if canGTID, startErr = r.storeNewestGTID(); startErr != nil {
+						return
+					} else {
+						event.Event(event2.NewErrorPipeline(r.Options.PipeName, "Start mysql replication could not find first log file name in binary log index file, set current pipeline binlog postion to newest"))
+					}
+					if startErr = r.canal.StartFromGTID(canGTID); startErr != nil {
+						return
+					}
+				}
 			}
 		}()
 		return
@@ -151,31 +155,14 @@ func (r *Input) runCanal() (err error) {
 
 	if r.pipe.Mysql.Mode == pipeline.MODE_POSITION {
 		logrus.Debugln("Run pipeline in mode position", r.Options.PipeName)
-		var canPos *mysql.Position
-		if record != nil {
-			if record.Pre != nil {
-				canPos = &mysql.Position{
-					Name: record.Pre.BinlogFile,
-					Pos:  record.Pre.BinlogPosition,
-				}
+		var canPos mysql.Position
+		if record != nil && record.Pre != nil {
+			canPos = mysql.Position{
+				Name: record.Pre.BinlogFile,
+				Pos:  record.Pre.BinlogPosition,
 			}
-		}
-		if canPos == nil {
-			canPos = &mysql.Position{}
-			*canPos, err = r.canal.GetMasterPos()
-			if err != nil {
-				logrus.Errorln(err)
-				return
-			}
-			err = dao_pipe.UpdateRecord(&pipeline.RecordPosition{
-				PipelineName: r.Options.PipeName,
-				Pre: &pipeline.Position{
-					BinlogFile:     canPos.Name,
-					BinlogPosition: canPos.Pos,
-					PipelineName:   r.Options.PipeName,
-				},
-			})
-			if err != nil {
+		} else {
+			if canPos, err = r.storeNewestPosition(); err != nil {
 				return
 			}
 		}
@@ -186,10 +173,25 @@ func (r *Input) runCanal() (err error) {
 		})
 		//go r.canal.RunFrom(canPos)
 		go func() {
-			startErr := r.canal.RunFrom(*canPos)
-			if startErr != nil {
-				fmt.Println(startErr)
-				event.Event(event2.NewErrorPipeline(r.Options.PipeName, "Start mysql replication error: "+startErr.Error()))
+			var startErr error
+			defer func() {
+				if startErr != nil {
+					event.Event(event2.NewErrorPipeline(r.Options.PipeName, "Start mysql replication error: "+startErr.Error()))
+				}
+			}()
+			if startErr = r.canal.RunFrom(canPos); startErr != nil {
+				logrus.WithField("mode", "file index").Errorln(startErr.Error())
+				errCode := mysql.ErrorCode(startErr.Error())
+				if errCode == 1236 && r.pipe.FixPosNewest {
+					if canPos, startErr = r.storeNewestPosition(); startErr != nil {
+						return
+					} else {
+						event.Event(event2.NewErrorPipeline(r.Options.PipeName, "Start mysql replication could not find first log file name in binary log index file, set current pipeline binlog postion to newest"))
+					}
+					if startErr = r.canal.RunFrom(canPos); startErr != nil {
+						return
+					}
+				}
 			}
 		}()
 		return
@@ -199,6 +201,37 @@ func (r *Input) runCanal() (err error) {
 	//if err != nil {
 	//	logrus.Errorln("Run canal error: ", err)
 	//}
+	return
+}
+
+func (r *Input) storeNewestGTID() (gtidSet mysql.GTIDSet, err error) {
+	if gtidSet, err = r.canal.GetMasterGTIDSet(); err != nil {
+		return
+	}
+	err = dao_pipe.UpdateRecord(&pipeline.RecordPosition{
+		PipelineName: r.Options.PipeName,
+		Pre: &pipeline.Position{
+			GTIDSet:      gtidSet.String(),
+			PipelineName: r.Options.PipeName,
+		},
+	})
+	return
+}
+
+func (r *Input) storeNewestPosition() (pos mysql.Position, err error) {
+	pos, err = r.canal.GetMasterPos()
+	if err != nil {
+		logrus.Errorln(err)
+		return
+	}
+	err = dao_pipe.UpdateRecord(&pipeline.RecordPosition{
+		PipelineName: r.Options.PipeName,
+		Pre: &pipeline.Position{
+			BinlogFile:     pos.Name,
+			BinlogPosition: pos.Pos,
+			PipelineName:   r.Options.PipeName,
+		},
+	})
 	return
 }
 
