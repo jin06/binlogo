@@ -286,11 +286,11 @@ export default {
           {
             key: 'rocketMQ',
             value: 'RocketMQ'
-          },
-          {
-            key: 'elastic',
-            value: 'Elasticsearch'
           }
+          // {
+          //   key: 'elastic',
+          //   value: 'Elasticsearch'
+          // }
         ]
       }
     },
