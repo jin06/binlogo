@@ -17,3 +17,27 @@ etcd:
     - "localhost:2379"
   password:
   username:
+auth:
+  #store session code
+  store:
+    #memory redis file
+    type: memory
+    redis:
+      addr: ""
+      password: ""
+      database: 1
+    file:
+      path: ""
+  #emtpy for no auth 
+  implement: 
+    #basic ldap
+    type: basic
+    basic:
+      username: admin  
+      password: admin
+    ldap:
+      addr: ""
+      username: ""
+      password: ""
+        
+  
