@@ -3,14 +3,14 @@ package handler
 import "fmt"
 
 type Result struct {
-	Code int         `json:"code"`
+	Code Code        `json:"code"`
 	Msg  string      `json:"msg"`
 	Data interface{} `json:"data"`
 }
 
 func Success(data interface{}) Result {
 	return Result{
-		Code: 20000,
+		Code: CodeSuccess,
 		Msg:  "success",
 		Data: data,
 	}
@@ -19,8 +19,22 @@ func Success(data interface{}) Result {
 func Fail(msg interface{}) Result {
 	errMsg := fmt.Sprintf("%v", msg)
 	result := Result{
-		Code: 500,
+		Code: CodeUnknownError,
 		Msg:  errMsg,
 	}
 	return result
+}
+
+func FailCode(code Code) Result {
+	return Result{
+		Code: code,
+		Msg:  code.String(),
+	}
+}
+
+func FaileReason(code Code, reason string) Result {
+	return Result{
+		Code: code,
+		Msg:  fmt.Sprintf("%s。 %s", code.String(), reason),
+	}
 }
