@@ -5,66 +5,17 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"sync"
 
 	"github.com/go-mysql-org/go-mysql/canal"
 	"github.com/go-mysql-org/go-mysql/mysql"
-	message2 "github.com/jin06/binlogo/app/pipeline/message"
+	"github.com/jin06/binlogo/app/pipeline/message"
 	"github.com/jin06/binlogo/pkg/event"
 	"github.com/jin06/binlogo/pkg/store/dao/dao_pipe"
-	event2 "github.com/jin06/binlogo/pkg/store/model/event"
-	"github.com/jin06/binlogo/pkg/store/model/node"
+	event_store "github.com/jin06/binlogo/pkg/store/model/event"
 	"github.com/jin06/binlogo/pkg/store/model/pipeline"
 	"github.com/sirupsen/logrus"
 )
-
-// Input read binlog event from mysql
-type Input struct {
-	OutChan      chan *message2.Message
-	Options      *Options
-	canal        *canal.Canal
-	eventHandler *canalHandler
-	ctx          context.Context
-	pipe         *pipeline.Pipeline
-	node         *node.Node
-}
-
-// Run Input start working
-func (r *Input) Run(ctx context.Context) (err error) {
-	myCtx, cancel := context.WithCancel(ctx)
-	r.ctx = myCtx
-	go func() {
-		defer func() {
-			if err != nil {
-				event.Event(event2.NewErrorPipeline(r.Options.PipeName, err.Error()))
-			}
-			if r.canal != nil {
-				r.canal.Close()
-			}
-			cancel()
-		}()
-		if r.canal == nil {
-			err = r.prepareCanal()
-			if err != nil {
-				return
-			}
-			err = r.runCanal()
-			if err != nil {
-				return
-			}
-		}
-		select {
-		case <-ctx.Done():
-			{
-				return
-			}
-		case <-r.canal.Ctx().Done():
-			{
-				return
-			}
-		}
-	}()
-	return
-}
 
 // New returns a new Input
 func New(opts ...Option) (input *Input, err error) {
@@ -73,9 +24,80 @@ func New(opts ...Option) (input *Input, err error) {
 		v(options)
 	}
 	input = &Input{
-		Options: options,
+		Options:  options,
+		closed:   make(chan struct{}),
+		stopping: make(chan struct{}),
 	}
+	input.log = logrus.WithField("mod", "input").
+		WithField("pipe name", options.PipeName)
 	return
+}
+
+// Input read binlog event from mysql
+type Input struct {
+	OutChan chan *message.Message
+	Options *Options
+	canal   *canal.Canal
+	// eventHandler *canalHandler
+	pipe *pipeline.Pipeline
+	// node         *node.Node
+	closed    chan struct{}
+	closeOnce sync.Once
+	stopping  chan struct{}
+	stopOnce  sync.Once
+	log       *logrus.Entry
+}
+
+// Run Input start working
+func (r *Input) Run(ctx context.Context) (err error) {
+	defer func() {
+		if err != nil {
+			event.Event(event_store.NewErrorPipeline(r.Options.PipeName, err.Error()))
+		}
+		r.close()
+	}()
+	if r.canal == nil {
+		if err = r.prepareCanal(); err != nil {
+			r.log.WithError(err).Error("prepare canal")
+			return
+		}
+		if err = r.runCanal(); err != nil {
+			r.log.WithError(err).Error("run canal")
+			return
+		}
+	}
+	select {
+	case <-ctx.Done():
+		r.log.Info("father goroutine exit")
+		return
+	case <-r.canal.Ctx().Done():
+		{
+			r.log.Info("canal done")
+			return
+		}
+	case <-r.stopping:
+		r.log.Info("stopping")
+		return
+	}
+}
+
+func (r *Input) stop() {
+	r.stopOnce.Do(func() {
+		close(r.stopping)
+	})
+}
+
+func (r *Input) Closed() chan struct{} {
+	return r.closed
+}
+
+func (r *Input) close() {
+	r.closeOnce.Do(func() {
+		if r.canal != nil {
+			r.canal.Close()
+		}
+		close(r.closed)
+	})
 }
 
 func (r *Input) prepareCanal() (err error) {
@@ -103,6 +125,7 @@ func (r *Input) prepareCanal() (err error) {
 }
 
 func (r *Input) runCanal() (err error) {
+	defer r.stop()
 	defer func() {
 		if err != nil {
 			logrus.Errorln("canal run failed with error, ", err.Error())
@@ -128,11 +151,11 @@ func (r *Input) runCanal() (err error) {
 			pipe: r.pipe,
 		})
 		//go r.canal.StartFromGTID(canGTID)
-		go func() {
+		func() {
 			var startErr error
 			defer func() {
 				if startErr != nil {
-					event.Event(event2.NewErrorPipeline(r.Options.PipeName, "Start mysql replication error: "+startErr.Error()))
+					event.Event(event_store.NewErrorPipeline(r.Options.PipeName, "Start mysql replication error: "+startErr.Error()))
 				}
 			}()
 			if startErr = r.canal.StartFromGTID(canGTID); startErr != nil {
@@ -142,7 +165,7 @@ func (r *Input) runCanal() (err error) {
 					if canGTID, startErr = r.storeNewestGTID(); startErr != nil {
 						return
 					} else {
-						event.Event(event2.NewErrorPipeline(r.Options.PipeName, "Start mysql replication could not find first log file name in binary log index file, set current pipeline binlog postion to newest"))
+						event.Event(event_store.NewErrorPipeline(r.Options.PipeName, "Start mysql replication could not find first log file name in binary log index file, set current pipeline binlog postion to newest"))
 					}
 					if startErr = r.canal.StartFromGTID(canGTID); startErr != nil {
 						return
@@ -172,11 +195,11 @@ func (r *Input) runCanal() (err error) {
 			pipe: r.pipe,
 		})
 		//go r.canal.RunFrom(canPos)
-		go func() {
+		func() {
 			var startErr error
 			defer func() {
 				if startErr != nil {
-					event.Event(event2.NewErrorPipeline(r.Options.PipeName, "Start mysql replication error: "+startErr.Error()))
+					event.Event(event_store.NewErrorPipeline(r.Options.PipeName, "Start mysql replication error: "+startErr.Error()))
 				}
 			}()
 			if startErr = r.canal.RunFrom(canPos); startErr != nil {
@@ -186,7 +209,7 @@ func (r *Input) runCanal() (err error) {
 					if canPos, startErr = r.storeNewestPosition(); startErr != nil {
 						return
 					} else {
-						event.Event(event2.NewErrorPipeline(r.Options.PipeName, "Start mysql replication could not find first log file name in binary log index file, set current pipeline binlog postion to newest"))
+						event.Event(event_store.NewErrorPipeline(r.Options.PipeName, "Start mysql replication could not find first log file name in binary log index file, set current pipeline binlog postion to newest"))
 					}
 					if startErr = r.canal.RunFrom(canPos); startErr != nil {
 						return
@@ -233,9 +256,4 @@ func (r *Input) storeNewestPosition() (pos mysql.Position, err error) {
 		},
 	})
 	return
-}
-
-// Context returns Input's context
-func (r *Input) Context() context.Context {
-	return r.ctx
 }

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	message2 "github.com/jin06/binlogo/app/pipeline/message"
+	"github.com/jin06/binlogo/app/pipeline/message"
 	"github.com/sirupsen/logrus"
 )
 
@@ -21,7 +21,7 @@ func New() (std *Stdout, err error) {
 }
 
 // Send logic and control
-func (s *Stdout) Send(msg *message2.Message) (bool, error) {
+func (s *Stdout) Send(msg *message.Message) (bool, error) {
 	// _, err := fmt.Fprintln(os.Stdout, msg.ToString())
 	// if err != nil {
 	// 	logrus.Errorln(err)

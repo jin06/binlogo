@@ -5,11 +5,11 @@ import (
 	"errors"
 	"time"
 
-	node2 "github.com/jin06/binlogo/app/server/node"
+	server_node "github.com/jin06/binlogo/app/server/node"
 	"github.com/jin06/binlogo/configs"
 	"github.com/jin06/binlogo/pkg/event"
 	"github.com/jin06/binlogo/pkg/store/dao/dao_node"
-	event2 "github.com/jin06/binlogo/pkg/store/model/event"
+	model_event "github.com/jin06/binlogo/pkg/store/model/event"
 	"github.com/jin06/binlogo/pkg/store/model/node"
 	"github.com/sirupsen/logrus"
 )
@@ -43,9 +43,9 @@ func RunNode(c context.Context) (err error) {
 		return
 	}
 	logrus.Info("run node")
-	event.Event(event2.NewInfoNode("Run node success"))
+	event.Event(model_event.NewInfoNode("Run node success"))
 	for {
-		_node := node2.New(node2.OptionNode(nModel))
+		_node := server_node.New(server_node.OptionNode(nModel))
 		ctx, _ := context.WithCancel(c)
 		ch := make(chan error, 1)
 		go func() {
