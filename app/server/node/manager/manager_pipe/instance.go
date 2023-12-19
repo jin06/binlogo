@@ -11,8 +11,8 @@ import (
 	"github.com/jin06/binlogo/pkg/register"
 	"github.com/jin06/binlogo/pkg/store/dao/dao_pipe"
 	"github.com/jin06/binlogo/pkg/store/dao/dao_register"
-	event2 "github.com/jin06/binlogo/pkg/store/model/event"
-	pipeline2 "github.com/jin06/binlogo/pkg/store/model/pipeline"
+	model_event "github.com/jin06/binlogo/pkg/store/model/event"
+	model_pipeline "github.com/jin06/binlogo/pkg/store/model/pipeline"
 	"github.com/sirupsen/logrus"
 )
 
@@ -20,7 +20,7 @@ type instance struct {
 	pipeName  string
 	nodeName  string
 	pipeIns   *pipeline.Pipeline
-	pipeInfo  *pipeline2.Pipeline
+	pipeInfo  *model_pipeline.Pipeline
 	pipeReg   *register.Register
 	cancel    context.CancelFunc
 	mutex     sync.Mutex
@@ -60,7 +60,7 @@ func (i *instance) init() (err error) {
 		return
 	}
 	if posPos == nil {
-		posPos = &pipeline2.Position{}
+		posPos = &model_pipeline.Position{}
 	}
 	pipe, err := pipeline.New(
 		pipeline.OptionPipeline(pipeInfo),
@@ -69,7 +69,7 @@ func (i *instance) init() (err error) {
 	if err != nil {
 		return
 	}
-	insModel := &pipeline2.Instance{
+	insModel := &model_pipeline.Instance{
 		PipelineName: i.pipeName,
 		NodeName:     i.nodeName,
 		CreateTime:   time.Now(),
@@ -93,9 +93,9 @@ func (i *instance) start(ctx context.Context) (err error) {
 		}
 		logrus.Info("pipeline instance stopped: ", i.pipeName)
 		if err != nil {
-			event.Event(event2.NewErrorPipeline(i.pipeName, "Pipeline instance stopped error: "+err.Error()))
+			event.Event(model_event.NewErrorPipeline(i.pipeName, "Pipeline instance stopped error: "+err.Error()))
 		}
-		event.Event(event2.NewInfoPipeline(i.pipeName, "Pipeline instance stopped"))
+		event.Event(model_event.NewInfoPipeline(i.pipeName, "Pipeline instance stopped"))
 		close(i.stopped)
 		i.exit = true
 	}()
@@ -113,7 +113,7 @@ func (i *instance) start(ctx context.Context) (err error) {
 		i.pipeIns.Run(stx)
 		i.stop()
 	}()
-	event.Event(event2.NewInfoPipeline(i.pipeName, "Pipeline instance start success"))
+	event.Event(model_event.NewInfoPipeline(i.pipeName, "Pipeline instance start success"))
 	close(i.started)
 
 	select {
