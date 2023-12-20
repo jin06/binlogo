@@ -36,7 +36,7 @@ auth:
   authorizer: 
     #default type is none
     #none basic ldap
-    type: basic
+    type: none
     basic:
       username: admin  
       password: admin
