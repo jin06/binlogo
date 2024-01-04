@@ -1,8 +1,9 @@
 import request from '@/utils/request'
+import settings from '@/settings'
 
 export function login(data) {
   return request({
-    url: '/vue-element-admin/user/login',
+    url: settings.host.api + '/api/user/login',
     method: 'post',
     data
   })
@@ -10,7 +11,7 @@ export function login(data) {
 
 export function getInfo(token) {
   return request({
-    url: '/vue-element-admin/user/info',
+    url: settings.host.api + '/api/user/info',
     method: 'get',
     params: { token }
   })
@@ -18,7 +19,15 @@ export function getInfo(token) {
 
 export function logout() {
   return request({
-    url: '/vue-element-admin/user/logout',
+    url: settings.host.api + '/api/user/logout',
     method: 'post'
+  })
+}
+
+export function authType(query) {
+  return request({
+    url: settings.host.api + '/api/user/auth_type',
+    method: 'get',
+    params: query
   })
 }

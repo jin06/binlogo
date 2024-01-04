@@ -16,7 +16,16 @@ var initDefaultStore sync.Once
 func DefaultStore() TokenStore {
 	initDefaultStore.Do(func() {
 		duration := viper.GetDuration("auth.store.expiration")
-		switch viper.GetString("auth.store") {
+		store := viper.GetString("auth.store")
+		authType := viper.GetString("auth.authorizer.type")
+		if authType == "" || authType == "none" {
+			store = "none"
+		} else {
+			if store == "" || store == "none" {
+				store = "memory"
+			}
+		}
+		switch store {
 		case "redis":
 			{
 				client := redis.NewClient(&redis.Options{
@@ -28,8 +37,8 @@ func DefaultStore() TokenStore {
 				})
 				defaultStore = &RedisStore{
 					prefix:   "binlogo_token:",
-					client:   client,
-					duraiton: duration,
+					rdb:      client,
+					duration: duration,
 				}
 			}
 		case "memory":
@@ -40,9 +49,9 @@ func DefaultStore() TokenStore {
 				}
 			}
 		case "none":
-			fallthrough
-		default:
 			defaultStore = &noneStore{}
+		default:
+			panic("unknow auth store")
 		}
 	})
 	return defaultStore
@@ -89,22 +98,19 @@ func (m *MemoryStore) Remove(token string) {
 
 type RedisStore struct {
 	prefix   string
-	duration time.Duration
 	rdb      *redis.Client
+	duration time.Duration
 }
 
 func (r *RedisStore) Set() (token string) {
 	token = uuid.New().String()
-	r.rdb.SetEX(context.Background(), r.prefix+token, true, r.duration)
+	r.rdb.SetEx(context.Background(), r.prefix+token, true, r.duration)
 	return token
 }
 
 func (r *RedisStore) Get(token string) bool {
 	err := r.rdb.Get(context.Background(), r.prefix+token).Err()
-	if err != nil {
-		return false
-	}
-	return true
+	return err == nil
 }
 
 func (r *RedisStore) Remove(token string) {
@@ -123,5 +129,4 @@ func (n *noneStore) Get(token string) bool {
 }
 
 func (n *noneStore) Remove(token string) {
-	return
 }

@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/jin06/binlogo/app/server/console/handler"
 	"github.com/jin06/binlogo/app/server/console/service"
+	"github.com/spf13/viper"
 )
 
 type token struct {
@@ -51,5 +52,11 @@ func Info(c *gin.Context) {
 		return
 	}
 	c.JSON(200, handler.FailCode(handler.CodeTokenExpired))
-	return
+}
+
+func AuthType(c *gin.Context) {
+	typ := viper.GetString("auth.authorizer.type")
+	c.JSON(200, handler.Success(map[string]any{
+		"type": typ,
+	}))
 }

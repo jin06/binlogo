@@ -10,6 +10,7 @@ import (
 	"github.com/jin06/binlogo/app/server/console/handler/node"
 	"github.com/jin06/binlogo/app/server/console/handler/pipeline"
 	"github.com/jin06/binlogo/app/server/console/handler/position"
+	"github.com/jin06/binlogo/app/server/console/handler/user"
 	mid "github.com/jin06/binlogo/app/server/console/middleware"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
@@ -24,6 +25,13 @@ func router(g *gin.Engine) {
 	})
 	g.Static("/console", "./assets/dist")
 	g.Static("/assets", "./assets/dist/assets")
+	g.POST("/api/user/login", user.Login)
+	g.POST("/api/user/logout", user.Logout)
+	g.GET("/api/user/auth_type", user.AuthType)
+
+	g.Use(auth())
+
+	g.GET("/api/user/info", user.Info)
 
 	g.GET("/api/pipeline/list", pipeline.List)
 	g.GET("/api/pipeline/get", pipeline.Get)

@@ -23,19 +23,20 @@ auth:
     #default type is memory
     #memory redis file
     type: memory
+    expiration: 24h
     redis:
       addr: "127.0.0.1:6379"
       password: "jkl;asdf"
       db: 1
     file:
       path: "./.tokens"
-    expiration: 24h
-
 
   #emtpy for no auth 
   authorizer: 
     #default type is none
-    #none basic ldap
+    #none: no auth 
+    #basic
+    #ldap
     type: none
     basic:
       username: admin  

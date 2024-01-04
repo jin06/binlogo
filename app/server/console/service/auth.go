@@ -15,7 +15,11 @@ var initDefaultAuth sync.Once
 
 func DefaultAuth() Authorizer {
 	initDefaultAuth.Do(func() {
-		switch viper.GetString("auth.authorizer.type") {
+		authType := viper.GetString("auth.authorizer.type")
+		if authType == "" {
+			authType = "none"
+		}
+		switch authType {
 		case "basic":
 			{
 				defaultAuth = &basicAuth{
@@ -35,9 +39,9 @@ func DefaultAuth() Authorizer {
 				}
 			}
 		case "none":
-			fallthrough
-		default:
 			defaultAuth = &noneAuth{}
+		default:
+			panic("unknown auth type")
 		}
 	})
 	return defaultAuth

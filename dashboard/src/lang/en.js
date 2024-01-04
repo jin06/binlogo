@@ -78,6 +78,7 @@ export default {
   login: {
     title: 'Login Form',
     logIn: 'Login',
+    authType: 'Auth Type',
     username: 'Username',
     password: 'Password',
     any: 'any',
