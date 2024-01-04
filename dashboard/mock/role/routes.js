@@ -449,26 +449,6 @@ const asyncRoutes = [
       }
     ]
   },
-
-  {
-    path: '/pdf',
-    component: 'layout/Layout',
-    redirect: '/pdf/index',
-    children: [
-      {
-        path: 'index',
-        component: 'views/pdf/index',
-        name: 'PDF',
-        meta: { title: 'pdf', icon: 'pdf' }
-      }
-    ]
-  },
-  {
-    path: '/pdf/download',
-    component: 'views/pdf/download',
-    hidden: true
-  },
-
   {
     path: '/theme',
     component: 'layout/Layout',
@@ -509,7 +489,6 @@ const asyncRoutes = [
       }
     ]
   },
-
   {
     path: 'external-link',
     component: 'layout/Layout',
