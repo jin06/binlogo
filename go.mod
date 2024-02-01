@@ -1,9 +1,6 @@
 module github.com/jin06/binlogo
 
-go 1.18
-
-// replace google.golang.org/grpc v1.42.0 => google.golang.org/grpc v1.26.0
-// replace google.golang.org/grpc => google.golang.org/grpc v1.25.1
+go 1.20
 
 require (
 	github.com/Shopify/sarama v1.30.0
