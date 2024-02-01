@@ -1,10 +1,11 @@
 package app
 
 import (
+	"net/http"
+
 	"github.com/jin06/binlogo/configs"
 	"github.com/jin06/binlogo/pkg/blog"
 	"github.com/sirupsen/logrus"
-	"net/http"
 )
 
 // Init init run environment
@@ -17,4 +18,8 @@ func Init(file string) {
 			logrus.Println(http.ListenAndServe("localhost:6060", nil))
 		}()
 	}
+}
+
+func RunMonitor() {
+
 }

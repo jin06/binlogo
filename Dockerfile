@@ -32,11 +32,11 @@ FROM alpine:3.10 as final
 #ENV CONSOLE_PORT="9999"
 #ENV CLUSTER_NAME="cluster"
 COPY --from=builder /binlogo/binlogo /binlogo/binlogo
-COPY --from=builder /binlogo/configs/binlogo_docker.yaml /binlogo/configs/binlogo.yaml
+COPY --from=builder /binlogo/env/binlogo_docker.yaml /binlogo/env/binlogo.yaml
 COPY --from=builder /binlogo/assets /binlogo/assets
 WORKDIR /binlogo
 
 EXPOSE 9999
 RUN cd /binlogo
 
-CMD ["/binlogo/binlogo","server", "--config", "/binlogo/configs/binlogo.yaml"]
+CMD ["/binlogo/binlogo","server", "--config", "/binlogo/env/binlogo.yaml"]

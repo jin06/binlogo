@@ -62,7 +62,7 @@ func NewCommand() (cmd *cobra.Command) {
 	}
 
 	cmd = &cobra.Command{Use: "binlogo"}
-	cmd.PersistentFlags().String("config", "./configs/binlogo.yaml", "")
+	cmd.PersistentFlags().String("config", "./env/binlogo.yaml", "")
 	cmd.AddCommand(cmdRun, cmdVersion)
 	return
 }

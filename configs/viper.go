@@ -20,7 +20,7 @@ func Init(file string) {
 // initViperFromFile read config file and write to viper
 func initViperFromFile(file string) {
 	if file == "" {
-		file = "./configs/binlogo.yaml"
+		file = "./env/binlogo.yaml"
 	}
 	//fmt.Println("init config from ", file)
 	logrus.Info("config file path: ", file)
