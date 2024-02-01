@@ -19,7 +19,3 @@ func Init(file string) {
 		}()
 	}
 }
-
-func RunMonitor() {
-
-}

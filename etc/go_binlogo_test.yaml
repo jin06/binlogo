@@ -14,6 +14,8 @@ etcd:
     - "192.168.3.45:12379"
   password:
   username:
+monitor:
+  port: 8085
 auth:
   #store session code
   store:

@@ -17,6 +17,9 @@ etcd:
     - "localhost:2379"
   password:
   username:
+monitor:
+  port: 8085
+
 auth:
   #store session code
   store:
