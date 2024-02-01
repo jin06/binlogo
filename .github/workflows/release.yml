@@ -59,7 +59,7 @@ jobs:
           tag_name: ${{ github.ref }}
           release_name: ${{ github.ref }}
           body: |
-          What's Changed
+            What's Changed
           draft: false
           prerelease: false
 
