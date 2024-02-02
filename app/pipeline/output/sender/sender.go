@@ -6,6 +6,6 @@ import (
 
 // Sender interface for sender
 type Sender interface {
-	Send(ch *message.Message) (bool, error)
+	Send(msg *message.Message) (bool, error)
 	Close() error
 }

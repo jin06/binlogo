@@ -28,12 +28,14 @@ import (
 // Output handle message output
 // depends pipeline config, send message to stdout、kafka, etc.
 type Output struct {
-	InChan    chan *message.Message
-	Sender    sender.Sender
-	Options   *Options
-	record    *pipeline.RecordPosition
-	closed    chan struct{}
-	closeOnce sync.Once
+	InChan       chan *message.Message
+	Sender       sender.Sender
+	Options      *Options
+	record       *pipeline.RecordPosition
+	closed       chan struct{}
+	closeOnce    sync.Once
+	recordMutex  sync.Mutex
+	recordSynced bool
 }
 
 // New return a Output object
@@ -43,8 +45,9 @@ func New(opts ...Option) (out *Output, err error) {
 		v(options)
 	}
 	out = &Output{
-		Options: options,
-		closed:  make(chan struct{}),
+		Options:      options,
+		closed:       make(chan struct{}),
+		recordSynced: false,
 	}
 	return
 }
@@ -99,40 +102,55 @@ func (o *Output) handle(msg *message.Message) (err error) {
 			event.Event(event_store.NewErrorPipeline(o.Options.PipelineName, "send message error: "+err.Error()))
 		}
 	}()
-	switch msg.Status {
-	case message.STATUS_RECORD:
-		{
+	var ok bool
+	if !msg.Filter {
+		ok, err = o.Sender.Send(msg)
+		if err != nil {
 			return
 		}
-	case message.STATUS_SEND:
-		{
-			err = o.syncRecord()
-			if err == nil {
-				msg.Status = message.STATUS_RECORD
-			}
-			return
+		if !ok {
+			err = errors.New("send message failed")
 		}
-	default:
-		if !msg.Filter {
-			var ok bool
-			ok, err = o.Sender.Send(msg)
-			if err == nil {
-				if !ok {
-					err = errors.New("send message failed")
-				}
-			}
-			if err == nil {
-				msg.Status = message.STATUS_SEND
-			}
-		}
-		if err == nil {
-			err = o.syncRecord()
-			if err == nil {
-				msg.Status = message.STATUS_RECORD
-			}
-		}
+	}
+	if err != nil {
 		return
 	}
+	o.updateRecord()
+	return
+	// switch msg.Status {
+	// case message.STATUS_RECORD:
+	// 	{
+	// 		return
+	// 	}
+	// case message.STATUS_SEND:
+	// 	{
+	// 		err = o.syncRecord()
+	// 		if err == nil {
+	// 			msg.Status = message.STATUS_RECORD
+	// 		}
+	// 		return
+	// 	}
+	// default:
+	// 	if !msg.Filter {
+	// 		var ok bool
+	// 		ok, err = o.Sender.Send(msg)
+	// 		if err == nil {
+	// 			if !ok {
+	// 				err = errors.New("send message failed")
+	// 			}
+	// 		}
+	// 		if err == nil {
+	// 			msg.Status = message.STATUS_SEND
+	// 		}
+	// 	}
+	// 	if err == nil {
+	// 		err = o.syncRecord()
+	// 		if err == nil {
+	// 			msg.Status = message.STATUS_RECORD
+	// 		}
+	// 	}
+	// 	return
+	// }
 }
 
 // Run start Output to send message
@@ -141,6 +159,7 @@ func (o *Output) Run(ctx context.Context) (err error) {
 		return
 	}
 	defer o.close()
+	go o.loopSync(ctx)
 	for {
 		select {
 		case <-ctx.Done():
@@ -172,6 +191,8 @@ func (o *Output) Run(ctx context.Context) (err error) {
 }
 
 func (o *Output) prepareRecord(msg *message.Message) (pass bool, err error) {
+	o.recordMutex.Lock()
+	defer o.recordMutex.Unlock()
 	pass = true
 	if o.record == nil {
 		o.record, err = dao_pipe.GetRecord(o.Options.PipelineName)
@@ -240,8 +261,35 @@ func (o *Output) prepareRecord(msg *message.Message) (pass bool, err error) {
 	return
 }
 
+func (o *Output) loopSync(c context.Context) {
+	ticker := time.NewTicker(time.Second)
+	defer ticker.Stop()
+	for {
+		select {
+		case <-c.Done():
+			{
+				return
+			}
+		case <-ticker.C:
+			{
+				o.syncRecord()
+			}
+		}
+	}
+}
+
+func (o *Output) updateRecord() {
+	o.recordMutex.Lock()
+	defer o.recordMutex.Unlock()
+	o.recordSynced = true
+}
+
 func (o *Output) syncRecord() (err error) {
-	err = dao_pipe.UpdateRecord(o.record)
+	o.recordMutex.Lock()
+	defer o.recordMutex.Unlock()
+	if o.recordSynced {
+		err = dao_pipe.UpdateRecord(o.record)
+	}
 	return
 }
 

@@ -118,19 +118,24 @@ func (msg *Message) reset() {
 // Pool reuse message object
 var Pool = sync.Pool{
 	New: func() interface{} {
-		return &Message{
-		}
+		return &Message{}
 	},
 }
 
 // Get get a message object from Pool
-func Get() *Message {
-	msg := Pool.Get().(*Message)
-	msg.reset()
-	return msg
-}
+// func Get() *Message {
+// 	msg := Pool.Get().(*Message)
+// 	msg.reset()
+// 	return msg
+// }
 
 // Put put a message to Pool
-func Put(msg *Message) {
-	Pool.Put(msg)
+// func Put(msg *Message) {
+// 	Pool.Put(msg)
+// }
+
+func Get() *Message {
+	return &Message{}
 }
+
+func Put(msg *Message) {}

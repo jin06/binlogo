@@ -2,16 +2,16 @@ package election
 
 import (
 	"context"
+	"sync"
+
 	"github.com/jin06/binlogo/pkg/node/role"
 	"github.com/jin06/binlogo/pkg/store/model/node"
-	"sync"
 )
 
 // Manager is election cycle manager
 type Manager struct {
 	optNode   *node.Node
 	roleCh    chan role.Role
-	cancel    context.CancelFunc
 	closeOnce sync.Once
 	stopped   chan struct{}
 }
@@ -36,29 +36,7 @@ func (m *Manager) Run(ctx context.Context) {
 			OptionNode(m.optNode),
 			OptionTTL(5),
 		)
-
-		go election.Run(stx)
-		for {
-			select {
-			case <-ctx.Done():
-				{
-					return
-				}
-			case <-election.stopped:
-				{
-					break
-				}
-			case r, ok := <-election.RoleCh:
-				{
-					if !ok {
-						break
-					}
-
-					m.roleCh <- r
-				}
-			}
-		}
-		election.close()
+		election.Run(stx, m.roleCh)
 	}
 }
 
@@ -69,6 +47,7 @@ func (m *Manager) RoleCh() chan role.Role {
 
 func (m *Manager) close() error {
 	m.closeOnce.Do(func() {
+		close(m.roleCh)
 		close(m.stopped)
 	})
 	return nil

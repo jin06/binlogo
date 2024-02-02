@@ -2,6 +2,7 @@ package main
 
 import (
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -38,4 +39,5 @@ func main() {
 	}()
 	http.Handle("/metrics", promhttp.Handler())
 	http.ListenAndServe(":2112", nil)
+	strings.FieldsFunc()
 }

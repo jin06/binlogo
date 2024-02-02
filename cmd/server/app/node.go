@@ -2,7 +2,7 @@ package app
 
 import (
 	"context"
-	"errors"
+	"fmt"
 	"time"
 
 	server_node "github.com/jin06/binlogo/app/server/node"
@@ -17,27 +17,27 @@ import (
 // RunNode run node.
 func RunNode(c context.Context) (err error) {
 	logrus.Info("init node")
-	nModel := &node.Node{
+	nodeOpts := &node.Node{
 		Name:       configs.NodeName,
 		Version:    configs.Version,
 		CreateTime: time.Now(),
 		Role:       node.Role{Master: true, Admin: true, Worker: true},
 	}
-	nModel.IP = configs.NodeIP
-	n, err := dao_node.GetNode(nModel.Name)
+	nodeOpts.IP = configs.NodeIP
+	n, err := dao_node.GetNode(nodeOpts.Name)
 	if err != nil {
 		return
 	}
 	if n != nil {
-		if _, err = dao_node.UpdateNode(nModel.Name, node.WithNodeIP(nModel.IP), node.WithNodeVersion(nModel.Version)); err != nil {
+		if _, err = dao_node.UpdateNode(nodeOpts.Name, node.WithNodeIP(nodeOpts.IP), node.WithNodeVersion(nodeOpts.Version)); err != nil {
 			return
 		}
 	} else {
-		if err = dao_node.CreateNodeIfNotExist(nModel); err != nil {
+		if err = dao_node.CreateNodeIfNotExist(nodeOpts); err != nil {
 			return
 		}
 	}
-	err = dao_node.CreateStatusIfNotExist(&node.Status{NodeName: nModel.Name, Ready: true})
+	err = dao_node.CreateStatusIfNotExist(&node.Status{NodeName: nodeOpts.Name, Ready: true})
 	if err != nil {
 		logrus.Error(err)
 		return
@@ -45,26 +45,22 @@ func RunNode(c context.Context) (err error) {
 	logrus.Info("run node")
 	event.Event(model_event.NewInfoNode("Run node success"))
 	for {
-		_node := server_node.New(server_node.OptionNode(nModel))
-		ctx, _ := context.WithCancel(c)
-		ch := make(chan error, 1)
-		go func() {
-			var nodeError error
+		server := server_node.New(server_node.OptionNode(nodeOpts))
+		func() {
+			var err error
+			ctx, cancel := context.WithCancel(c)
 			defer func() {
 				if r := recover(); r != nil {
-					logrus.Errorln("run node panic, ", r)
-					nodeError = errors.New("panic")
+					err = fmt.Errorf("server panic %v", r)
 				}
-				ch <- nodeError
+				if err != nil {
+					logrus.Errorln(err)
+				}
+				cancel()
 			}()
 			logrus.WithField("node name", configs.NodeName).Info("Running node")
-			nodeError = _node.Run(ctx)
+			err = server.Run(ctx)
 		}()
-		errNode := <-ch
-		if errNode != nil {
-			logrus.Errorln("run node error, ", errNode)
-		}
-		close(ch)
 		time.Sleep(time.Second * 5)
 	}
 }

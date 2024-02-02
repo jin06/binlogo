@@ -15,7 +15,7 @@ etcd:
   password:
   username:
 monitor:
-  port: 8085
+  port: 8035
 auth:
   #store session code
   store:
