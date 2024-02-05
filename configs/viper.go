@@ -20,7 +20,7 @@ func Init(file string) {
 // initViperFromFile read config file and write to viper
 func initViperFromFile(file string) {
 	if file == "" {
-		file = "./configs/binlogo.yaml"
+		file = "./env/binlogo.yaml"
 	}
 	//fmt.Println("init config from ", file)
 	logrus.Info("config file path: ", file)
@@ -41,6 +41,7 @@ func initViperDefault() {
 	viper.SetDefault("console.port", CONSOLE_PORT)
 	viper.SetDefault("roles.api", true)
 	viper.SetDefault("roles.master", true)
+	viper.SetDefault("monitor.port", 8085)
 }
 
 // initViperFromEnv read config from env then whrite to viper

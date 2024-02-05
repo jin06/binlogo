@@ -46,6 +46,7 @@ func (m *Monitor) monitorNode(ctx context.Context) (err error) {
 	}
 
 	ticker := time.NewTicker(time.Second * 120)
+	defer ticker.Stop()
 
 	for {
 		select {

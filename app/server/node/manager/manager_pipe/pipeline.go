@@ -40,24 +40,25 @@ func New(n *node.Node) (m *Manager) {
 // Run start woking
 func (m *Manager) Run(ctx context.Context) {
 	var err error
+	stx, cancel := context.WithCancel(ctx)
 	defer func() {
 		if r := recover(); r != nil {
 			logrus.Errorln("pipeline manager panic, ", r)
 		}
+		cancel()
 		m.close()
 	}()
 	if err = m.scanPipelines(nil); err != nil {
 		logrus.Error(err)
 	}
-	stx, cancel := context.WithCancel(ctx)
-	defer cancel()
+	ticker := time.NewTicker(time.Second * 1)
 	for {
 		select {
 		case <-ctx.Done():
 			{
 				return
 			}
-		case <-time.Tick(time.Second * 1):
+		case <-ticker.C:
 			{
 				if serr := m.scanPipelines(nil); serr != nil {
 					logrus.Error(serr)

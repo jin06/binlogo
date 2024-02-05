@@ -2,8 +2,10 @@ package main
 
 import (
 	"fmt"
+
 	"github.com/jin06/binlogo/cmd/server/app"
-	_ "net/http/pprof"
+
+	// _ "net/http/pprof"
 	"os"
 )
 

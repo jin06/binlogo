@@ -3,9 +3,10 @@ package election
 import (
 	"context"
 	"fmt"
-	"github.com/jin06/binlogo/pkg/watcher"
 	"sync"
 	"time"
+
+	"github.com/jin06/binlogo/pkg/watcher"
 
 	"github.com/jin06/binlogo/configs"
 	"github.com/jin06/binlogo/pkg/etcdclient"
@@ -39,10 +40,10 @@ type Election struct {
 // New returns a new Election
 func New(opts ...Option) (e *Election) {
 	e = &Election{
-		ttl:     5,
-		prefix:  dao_cluster.ElectionPrefix(),
-		role:    role.FOLLOWER,
-		RoleCh:  make(chan role.Role, 1000),
+		ttl:    5,
+		prefix: dao_cluster.ElectionPrefix(),
+		role:   role.FOLLOWER,
+		// RoleCh:  make(chan role.Role, 1000),
 		eleLock: sync.Mutex{},
 		stopped: make(chan struct{}),
 	}
@@ -58,8 +59,9 @@ func New(opts ...Option) (e *Election) {
 }
 
 // Run start election process
-func (e *Election) Run(ctx context.Context) {
+func (e *Election) Run(ctx context.Context, ch chan role.Role) {
 	defer e.close()
+	e.RoleCh = ch
 	e.campaign(ctx)
 }
 
@@ -100,6 +102,8 @@ func (e *Election) campaign(ctx context.Context) {
 		return
 	}
 	defer w.Close()
+	ticker := time.NewTicker(time.Minute)
+	defer ticker.Stop()
 	for {
 		var b bool
 		select {
@@ -125,7 +129,7 @@ func (e *Election) campaign(ctx context.Context) {
 					return
 				}
 			}
-		case <-time.Tick(time.Minute):
+		case <-ticker.C:
 			{
 				s, er := dao_cluster.GetElection(fmt.Sprintf("%x", e.session.Lease()))
 				if er != nil {
@@ -205,7 +209,7 @@ func (e *Election) close() (err error) {
 			err = e.session.Close()
 		}
 		e.setRole(role.FOLLOWER)
-		close(e.RoleCh)
+		// close(e.RoleCh)
 		close(e.stopped)
 	})
 	return

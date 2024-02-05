@@ -1,0 +1,37 @@
+env: production
+cluster:
+  name: cluster1
+  nodes:
+    - 127.0.0.1:50001
+    - 127.0.0.1:50002
+
+# node configs. Different node should have different name.
+node:
+  name: node2
+  port: 50002
+# console configs
+console:
+  port: 9992
+  listen: 0.0.0.0
+# Etcd configs
+etcd:
+  endpoints:
+    - "localhost:2379"
+  password:
+  username:
+raft:
+  bootstrap: false
+  address: 127.0.0.1:39002
+  data_dir: './data/node2'
+  nodes:
+    -
+      id: node1
+      address: '127.0.0.1:39001'
+    -
+      id: node2
+      address: '127.0.0.1:39002'
+    -
+      id: node3
+      address: '127.0.0.1:39003'
+
+

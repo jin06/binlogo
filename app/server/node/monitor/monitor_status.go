@@ -2,8 +2,9 @@ package monitor
 
 import (
 	"context"
-	"github.com/jin06/binlogo/pkg/watcher"
 	"time"
+
+	"github.com/jin06/binlogo/pkg/watcher"
 
 	"github.com/jin06/binlogo/pkg/store/dao"
 	"github.com/jin06/binlogo/pkg/store/dao/dao_node"
@@ -31,9 +32,10 @@ func (m *Monitor) monitorStatus(ctx context.Context) (err error) {
 	if err = checkAllNodeStatus(); err != nil {
 		return
 	}
-	ticker := time.NewTicker(time.Minute)
 
+	ticker := time.NewTicker(time.Minute)
 	defer ticker.Stop()
+
 	for {
 		select {
 		case <-ctx.Done():

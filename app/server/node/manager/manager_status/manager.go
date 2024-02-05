@@ -37,20 +37,23 @@ func (m *Manager) Run(ctx context.Context) {
 		}
 	}()
 	var err error
+	statusTicker := time.NewTicker(time.Second * 10)
+	defer statusTicker.Stop()
+	ipTicker := time.NewTicker(time.Minute)
+	defer ipTicker.Stop()
 	for {
 		select {
 		case <-ctx.Done():
 			{
 				return
 			}
-		case <-time.Tick(time.Second * 10):
-			//case <-time.Tick(time.Second * 1):
+		case <-statusTicker.C:
 			{
 				if err = m.syncStatus(); err != nil {
 					logrus.Error("Sync status failed: ", err)
 				}
 			}
-		case <-time.Tick(time.Minute):
+		case <-ipTicker.C:
 			{
 				if err = m.syncIP(); err != nil {
 					logrus.Error("Sync node ip failed: ", err)

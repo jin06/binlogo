@@ -55,6 +55,8 @@ func (r Recorder) _dispatch(ctx context.Context) {
 }
 
 func (r Recorder) _send(ctx context.Context) {
+	ticker := time.NewTicker(time.Second * 10)
+	defer ticker.Stop()
 	for {
 		select {
 		case <-ctx.Done():
@@ -66,7 +68,7 @@ func (r Recorder) _send(ctx context.Context) {
 				r.flushMap[e.Key] = e
 				r.flush(false)
 			}
-		case <-time.Tick(time.Second * 10):
+		case <-ticker.C:
 			{
 				r.flush(true)
 			}

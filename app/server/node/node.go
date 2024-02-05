@@ -109,9 +109,10 @@ func (n *Node) Run(ctx context.Context) (err error) {
 	stx, cancel := context.WithCancel(ctx)
 	defer func() {
 		if re := recover(); re != nil {
-			err = errors.New(fmt.Sprintf("panic %v", re))
+			err = fmt.Errorf("panic %v", re)
 		}
 		cancel()
+		n.stop()
 	}()
 	if err = n.refreshNode(); err != nil {
 		return
@@ -120,14 +121,12 @@ func (n *Node) Run(ctx context.Context) (err error) {
 	n.init()
 
 	go func() {
-		n._mustRun(stx)
-		n.stop()
+		n.pollMustRun(stx)
 	}()
 
 	if viper.GetBool("roles.master") {
 		go func() {
-			n._leaderRun(stx)
-			n.stop()
+			n.pollLeaderRun(stx)
 		}()
 	}
 
@@ -139,10 +138,13 @@ func (n *Node) Run(ctx context.Context) (err error) {
 	}
 }
 
-// _leaderRun run when node is leader
-func (n *Node) _leaderRun(ctx context.Context) {
+// pollLeaderRun run when node is leader
+func (n *Node) pollLeaderRun(ctx context.Context) {
 	stx, cancel := context.WithCancel(ctx)
-	defer cancel()
+	defer func() {
+		defer cancel()
+		n.stop()
+	}()
 	curRole := role.FOLLOWER
 	ticker := time.NewTicker(time.Second)
 	defer ticker.Stop()
@@ -160,6 +162,13 @@ func (n *Node) _leaderRun(ctx context.Context) {
 				curRole = r
 			}
 		case <-ticker.C:
+			{
+
+			}
+		case <-n.stopping:
+			{
+				return
+			}
 		}
 		n.leaderRun(stx, curRole)
 	}
@@ -199,9 +208,9 @@ func (n *Node) leaderRun(ctx context.Context, r role.Role) {
 	}
 }
 
-// _mustRun run manager that every node must run
+// pollMustRun run manager that every node must run
 // such as election, node register, node status
-func (n *Node) _mustRun(ctx context.Context) {
+func (n *Node) pollMustRun(ctx context.Context) {
 	stx, cancel := context.WithCancel(ctx)
 	defer cancel()
 	go func() {
@@ -224,6 +233,7 @@ func (n *Node) _mustRun(ctx context.Context) {
 		n.StatusManager.Run(stx)
 		n.stop()
 	}()
+
 	select {
 	case <-ctx.Done():
 	case <-n.stopping:

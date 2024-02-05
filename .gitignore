@@ -2,7 +2,7 @@
 .vscode
 #vendor/
 vendor2/
-configs/*test*.yaml
+env/*test*.yaml
 _output
 binlogo
 bin/
