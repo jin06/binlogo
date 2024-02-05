@@ -102,6 +102,8 @@ func (e *Election) campaign(ctx context.Context) {
 		return
 	}
 	defer w.Close()
+	ticker := time.NewTicker(time.Minute)
+	defer ticker.Stop()
 	for {
 		var b bool
 		select {
@@ -127,7 +129,7 @@ func (e *Election) campaign(ctx context.Context) {
 					return
 				}
 			}
-		case <-time.Tick(time.Minute):
+		case <-ticker.C:
 			{
 				s, er := dao_cluster.GetElection(fmt.Sprintf("%x", e.session.Lease()))
 				if er != nil {

@@ -51,13 +51,14 @@ func (m *Manager) Run(ctx context.Context) {
 	if err = m.scanPipelines(nil); err != nil {
 		logrus.Error(err)
 	}
+	ticker := time.NewTicker(time.Second * 1)
 	for {
 		select {
 		case <-ctx.Done():
 			{
 				return
 			}
-		case <-time.Tick(time.Second * 1):
+		case <-ticker.C:
 			{
 				if serr := m.scanPipelines(nil); serr != nil {
 					logrus.Error(serr)

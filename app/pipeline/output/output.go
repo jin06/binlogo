@@ -81,13 +81,14 @@ func (o *Output) loopHandle(ctx context.Context, msg *message.Message) (err erro
 			return
 		}
 		promeths.MessageSendErrCounter.With(prometheus.Labels{"pipeline": o.Options.PipelineName, "node": configs.NodeName}).Inc()
-		timer := time.NewTimer(time.Second)
+		ticker := time.NewTicker(time.Second)
+		defer ticker.Stop()
 		select {
 		case <-ctx.Done():
 			{
 				return
 			}
-		case <-timer.C:
+		case <-ticker.C:
 			{
 				continue
 			}

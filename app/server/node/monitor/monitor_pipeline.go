@@ -2,8 +2,9 @@ package monitor
 
 import (
 	"context"
-	"github.com/jin06/binlogo/pkg/watcher"
 	"time"
+
+	"github.com/jin06/binlogo/pkg/watcher"
 
 	"github.com/jin06/binlogo/pkg/store/dao/dao_pipe"
 	"github.com/jin06/binlogo/pkg/store/dao/dao_sche"
@@ -32,6 +33,7 @@ func (m *Monitor) monitorPipe(ctx context.Context) (err error) {
 	m.checkAllPipelineBind()
 	m.checkAllPipelineDelete()
 	ticker := time.NewTicker(time.Second * 120)
+	defer ticker.Stop()
 	for {
 		select {
 		case <-ticker.C:
