@@ -3,30 +3,30 @@ app = github.com/jin06/binlogo
 version = $version
 compileTime = $(shell date)
 goVersion = $(shell go version)
-baseOutput = upload
-output = $(baseOutput)
-darwinDirName = binlogo-v$(version)-darwin-amd64 
-darwinDir = $(output)/$(darwinDirName)
-windowsDirName = binlogo-v$(version)-linux-amd64
-windowsDir = $(output)/$(windowsDirName)
-linuxDirDirName = binlogo-v$(version)-linux-amd64
-linuxDir = $(output)/$(linuxDirDirName)
+output ?= bin
+darwinName = binlogo-v$(version)-darwin-amd64
+darwinDir = $(output)/$(darwinName)
+windowsName = binlogo-v$(version)-windows-amd64
+windowsDir = $(output)/$(windowsName)
+linuxName = binlogo-v$(version)-linux-amd64
+linuxDir = $(output)/$(linuxName)
 buildArgs = -ldflags="-X '$(app)/configs.Version=$(version)' -X '$(app)/configs.BuildTime=$(compileTime)' -X '$(app)/configs.GoVersion=$(goVersion)'" cmd/server/binlogo.go
 build:
 	mkdir -p $(darwinDir)/etc
-	cp etc/binlogo.yaml $(darwinDir)/etc/binlogo.yaml
 	mkdir -p $(windowsDir)/etc
-	cp etc/binlogo.yaml $(windowsDir)/etc/binlogo.yaml
 	mkdir -p $(linuxDir)/etc
+	cp -rf assets $(darwinDir)
+	cp -rf assets $(windowsDir)
+	cp -rf assets $(linuxDir)
+	cp etc/binlogo.yaml $(darwinDir)/etc/binlogo.yaml
+	cp etc/binlogo.yaml $(windowsDir)/etc/binlogo.yaml
 	cp etc/binlogo.yaml $(linuxDir)/etc/binlogo.yaml
 	CGO_ENABLE=0 GOOS=darwin GOARCH=amd64 go build -o $(darwinDir)/binlogo $(buildArgs)
 	CGO_ENABLE=0 GOOS=windows GOARCH=amd64 go build -o $(windowsDir)/binlogo $(buildArgs)
 	CGO_ENABLE=0 GOOS=linux GOARCH=amd64 go build -o $(linuxDir)/binlogo $(buildArgs)
-	cd $(output)
-	zip -q -r -o ./binlogo-darwin-amd64.zip $(darwinDir)
-	zip -q -r -o ./binlogo-windows-amd64.zip $(windowsDir)
-	tar -zcvf ./binlogo-linux-amd64.tar.gz $(linuxDir)
-	cd ..
+	zip -q -r -o $(output)/$(darwinName).zip  $(output)/$(darwinName)/
+	zip -q -r -o $(output)/$(windowsName).zip $(output)/$(windowsName)/
+	tar -zcvf $(output/)$(linuxName).tar.gz $(output)/$(linuxName)/
 .PHONY: docker
 version = $version
 docker:

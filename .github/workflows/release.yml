@@ -4,6 +4,8 @@ on:
   push:
     tags:
       - 'v*.*.*'
+env:
+  version: ${{ github.action_ref }}
 
 jobs:
   release:
@@ -48,7 +50,7 @@ jobs:
         env:
           version : ${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}
         run: |  
-          make build version=$version
+          make build version=$version output=.
 
       - name: Create Release
         id: create_release
@@ -69,8 +71,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./upload/binlogo-darwin-amd64.zip
-          asset_name: binlogo-darwin-amd64.zip
+          asset_path: ./binlogo-${{ github.ref_name }}-darwin-amd64.zip
+          asset_name: binlogo-${{ github.ref_name }}-darwin-amd64.zip
           asset_content_type: application/zip
 
       - name: Upload Release Asset
@@ -79,8 +81,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./upload/binlogo-windows-amd64.zip
-          asset_name: binlogo-windows-amd64.zip
+          asset_path: ./binlogo-${{ github.ref_name }}-windows-amd64.zip
+          asset_name: binlogo-${{ github.ref_name }}-windows-amd64.zip
           asset_content_type: application/zip
 
       - name: Upload Release Asset
@@ -89,6 +91,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./upload/binlogo-linux-amd64.tar.gz
-          asset_name: binlogo-linux-amd64.tar.gz
+          asset_path: ./binlogo-${{ github.ref_name }}-linux-amd64.tar.gz
+          asset_name: binlogo-${{ github.ref_name }}-linux-amd64.tar.gz
           asset_content_type: application/gzip
