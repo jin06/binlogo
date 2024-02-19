@@ -71,8 +71,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./binlogo-${{ env.version }}-darwin-amd64.zip
-          asset_name: binlogo-${{ env.version }}-darwin-amd64.zip
+          asset_path: ./binlogo-${{ github.action_ref }}-darwin-amd64.zip
+          asset_name: binlogo-${{ github.action_ref }}-darwin-amd64.zip
           asset_content_type: application/zip
 
       - name: Upload Release Asset
