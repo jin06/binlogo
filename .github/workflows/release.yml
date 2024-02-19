@@ -44,7 +44,7 @@ jobs:
         with:
           go-version: 1.21.4
 
-      - name: Build
+      - name: Go Build
         env:
           version : ${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}
         run: |  

@@ -4,10 +4,13 @@ version = $version
 compileTime = $(shell date)
 goVersion = $(shell go version)
 baseOutput = upload
-output = $(baseOutput)/$(version)
-darwinDir = $(output)/binlogo-v$(version)-darwin-amd64
-windowsDir = $(output)/binlogo-v$(version)-windows-amd64
-linuxDir = $(output)/binlogo-v$(version)-linux-amd64
+output = $(baseOutput)
+darwinDirName = binlogo-v$(version)-darwin-amd64 
+darwinDir = $(output)/$(darwinDirName)
+windowsDirName = binlogo-v$(version)-linux-amd64
+windowsDir = $(output)/$(windowsDirName)
+linuxDirDirName = binlogo-v$(version)-linux-amd64
+linuxDir = $(output)/$(linuxDirDirName)
 buildArgs = -ldflags="-X '$(app)/configs.Version=$(version)' -X '$(app)/configs.BuildTime=$(compileTime)' -X '$(app)/configs.GoVersion=$(goVersion)'" cmd/server/binlogo.go
 build:
 	mkdir -p $(darwinDir)/etc
@@ -19,10 +22,11 @@ build:
 	CGO_ENABLE=0 GOOS=darwin GOARCH=amd64 go build -o $(darwinDir)/binlogo $(buildArgs)
 	CGO_ENABLE=0 GOOS=windows GOARCH=amd64 go build -o $(windowsDir)/binlogo $(buildArgs)
 	CGO_ENABLE=0 GOOS=linux GOARCH=amd64 go build -o $(linuxDir)/binlogo $(buildArgs)
-	zip -q -r -o $(baseOutput)/binlogo-darwin-amd64.zip $(darwinDir)
-	zip -q -r -o $(baseOutput)/binlogo-windows-amd64.zip $(windowsDir)
-	tar -zcvf $(baseOutput)/binlogo-linux-amd64.tar.gz $(linuxDir)
-
+	cd $(output)
+	zip -q -r -o ./binlogo-darwin-amd64.zip $(darwinDir)
+	zip -q -r -o ./binlogo-windows-amd64.zip $(windowsDir)
+	tar -zcvf ./binlogo-linux-amd64.tar.gz $(linuxDir)
+	cd ..
 .PHONY: docker
 version = $version
 docker:
