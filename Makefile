@@ -10,12 +10,12 @@ windowsDir = $(output)/binlogo-v$(version)-windows-amd64
 linuxDir = $(output)/binlogo-v$(version)-linux-amd64
 buildArgs = -ldflags="-X '$(app)/configs.Version=$(version)' -X '$(app)/configs.BuildTime=$(compileTime)' -X '$(app)/configs.GoVersion=$(goVersion)'" cmd/server/binlogo.go
 build:
-	mkdir -p $(darwinDir)/env
-	cp env/binlogo.yaml $(darwinDir)/env/binlogo.yaml
-	mkdir -p $(windowsDir)/env
-	cp env/binlogo.yaml $(windowsDir)/env/binlogo.yaml
-	mkdir -p $(linuxDir)/env
-	cp env/binlogo.yaml $(linuxDir)/env/binlogo.yaml
+	mkdir -p $(darwinDir)/etc
+	cp etc/binlogo.yaml $(darwinDir)/etc/binlogo.yaml
+	mkdir -p $(windowsDir)/etc
+	cp etc/binlogo.yaml $(windowsDir)/etc/binlogo.yaml
+	mkdir -p $(linuxDir)/etc
+	cp etc/binlogo.yaml $(linuxDir)/etc/binlogo.yaml
 	CGO_ENABLE=0 GOOS=darwin GOARCH=amd64 go build -o $(darwinDir)/binlogo $(buildArgs)
 	CGO_ENABLE=0 GOOS=windows GOARCH=amd64 go build -o $(windowsDir)/binlogo $(buildArgs)
 	CGO_ENABLE=0 GOOS=linux GOARCH=amd64 go build -o $(linuxDir)/binlogo $(buildArgs)

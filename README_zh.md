@@ -17,7 +17,7 @@ Binlogo是一个基于MySQL的binlog开发的数据同步中间件。同步binlo
 * 数据格式： [Binlogo输出的数据格式](/docs/wiki/message-format.md)
 
 * 启动Binlogo
-  * 配置文件：解压下载的程序，在程序目录env中有配置文件： ${binlogo-path}/env/binlogo.yaml
+  * 配置文件：解压下载的程序，在程序目录etc中有配置文件： ${binlogo-path}/etc/binlogo.yaml
     
   * 修改etcd地址为你的etcd地址；
     
@@ -25,7 +25,7 @@ Binlogo是一个基于MySQL的binlog开发的数据同步中间件。同步binlo
     
   ![avatar](/docs/wiki/assets/pic/edit_config_step1.en.png)
 
-  * > $ ./binlogo server --config ./env/binlogo.yaml
+  * > $ ./binlogo server --config ./etc/binlogo.yaml
 
 * 打开浏览器，进入控制台 : http://127.0.0.1:9999/console
 

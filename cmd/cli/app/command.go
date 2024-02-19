@@ -19,7 +19,7 @@ func NewCommand() (cmd *cobra.Command) {
 	}}
 	cmd.AddCommand(cmdMemory())
 	cmd.AddCommand(cmdPipeline())
-	cmd.PersistentFlags().String("config", "./env/binlogo.yaml", "config file default is ./env/binlogo.yaml")
+	cmd.PersistentFlags().String("config", "./etc/binlogo.yaml", "config file default is ./etc/binlogo.yaml")
 	err := viper.BindPFlag("config", cmd.PersistentFlags().Lookup("config"))
 	// configs.InitViperFromFile(viper.GetString("config"))
 	configs.Init(viper.GetString("config"))

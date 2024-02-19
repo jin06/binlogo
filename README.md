@@ -24,16 +24,16 @@ configuration. Here are part of advantages:
 * Message Format： [Data format of binlogo output](/docs/1.0.*/message-format.md)
 
 * Start binlogo.
-    * Edit config. ${binlogo-path}/env/binlogo.yaml
+    * Edit config. ${binlogo-path}/etc/binlogo.yaml
 
       ![avatar](/docs/wiki/assets/pic/edit_config_step1.en.png)
 
-    * > $ ./binlogo server --config ./env/binlogo.yaml
+    * > $ ./binlogo server --config ./etc/binlogo.yaml
 
 * Open up your browser to http://127.0.0.1:9999/console to view the console website
 
 * Create Pipeline:
-[config.go](env%2Fconfig.go)
+[config.go](etc%2Fconfig.go)
 > Follow the steps.
 
 ![avatar](/docs/wiki/assets/pic/create_pipe_step1.en.png)
