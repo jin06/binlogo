@@ -71,8 +71,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./binlogo-${{ github.action_ref }}-darwin-amd64.zip
-          asset_name: binlogo-${{ github.action_ref }}-darwin-amd64.zip
+          asset_path: ./binlogo-${{ github.ref_name }}-darwin-amd64.zip
+          asset_name: binlogo-${{ github.ref_name }}-darwin-amd64.zip
           asset_content_type: application/zip
 
       - name: Upload Release Asset
@@ -81,8 +81,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./binlogo-${{ env.version }}-windows-amd64.zip
-          asset_name: binlogo-${{ env.version }}-windows-amd64.zip
+          asset_path: ./binlogo-${{ github.ref_name }}-windows-amd64.zip
+          asset_name: binlogo-${{ github.ref_name }}-windows-amd64.zip
           asset_content_type: application/zip
 
       - name: Upload Release Asset
@@ -91,6 +91,5 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./binlogo-${{ env.version }}-linux-amd64.tar.gz
-          asset_name: binlogo-${{ env.version }}-linux-amd64.tar.gz
+          asset_path: ./binlogo-${{ github.ref_name }}-linux-amd64.tar.gz
           asset_content_type: application/gzip
