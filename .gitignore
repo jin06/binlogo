@@ -1,6 +1,6 @@
 .idea/
 .vscode
-#vendor/
+vendor/
 vendor2/
 etc/*test*.yaml
 _output
