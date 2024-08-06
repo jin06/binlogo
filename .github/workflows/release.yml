@@ -3,7 +3,7 @@ name: Release
 on:
   push:
     tags:
-      - 'v*.*.*'
+      - 'v1.*.*'
 env:
   version: ${{ github.action_ref }}
 

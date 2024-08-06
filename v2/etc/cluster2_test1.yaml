@@ -1,0 +1,11 @@
+env: dev
+cluster:
+  name: test_cluster2
+node:
+  name: test_node1
+console:
+  port: 9801
+  listen: 0.0.0.0
+etcd:
+  endpoints:
+    - "localhost:12379"

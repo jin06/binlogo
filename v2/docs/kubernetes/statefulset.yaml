@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  namespace: default
+  labels:
+    app: binlogo
+  name: binlogo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: binlogo
+  template:
+    metadata:
+      labels:
+        app: binlogo
+      annotations:
+        kubesphere.io/containerSecrets: ''
+    spec:
+      volumes:
+        - name: host-time
+          hostPath:
+            path: /etc/localtime
+            type: ''
+      containers:
+        - name: binlogo
+          imagePullPolicy: IfNotPresent
+          image: 'jin06/binlogo:latest'
+          ports:
+            - name: console
+              protocol: TCP
+              containerPort: 9999
+          env:
+            - name: ETCD_ENDPOINTS
+              value: 'etcd-apple-headless.default.svc.cluster.local:2379'
+            - name: ETCD_USERNAME
+              value: 'root'
+            - name: ETCD_PASSWORD
+              value: 'password'
+            - name: BINLOGO_ENV
+              value: production
+            - name: CONSOLE_LISTEN
+              value: '0.0.0.0'
+            - name: CONSOLE_PORT
+              value: '9999'
+            - name: CLUSTER_NAME
+              value: 'cluster'
+      affinity: { }
+      initContainers: [ ]
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      partition: 0
+  serviceName: binlogo
