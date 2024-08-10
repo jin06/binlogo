@@ -2,14 +2,15 @@ package pipeline
 
 import (
 	"fmt"
-	"github.com/gin-gonic/gin"
-	"github.com/jin06/binlogo/app/server/console/handler"
-	"github.com/jin06/binlogo/app/server/console/module/pipeline"
-	"github.com/jin06/binlogo/app/server/console/util"
-	"github.com/jin06/binlogo/pkg/store/dao/dao_pipe"
-	pipeline2 "github.com/jin06/binlogo/pkg/store/model/pipeline"
 	"sort"
 	"strings"
+
+	"github.com/gin-gonic/gin"
+	"github.com/jin06/binlogo/v2/app/server/console/handler"
+	"github.com/jin06/binlogo/v2/app/server/console/module/pipeline"
+	"github.com/jin06/binlogo/v2/app/server/console/util"
+	"github.com/jin06/binlogo/v2/pkg/store/dao/dao_pipe"
+	pipeline2 "github.com/jin06/binlogo/v2/pkg/store/model/pipeline"
 )
 
 func List(c *gin.Context) {

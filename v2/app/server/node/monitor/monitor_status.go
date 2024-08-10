@@ -4,12 +4,12 @@ import (
 	"context"
 	"time"
 
-	"github.com/jin06/binlogo/pkg/watcher"
+	"github.com/jin06/binlogo/v2/pkg/watcher"
 
-	"github.com/jin06/binlogo/pkg/store/dao"
-	"github.com/jin06/binlogo/pkg/store/dao/dao_node"
-	"github.com/jin06/binlogo/pkg/store/dao/dao_sche"
-	"github.com/jin06/binlogo/pkg/store/model/node"
+	"github.com/jin06/binlogo/v2/pkg/store/dao"
+	"github.com/jin06/binlogo/v2/pkg/store/dao/dao_node"
+	"github.com/jin06/binlogo/v2/pkg/store/dao/dao_sche"
+	"github.com/jin06/binlogo/v2/pkg/store/model/node"
 	"github.com/sirupsen/logrus"
 	"go.etcd.io/etcd/api/v3/mvccpb"
 )

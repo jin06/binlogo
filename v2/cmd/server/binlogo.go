@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/jin06/binlogo/cmd/server/app"
+	"github.com/jin06/binlogo/v2/cmd/server/app"
 
 	// _ "net/http/pprof"
 	"os"

@@ -4,10 +4,10 @@ import (
 	"context"
 	"encoding/json"
 
-	clientv3 "go.etcd.io/etcd/client/v3"
-	"github.com/jin06/binlogo/pkg/etcdclient"
-	"github.com/jin06/binlogo/pkg/store/model/pipeline"
+	"github.com/jin06/binlogo/v2/pkg/etcdclient"
+	"github.com/jin06/binlogo/v2/pkg/store/model/pipeline"
 	"github.com/sirupsen/logrus"
+	clientv3 "go.etcd.io/etcd/client/v3"
 )
 
 // InstancePrefix returns etcd prefix of pipeline instance

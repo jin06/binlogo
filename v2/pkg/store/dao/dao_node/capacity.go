@@ -6,10 +6,10 @@ import (
 	"errors"
 	"fmt"
 
-	clientv3 "go.etcd.io/etcd/client/v3"
-	"github.com/jin06/binlogo/pkg/etcdclient"
-	"github.com/jin06/binlogo/pkg/store/model/node"
+	"github.com/jin06/binlogo/v2/pkg/etcdclient"
+	"github.com/jin06/binlogo/v2/pkg/store/model/node"
 	"github.com/sirupsen/logrus"
+	clientv3 "go.etcd.io/etcd/client/v3"
 )
 
 // CapacityPrefix returns prefix key of etcd for capacity

@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"errors"
 
-	"github.com/jin06/binlogo/pkg/etcdclient"
-	"github.com/jin06/binlogo/pkg/store/model/node"
+	"github.com/jin06/binlogo/v2/pkg/etcdclient"
+	"github.com/jin06/binlogo/v2/pkg/store/model/node"
 )
 
 // AllocatablePrefix returns prefix key of etcd for allocatable

@@ -4,7 +4,7 @@ import (
 	"net"
 	"testing"
 
-	"github.com/jin06/binlogo/configs"
+	"github.com/jin06/binlogo/v2/configs"
 )
 
 func TestNode(t *testing.T) {

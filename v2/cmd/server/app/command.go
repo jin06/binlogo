@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/jin06/binlogo/configs"
-	"github.com/jin06/binlogo/pkg/promeths"
+	"github.com/jin06/binlogo/v2/configs"
+	"github.com/jin06/binlogo/v2/pkg/promeths"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -29,13 +29,19 @@ func NewCommand() (cmd *cobra.Command) {
 		Use:   "server",
 		Short: "Generate mysql data increment",
 		Long:  "Generate mysql data increment",
-		Run: func(cmd *cobra.Command, args []string) {
-			cfg, _ := cmd.Flags().GetString("config")
-			Init(cfg)
+		RunE: func(cmd *cobra.Command, args []string) error {
+			var err error
+			cfg, err := cmd.Flags().GetString("config")
+			if err != nil {
+				return err
+			}
+			// Init(cfg)
+			if err = configs.InitConfig(cfg); err != nil {
+				return err
+			}
 			promeths.Init()
 			RunEvent()
 			// panic(123)
-			var err error
 			ctx := context.Background()
 			exit := make(chan struct{})
 			closeOnce := sync.Once{}
@@ -58,6 +64,7 @@ func NewCommand() (cmd *cobra.Command) {
 				}()
 			}
 			<-exit
+			return err
 		},
 	}
 

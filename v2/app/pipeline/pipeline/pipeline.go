@@ -7,12 +7,12 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"github.com/jin06/binlogo/app/pipeline/filter"
-	"github.com/jin06/binlogo/app/pipeline/input"
-	"github.com/jin06/binlogo/app/pipeline/message"
-	"github.com/jin06/binlogo/app/pipeline/output"
-	"github.com/jin06/binlogo/pkg/event"
-	event_store "github.com/jin06/binlogo/pkg/store/model/event"
+	"github.com/jin06/binlogo/v2/app/pipeline/filter"
+	"github.com/jin06/binlogo/v2/app/pipeline/input"
+	"github.com/jin06/binlogo/v2/app/pipeline/message"
+	"github.com/jin06/binlogo/v2/app/pipeline/output"
+	"github.com/jin06/binlogo/v2/pkg/event"
+	event_store "github.com/jin06/binlogo/v2/pkg/store/model/event"
 )
 
 type status byte

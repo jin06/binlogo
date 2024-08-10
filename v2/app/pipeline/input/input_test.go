@@ -5,10 +5,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/jin06/binlogo/configs"
-	"github.com/jin06/binlogo/pkg/store/dao/dao_pipe"
-	"github.com/jin06/binlogo/pkg/store/model/pipeline"
-	"github.com/jin06/binlogo/pkg/util/random"
+	"github.com/jin06/binlogo/v2/configs"
+	"github.com/jin06/binlogo/v2/pkg/store/dao/dao_pipe"
+	"github.com/jin06/binlogo/v2/pkg/store/model/pipeline"
+	"github.com/jin06/binlogo/v2/pkg/util/random"
 )
 
 func TestRun(t *testing.T) {

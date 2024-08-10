@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"strings"
 
-	message2 "github.com/jin06/binlogo/app/pipeline/message"
-	"github.com/jin06/binlogo/pkg/pipeline/tool"
-	"github.com/jin06/binlogo/pkg/store/model/pipeline"
+	message2 "github.com/jin06/binlogo/v2/app/pipeline/message"
+	"github.com/jin06/binlogo/v2/pkg/pipeline/tool"
+	"github.com/jin06/binlogo/v2/pkg/store/model/pipeline"
 )
 
 type tree struct {

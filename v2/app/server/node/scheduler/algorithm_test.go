@@ -1,12 +1,13 @@
 package scheduler
 
 import (
-	"github.com/jin06/binlogo/configs"
-	"github.com/jin06/binlogo/pkg/store/model/node"
-	"github.com/jin06/binlogo/pkg/store/model/pipeline"
-	"github.com/jin06/binlogo/pkg/store/model/scheduler"
 	"testing"
 	"time"
+
+	"github.com/jin06/binlogo/v2/configs"
+	"github.com/jin06/binlogo/v2/pkg/store/model/node"
+	"github.com/jin06/binlogo/v2/pkg/store/model/pipeline"
+	"github.com/jin06/binlogo/v2/pkg/store/model/scheduler"
 )
 
 func TestCal(t *testing.T) {

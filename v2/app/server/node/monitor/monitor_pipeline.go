@@ -4,11 +4,11 @@ import (
 	"context"
 	"time"
 
-	"github.com/jin06/binlogo/pkg/watcher"
+	"github.com/jin06/binlogo/v2/pkg/watcher"
 
-	"github.com/jin06/binlogo/pkg/store/dao/dao_pipe"
-	"github.com/jin06/binlogo/pkg/store/dao/dao_sche"
-	"github.com/jin06/binlogo/pkg/store/model/pipeline"
+	"github.com/jin06/binlogo/v2/pkg/store/dao/dao_pipe"
+	"github.com/jin06/binlogo/v2/pkg/store/dao/dao_sche"
+	"github.com/jin06/binlogo/v2/pkg/store/model/pipeline"
 	"github.com/sirupsen/logrus"
 	"go.etcd.io/etcd/api/v3/mvccpb"
 )

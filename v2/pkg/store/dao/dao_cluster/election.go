@@ -4,8 +4,8 @@ import (
 	"context"
 	"errors"
 
+	"github.com/jin06/binlogo/v2/pkg/etcdclient"
 	clientv3 "go.etcd.io/etcd/client/v3"
-	"github.com/jin06/binlogo/pkg/etcdclient"
 )
 
 // ElectionPrefix returns etcd prefix

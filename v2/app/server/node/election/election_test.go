@@ -2,11 +2,12 @@ package election
 
 import (
 	"context"
-	"github.com/jin06/binlogo/configs"
-	"github.com/jin06/binlogo/pkg/node/role"
-	"github.com/jin06/binlogo/pkg/store/model/node"
 	"testing"
 	"time"
+
+	"github.com/jin06/binlogo/v2/configs"
+	"github.com/jin06/binlogo/v2/pkg/node/role"
+	"github.com/jin06/binlogo/v2/pkg/store/model/node"
 )
 
 func TestSetRole(t *testing.T) {

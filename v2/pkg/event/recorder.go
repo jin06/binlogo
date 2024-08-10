@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/golang/groupcache/lru"
-	"github.com/jin06/binlogo/pkg/store/dao/dao_event"
-	"github.com/jin06/binlogo/pkg/store/model/event"
+	"github.com/jin06/binlogo/v2/pkg/store/dao/dao_event"
+	"github.com/jin06/binlogo/v2/pkg/store/model/event"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )

@@ -3,9 +3,9 @@ package mutex
 import (
 	"context"
 
-	"github.com/jin06/binlogo/pkg/etcdclient"
+	"github.com/jin06/binlogo/v2/pkg/etcdclient"
 
-	//"github.com/jin06/binlogo/pkg/store/etcd"
+	//"github.com/jin06/binlogo/v2/pkg/store/etcd"
 	"time"
 
 	"go.etcd.io/etcd/client/v3/concurrency"

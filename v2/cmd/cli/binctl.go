@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/jin06/binlogo/cmd/cli/app"
+	"github.com/jin06/binlogo/v2/cmd/cli/app"
 )
 
 func main() {

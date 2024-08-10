@@ -3,8 +3,8 @@ package dao_sche
 import (
 	"testing"
 
-	"github.com/jin06/binlogo/configs"
-	"github.com/jin06/binlogo/pkg/util/random"
+	"github.com/jin06/binlogo/v2/configs"
+	"github.com/jin06/binlogo/v2/pkg/util/random"
 )
 
 func TestScheduler(t *testing.T) {

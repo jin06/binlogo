@@ -1,12 +1,13 @@
 package event
 
 import (
-	"github.com/gin-gonic/gin"
-	"github.com/jin06/binlogo/app/server/console/handler"
-	"github.com/jin06/binlogo/pkg/store/dao/dao_event"
-	"github.com/jin06/binlogo/pkg/store/model/event"
-	clientv3 "go.etcd.io/etcd/client/v3"
 	"strconv"
+
+	"github.com/gin-gonic/gin"
+	"github.com/jin06/binlogo/v2/app/server/console/handler"
+	"github.com/jin06/binlogo/v2/pkg/store/dao/dao_event"
+	"github.com/jin06/binlogo/v2/pkg/store/model/event"
+	clientv3 "go.etcd.io/etcd/client/v3"
 )
 
 // List  event list api

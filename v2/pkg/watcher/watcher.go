@@ -1,7 +1,7 @@
 package watcher
 
 import (
-	"github.com/jin06/binlogo/pkg/store/model"
+	"github.com/jin06/binlogo/v2/pkg/store/model"
 )
 
 // Watcher a wrapper for etcd watcher

@@ -1,7 +1,7 @@
 package pipeline
 
 import (
-	"github.com/jin06/binlogo/pkg/store/model/pipeline"
+	"github.com/jin06/binlogo/v2/pkg/store/model/pipeline"
 )
 
 // Options for pipeline

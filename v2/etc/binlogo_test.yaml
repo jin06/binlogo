@@ -1,7 +1,5 @@
-cluster:
-  name: test_cluster
-node:
-  name: node1
+cluster_name: test_cluster
+node_name: node1
 console:
   port: 9999
   listen: 0.0.0.0
@@ -18,36 +16,22 @@ store:
     password: 123456
     db: 0
 auth:
-  #store session code
-  store:
-    #default type is memory
-    #memory redis file
-    type: memory
-    expiration: 24h
-    redis:
-      addr: "127.0.0.1:6379"
-      password: "jkl;asdf"
-      username: ""
-      db: 1
-    file:
-      path: "./.tokens"
-
+  expiration: 24h
   #emtpy for no auth 
-  authorizer: 
-    #default type is none
-    #none: no auth 
-    #basic
-    #ldap
-    type: basic
-    basic:
-      username: admin  
-      password: admin
-    ldap:
-      addr: "192.168.3.45:18888"
-      username: "admin"
-      password: "admin"
-      baseDN: "dc=ops,dc=com"
-      # filter: ""
-      idAttr: "uid"
-      attributs: 
-        - "dn"
+  #default type is none
+  #none: no auth 
+  #basic
+  #ldap
+  type: basic
+  basic:
+    username: admin  
+    password: admin
+  ldap:
+    addr: "192.168.3.45:18888"
+    username: "admin"
+    password: "admin"
+    baseDN: "dc=ops,dc=com"
+    # filter: ""
+    idAttr: "uid"
+    attributs: 
+      - "dn"
