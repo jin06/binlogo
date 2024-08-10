@@ -1,6 +1,5 @@
-env: dev
 cluster:
-  name: go_test_cluster
+  name: test_cluster
 node:
   name: node1
 console:
@@ -9,13 +8,15 @@ console:
 roles:
   api: true
   master: true
-etcd:
-  endpoints:
-    - "192.168.3.45:12379"
-  password:
-  username:
 monitor:
   port: 8035
+store:
+  type: redis
+  redis:
+    addr: 192.168.3.45
+    port: 16379
+    password: 123456
+    db: 0
 auth:
   #store session code
   store:

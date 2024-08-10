@@ -37,8 +37,6 @@ spec:
               value: 'root'
             - name: ETCD_PASSWORD
               value: 'password'
-            - name: BINLOGO_ENV
-              value: production
             - name: CONSOLE_LISTEN
               value: '0.0.0.0'
             - name: CONSOLE_PORT

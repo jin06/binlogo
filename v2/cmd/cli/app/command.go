@@ -6,7 +6,7 @@ import (
 	"github.com/jin06/binlogo/configs"
 	"github.com/jin06/binlogo/pkg/blog"
 	store2 "github.com/jin06/binlogo/pkg/store"
-	"github.com/jin06/binlogo/pkg/store/model/pipeline"
+	"github.com/jin06/binlogo/v2/pkg/store/model/pipeline"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )

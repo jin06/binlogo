@@ -1,26 +1,38 @@
 package store
 
 import (
-	etcd2 "github.com/jin06/binlogo/pkg/store/etcd"
-	model2 "github.com/jin06/binlogo/pkg/store/model"
+	"github.com/jin06/binlogo/pkg/store/model"
 )
 
+type Store interface {
+	Create(m model.Model) (bool, error)
+	Update(m model.Model) (bool, error)
+	Delete(m model.Model) (bool, error)
+	Get(m model.Model) (bool, error)
+}
+
+var def Store
+
+func Init() {
+
+}
+
 // Create  deprecated
-func Create(m model2.Model) (bool, error) {
-	return etcd2.E.Create(m)
+func Create(m model.Model) (bool, error) {
+	return def.Create(m)
 }
 
 // Update  deprecated
-func Update(m model2.Model) (bool, error) {
-	return etcd2.E.Update(m)
+func Update(m model.Model) (bool, error) {
+	return def.Update(m)
 }
 
 // Delete deprecated
-func Delete(m model2.Model) (bool, error) {
-	return etcd2.E.Delete(m)
+func Delete(m model.Model) (bool, error) {
+	return def.Delete(m)
 }
 
 // Get deprecated
-func Get(m model2.Model) (bool, error) {
-	return etcd2.E.Get(m)
+func Get(m model.Model) (bool, error) {
+	return def.Get(m)
 }

@@ -35,7 +35,6 @@ func initViperFromFile(file string) {
 func initViperDefault() {
 	hostName, _ := os.Hostname()
 	viper.SetDefault("node.name", hostName)
-	viper.SetDefault("env", ENV_PRO)
 	viper.SetDefault("cluster.name", CLUSTER_NAME)
 	viper.SetDefault("console.listen", CONSOLE_LISTEN)
 	viper.SetDefault("console.port", CONSOLE_PORT)
@@ -49,9 +48,7 @@ func initViperFromEnv() {
 	if val, found := syscall.Getenv("NODE_NAME"); found {
 		viper.Set("node.name", val)
 	}
-	if val, found := syscall.Getenv("BINLOGO_ENV"); found {
-		viper.Set("env", val)
-	}
+
 	if val, found := syscall.Getenv("CLUSTER_NAME"); found {
 		viper.Set("cluster.name", val)
 	}
@@ -80,7 +77,6 @@ func initViperFromEnv() {
 
 // initConst set global config
 func initConst() {
-	ENV = Env(viper.GetString("env"))
 	NodeName = viper.GetString("node.name")
 	NodeIP, _ = ip.LocalIp()
 }
@@ -88,8 +84,7 @@ func initConst() {
 // InitGoTest init environment for testing
 func InitGoTest() {
 	_ = os.Setenv("NODE_NAME", "go_test_node")
-	_ = os.Setenv("BINLOGO_ENV", "dev")
-	_ = os.Setenv("CLUSTER_NAME", "go_test_cluster")
+	_ = os.Setenv("CLUSTER_NAME", "test_cluster")
 	_ = os.Setenv("CONSOLE_LISTEN", "0.0.0.0")
 	_ = os.Setenv("CONSOLE_PORT", "19999")
 	_ = os.Setenv("ETCD_ENDPOINTS", "localhost:12379")
