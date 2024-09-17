@@ -1,17 +1,18 @@
 package node
 
 import (
-	"github.com/gin-gonic/gin"
-	"github.com/jin06/binlogo/app/server/console/handler"
-	"github.com/jin06/binlogo/app/server/console/module/node"
-	"github.com/jin06/binlogo/app/server/console/util"
-	"github.com/jin06/binlogo/pkg/node/role"
-	"github.com/jin06/binlogo/pkg/store/dao/dao_cluster"
-	"github.com/jin06/binlogo/pkg/store/dao/dao_node"
-	node2 "github.com/jin06/binlogo/pkg/store/model/node"
-	"github.com/sirupsen/logrus"
 	"sort"
 	"strings"
+
+	"github.com/gin-gonic/gin"
+	"github.com/jin06/binlogo/v2/app/server/console/handler"
+	"github.com/jin06/binlogo/v2/app/server/console/module/node"
+	"github.com/jin06/binlogo/v2/app/server/console/util"
+	"github.com/jin06/binlogo/v2/pkg/node/role"
+	"github.com/jin06/binlogo/v2/pkg/store/dao/dao_cluster"
+	"github.com/jin06/binlogo/v2/pkg/store/dao/dao_node"
+	node2 "github.com/jin06/binlogo/v2/pkg/store/model/node"
+	"github.com/sirupsen/logrus"
 )
 
 func List(c *gin.Context) {

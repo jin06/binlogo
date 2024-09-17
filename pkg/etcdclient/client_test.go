@@ -3,7 +3,7 @@ package etcdclient
 import (
 	"testing"
 
-	"github.com/jin06/binlogo/configs"
+	"github.com/jin06/binlogo/v2/configs"
 )
 
 func TestClient(t *testing.T) {

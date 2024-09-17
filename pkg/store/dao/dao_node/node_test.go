@@ -4,9 +4,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/jin06/binlogo/configs"
-	node2 "github.com/jin06/binlogo/pkg/store/model/node"
-	"github.com/jin06/binlogo/pkg/util/random"
+	"github.com/jin06/binlogo/v2/configs"
+	node2 "github.com/jin06/binlogo/v2/pkg/store/model/node"
+	"github.com/jin06/binlogo/v2/pkg/util/random"
 )
 
 func TestNode(t *testing.T) {

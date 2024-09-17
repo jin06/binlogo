@@ -1,9 +1,10 @@
 package rabbitmq
 
 import (
-	message2 "github.com/jin06/binlogo/app/pipeline/message"
-	"github.com/jin06/binlogo/pkg/store/model/pipeline"
 	"testing"
+
+	message2 "github.com/jin06/binlogo/v2/app/pipeline/message"
+	"github.com/jin06/binlogo/v2/pkg/store/model/pipeline"
 )
 
 func TestRabbitmq(t *testing.T) {

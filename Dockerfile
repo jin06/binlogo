@@ -13,7 +13,7 @@ WORKDIR /binlogo
 COPY . .
 
 ARG VERSION
-ENV app=github.com/jin06/binlogo
+ENV app=github.com/jin06/binlogo/v2
 
 RUN go mod vendor
 

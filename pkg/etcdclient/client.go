@@ -5,7 +5,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/jin06/binlogo/configs"
+	"github.com/jin06/binlogo/v2/configs"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	clientv3 "go.etcd.io/etcd/client/v3"

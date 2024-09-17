@@ -4,14 +4,14 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/jin06/binlogo/app/server/console/handler/cluster"
-	"github.com/jin06/binlogo/app/server/console/handler/event"
-	"github.com/jin06/binlogo/app/server/console/handler/instance"
-	"github.com/jin06/binlogo/app/server/console/handler/node"
-	"github.com/jin06/binlogo/app/server/console/handler/pipeline"
-	"github.com/jin06/binlogo/app/server/console/handler/position"
-	"github.com/jin06/binlogo/app/server/console/handler/user"
-	mid "github.com/jin06/binlogo/app/server/console/middleware"
+	"github.com/jin06/binlogo/v2/app/server/console/handler/cluster"
+	"github.com/jin06/binlogo/v2/app/server/console/handler/event"
+	"github.com/jin06/binlogo/v2/app/server/console/handler/instance"
+	"github.com/jin06/binlogo/v2/app/server/console/handler/node"
+	"github.com/jin06/binlogo/v2/app/server/console/handler/pipeline"
+	"github.com/jin06/binlogo/v2/app/server/console/handler/position"
+	"github.com/jin06/binlogo/v2/app/server/console/handler/user"
+	mid "github.com/jin06/binlogo/v2/app/server/console/middleware"
 )
 
 func router(g *gin.Engine) {

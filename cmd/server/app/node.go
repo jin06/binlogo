@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"time"
 
-	server_node "github.com/jin06/binlogo/app/server/node"
-	"github.com/jin06/binlogo/configs"
-	"github.com/jin06/binlogo/pkg/event"
-	"github.com/jin06/binlogo/pkg/store/dao/dao_node"
-	model_event "github.com/jin06/binlogo/pkg/store/model/event"
-	"github.com/jin06/binlogo/pkg/store/model/node"
+	server_node "github.com/jin06/binlogo/v2/app/server/node"
+	"github.com/jin06/binlogo/v2/configs"
+	"github.com/jin06/binlogo/v2/pkg/event"
+	"github.com/jin06/binlogo/v2/pkg/store/dao/dao_node"
+	model_event "github.com/jin06/binlogo/v2/pkg/store/model/event"
+	"github.com/jin06/binlogo/v2/pkg/store/model/node"
 	"github.com/sirupsen/logrus"
 )
 

@@ -1,8 +1,8 @@
 package store
 
 import (
-	etcd2 "github.com/jin06/binlogo/pkg/store/etcd"
-	model2 "github.com/jin06/binlogo/pkg/store/model"
+	etcd2 "github.com/jin06/binlogo/v2/pkg/store/etcd"
+	model2 "github.com/jin06/binlogo/v2/pkg/store/model"
 )
 
 // Create  deprecated

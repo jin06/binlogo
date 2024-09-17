@@ -1,9 +1,9 @@
 package rocketmq
 
 import (
-	"github.com/aliyunmq/mq-http-go-sdk"
-	message2 "github.com/jin06/binlogo/app/pipeline/message"
-	"github.com/jin06/binlogo/pkg/store/model/pipeline"
+	mq_http_sdk "github.com/aliyunmq/mq-http-go-sdk"
+	message2 "github.com/jin06/binlogo/v2/app/pipeline/message"
+	"github.com/jin06/binlogo/v2/pkg/store/model/pipeline"
 )
 
 // RocketMQ send message to Aliyun's RocketMQ

@@ -8,7 +8,7 @@ import (
 
 	"go.etcd.io/etcd/api/v3/v3rpc/rpctypes"
 
-	"github.com/jin06/binlogo/pkg/etcdclient"
+	"github.com/jin06/binlogo/v2/pkg/etcdclient"
 	"github.com/sirupsen/logrus"
 	clientv3 "go.etcd.io/etcd/client/v3"
 )

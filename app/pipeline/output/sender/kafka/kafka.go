@@ -2,11 +2,12 @@ package kafka
 
 import (
 	"encoding/json"
-	"github.com/Shopify/sarama"
-	message2 "github.com/jin06/binlogo/app/pipeline/message"
-	"github.com/jin06/binlogo/pkg/store/model/pipeline"
-	"github.com/sirupsen/logrus"
 	"strings"
+
+	"github.com/Shopify/sarama"
+	message2 "github.com/jin06/binlogo/v2/app/pipeline/message"
+	"github.com/jin06/binlogo/v2/pkg/store/model/pipeline"
+	"github.com/sirupsen/logrus"
 )
 
 // Kafka send message to kafka

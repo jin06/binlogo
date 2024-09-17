@@ -4,8 +4,8 @@ import (
 	"net"
 	"time"
 
-	"github.com/jin06/binlogo/configs"
-	"github.com/jin06/binlogo/pkg/util/key"
+	"github.com/jin06/binlogo/v2/configs"
+	"github.com/jin06/binlogo/v2/pkg/util/key"
 	"github.com/spf13/viper"
 )
 

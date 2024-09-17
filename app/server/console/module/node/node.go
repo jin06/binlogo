@@ -1,6 +1,6 @@
 package node
 
-import "github.com/jin06/binlogo/pkg/store/dao/dao_node"
+import "github.com/jin06/binlogo/v2/pkg/store/dao/dao_node"
 
 // GetAllCount get all nodes count
 func GetAllCount() (count int, err error) {

@@ -3,8 +3,8 @@ package etcd
 import (
 	"testing"
 
-	"github.com/jin06/binlogo/configs"
-	"github.com/jin06/binlogo/pkg/store/model/pipeline"
+	"github.com/jin06/binlogo/v2/configs"
+	"github.com/jin06/binlogo/v2/pkg/store/model/pipeline"
 )
 
 func TestCreate(t *testing.T) {

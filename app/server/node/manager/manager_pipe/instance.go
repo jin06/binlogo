@@ -6,13 +6,13 @@ import (
 	"sync"
 	"time"
 
-	"github.com/jin06/binlogo/app/pipeline/pipeline"
-	"github.com/jin06/binlogo/pkg/event"
-	"github.com/jin06/binlogo/pkg/register"
-	"github.com/jin06/binlogo/pkg/store/dao/dao_pipe"
-	"github.com/jin06/binlogo/pkg/store/dao/dao_register"
-	model_event "github.com/jin06/binlogo/pkg/store/model/event"
-	model_pipeline "github.com/jin06/binlogo/pkg/store/model/pipeline"
+	"github.com/jin06/binlogo/v2/app/pipeline/pipeline"
+	"github.com/jin06/binlogo/v2/pkg/event"
+	"github.com/jin06/binlogo/v2/pkg/register"
+	"github.com/jin06/binlogo/v2/pkg/store/dao/dao_pipe"
+	"github.com/jin06/binlogo/v2/pkg/store/dao/dao_register"
+	model_event "github.com/jin06/binlogo/v2/pkg/store/model/event"
+	model_pipeline "github.com/jin06/binlogo/v2/pkg/store/model/pipeline"
 	"github.com/sirupsen/logrus"
 )
 

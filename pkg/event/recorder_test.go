@@ -4,8 +4,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/jin06/binlogo/configs"
 	"github.com/jin06/binlogo/pkg/store/model/event"
+	"github.com/jin06/binlogo/v2/configs"
 )
 
 func TestIsExceedTime(t *testing.T) {

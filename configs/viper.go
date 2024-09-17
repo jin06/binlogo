@@ -4,7 +4,7 @@ import (
 	"os"
 	"syscall"
 
-	"github.com/jin06/binlogo/pkg/util/ip"
+	"github.com/jin06/binlogo/v2/pkg/util/ip"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )

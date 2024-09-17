@@ -4,7 +4,7 @@ import (
 	"strconv"
 
 	"github.com/go-mysql-org/go-mysql/canal"
-	message2 "github.com/jin06/binlogo/app/pipeline/message"
+	message2 "github.com/jin06/binlogo/v2/app/pipeline/message"
 )
 
 func emptyMessage() (msgs []*message2.Message) {

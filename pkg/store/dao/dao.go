@@ -4,11 +4,11 @@ import (
 	"context"
 	"errors"
 
+	"github.com/jin06/binlogo/v2/pkg/etcdclient"
+	"github.com/jin06/binlogo/v2/pkg/store/dao/dao_pipe"
+	"github.com/jin06/binlogo/v2/pkg/store/dao/dao_sche"
+	"github.com/jin06/binlogo/v2/pkg/store/model/scheduler"
 	clientv3 "go.etcd.io/etcd/client/v3"
-	"github.com/jin06/binlogo/pkg/etcdclient"
-	"github.com/jin06/binlogo/pkg/store/dao/dao_pipe"
-	"github.com/jin06/binlogo/pkg/store/dao/dao_sche"
-	"github.com/jin06/binlogo/pkg/store/model/scheduler"
 )
 
 // ClearOrDeleteBind clear or delete pipeline bind

@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/jin06/binlogo/configs"
-	"github.com/jin06/binlogo/pkg/promeths"
+	"github.com/jin06/binlogo/v2/configs"
+	"github.com/jin06/binlogo/v2/pkg/promeths"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"

@@ -2,8 +2,9 @@ package manager_event
 
 import (
 	"context"
-	"github.com/jin06/binlogo/configs"
 	"testing"
+
+	"github.com/jin06/binlogo/v2/configs"
 )
 
 func TestRun(t *testing.T) {

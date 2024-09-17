@@ -1,8 +1,8 @@
 package node
 
 import (
-	"github.com/jin06/binlogo/pkg/node/role"
-	"github.com/jin06/binlogo/pkg/store/model/node"
+	"github.com/jin06/binlogo/v2/pkg/node/role"
+	"github.com/jin06/binlogo/v2/pkg/store/model/node"
 )
 
 // Item for front display

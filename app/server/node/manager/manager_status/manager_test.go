@@ -2,12 +2,13 @@ package manager_status
 
 import (
 	"context"
-	"github.com/jin06/binlogo/configs"
-	"github.com/jin06/binlogo/pkg/store/dao/dao_node"
-	"github.com/jin06/binlogo/pkg/store/model/node"
-	"github.com/jin06/binlogo/pkg/util/random"
 	"testing"
 	"time"
+
+	"github.com/jin06/binlogo/v2/configs"
+	"github.com/jin06/binlogo/v2/pkg/store/dao/dao_node"
+	"github.com/jin06/binlogo/v2/pkg/store/model/node"
+	"github.com/jin06/binlogo/v2/pkg/util/random"
 )
 
 func TestRun(t *testing.T) {

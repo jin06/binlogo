@@ -1,7 +1,7 @@
 package dao_register
 
 import (
-	"github.com/jin06/binlogo/pkg/etcdclient"
+	"github.com/jin06/binlogo/v2/pkg/etcdclient"
 )
 
 //func PipePrefix() string {

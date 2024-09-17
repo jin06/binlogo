@@ -3,8 +3,8 @@ package console
 import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"github.com/jin06/binlogo/app/server/console/handler"
-	"github.com/jin06/binlogo/app/server/console/service"
+	"github.com/jin06/binlogo/v2/app/server/console/handler"
+	"github.com/jin06/binlogo/v2/app/server/console/service"
 )
 
 func corsMiddle() gin.HandlerFunc {

@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/jin06/binlogo/configs"
+	"github.com/jin06/binlogo/v2/configs"
 )
 
 func TestRun(t *testing.T) {

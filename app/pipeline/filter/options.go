@@ -1,7 +1,7 @@
 package filter
 
 import (
-	pipeline2 "github.com/jin06/binlogo/pkg/store/model/pipeline"
+	pipeline2 "github.com/jin06/binlogo/v2/pkg/store/model/pipeline"
 )
 
 // Options is an interface abstraction for dynamic configuration

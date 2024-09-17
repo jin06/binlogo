@@ -3,14 +3,15 @@ package scheduler
 import (
 	"context"
 	"fmt"
-	"github.com/jin06/binlogo/pkg/watcher"
 	"sync"
 	"time"
 
-	"github.com/jin06/binlogo/pkg/event"
-	"github.com/jin06/binlogo/pkg/store/dao/dao_sche"
-	"github.com/jin06/binlogo/pkg/store/model/pipeline"
-	"github.com/jin06/binlogo/pkg/store/model/scheduler"
+	"github.com/jin06/binlogo/v2/pkg/watcher"
+
+	"github.com/jin06/binlogo/v2/pkg/event"
+	"github.com/jin06/binlogo/v2/pkg/store/dao/dao_sche"
+	"github.com/jin06/binlogo/v2/pkg/store/model/pipeline"
+	"github.com/jin06/binlogo/v2/pkg/store/model/scheduler"
 	"github.com/sirupsen/logrus"
 	"go.etcd.io/etcd/api/v3/mvccpb"
 )

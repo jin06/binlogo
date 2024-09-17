@@ -5,9 +5,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/jin06/binlogo/configs"
-	"github.com/jin06/binlogo/pkg/etcdclient"
-	"github.com/jin06/binlogo/pkg/util/random"
+	"github.com/jin06/binlogo/v2/configs"
+	"github.com/jin06/binlogo/v2/pkg/etcdclient"
+	"github.com/jin06/binlogo/v2/pkg/util/random"
 )
 
 func TestRegister(t *testing.T) {

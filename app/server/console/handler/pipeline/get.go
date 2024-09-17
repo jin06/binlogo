@@ -2,8 +2,8 @@ package pipeline
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/jin06/binlogo/app/server/console/handler"
-	"github.com/jin06/binlogo/app/server/console/module/pipeline"
+	"github.com/jin06/binlogo/v2/app/server/console/handler"
+	"github.com/jin06/binlogo/v2/app/server/console/module/pipeline"
 )
 
 func Get(c *gin.Context) {

@@ -3,8 +3,8 @@ package tool
 import (
 	"testing"
 
-	"github.com/jin06/binlogo/app/pipeline/message"
-	"github.com/jin06/binlogo/pkg/store/model/pipeline"
+	"github.com/jin06/binlogo/v2/app/pipeline/message"
+	"github.com/jin06/binlogo/v2/pkg/store/model/pipeline"
 )
 
 func TestIsFilterWithName(t *testing.T) {

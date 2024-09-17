@@ -7,7 +7,7 @@ import (
 	"github.com/go-mysql-org/go-mysql/canal"
 	"github.com/go-mysql-org/go-mysql/replication"
 	"github.com/go-mysql-org/go-mysql/schema"
-	message2 "github.com/jin06/binlogo/app/pipeline/message"
+	message2 "github.com/jin06/binlogo/v2/app/pipeline/message"
 )
 
 func TestRowsMessage(t *testing.T) {

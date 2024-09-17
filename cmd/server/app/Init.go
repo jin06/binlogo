@@ -3,8 +3,8 @@ package app
 import (
 	"net/http"
 
-	"github.com/jin06/binlogo/configs"
-	"github.com/jin06/binlogo/pkg/blog"
+	"github.com/jin06/binlogo/v2/configs"
+	"github.com/jin06/binlogo/v2/pkg/blog"
 	"github.com/sirupsen/logrus"
 )
 

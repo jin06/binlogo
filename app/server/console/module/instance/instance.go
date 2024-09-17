@@ -2,7 +2,8 @@ package instance
 
 import (
 	"errors"
-	"github.com/jin06/binlogo/pkg/store/dao/dao_pipe"
+
+	"github.com/jin06/binlogo/v2/pkg/store/dao/dao_pipe"
 )
 
 func GetInstanceByName(name string) (item *Item, err error) {

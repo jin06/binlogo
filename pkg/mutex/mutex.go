@@ -3,7 +3,7 @@ package mutex
 import (
 	"context"
 
-	"github.com/jin06/binlogo/pkg/etcdclient"
+	"github.com/jin06/binlogo/v2/pkg/etcdclient"
 
 	//"github.com/jin06/binlogo/pkg/store/etcd"
 	"time"

@@ -6,11 +6,11 @@ import (
 	"os"
 	"time"
 
-	clientv3 "go.etcd.io/etcd/client/v3"
-	options2 "github.com/jin06/binlogo/pkg/store/etcd/options"
-	model2 "github.com/jin06/binlogo/pkg/store/model"
+	options2 "github.com/jin06/binlogo/v2/pkg/store/etcd/options"
+	model2 "github.com/jin06/binlogo/v2/pkg/store/model"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
+	clientv3 "go.etcd.io/etcd/client/v3"
 )
 
 var E *ETCD

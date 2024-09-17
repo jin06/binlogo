@@ -5,9 +5,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/jin06/binlogo/v2/configs"
+	"github.com/jin06/binlogo/v2/pkg/store/model/event"
 	clientv3 "go.etcd.io/etcd/client/v3"
-	"github.com/jin06/binlogo/configs"
-	"github.com/jin06/binlogo/pkg/store/model/event"
 )
 
 func TestUpdate(t *testing.T) {
