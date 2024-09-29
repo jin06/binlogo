@@ -18,7 +18,7 @@ func List(c *gin.Context) {
 	name := c.Query("name")
 	status := c.Query("status")
 
-	all, err := dao_pipe.AllPipelines()
+	all, err := dao_pipe.AllPipelines(c)
 	fmt.Println(all)
 
 	if err != nil {

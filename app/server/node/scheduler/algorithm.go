@@ -3,7 +3,7 @@ package scheduler
 import (
 	"errors"
 
-	"github.com/jin06/binlogo/v2/pkg/store/dao/dao_node"
+	"github.com/jin06/binlogo/v2/pkg/store/dao"
 	"github.com/jin06/binlogo/v2/pkg/store/dao/dao_sche"
 	"github.com/jin06/binlogo/v2/pkg/store/model/node"
 	"github.com/jin06/binlogo/v2/pkg/store/model/pipeline"
@@ -34,7 +34,7 @@ func newAlgorithm(opts ...optionAlgorithm) *algorithm {
 
 func (a *algorithm) cal() (err error) {
 	if a.allNodes == nil {
-		a.allNodes, err = dao_node.AllWorkNodesMap()
+		a.allNodes, err = dao.AllWorkNodesMap()
 		if err != nil {
 			return
 		}
@@ -46,7 +46,7 @@ func (a *algorithm) cal() (err error) {
 		}
 	}
 	if a.capacityMap == nil {
-		a.capacityMap, err = dao_node.CapacityMap()
+		a.capacityMap, err = dao.CapacityMap()
 		if err != nil {
 			return
 		}

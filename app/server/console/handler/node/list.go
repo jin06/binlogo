@@ -9,8 +9,8 @@ import (
 	"github.com/jin06/binlogo/v2/app/server/console/module/node"
 	"github.com/jin06/binlogo/v2/app/server/console/util"
 	"github.com/jin06/binlogo/v2/pkg/node/role"
+	"github.com/jin06/binlogo/v2/pkg/store/dao"
 	"github.com/jin06/binlogo/v2/pkg/store/dao/dao_cluster"
-	"github.com/jin06/binlogo/v2/pkg/store/dao/dao_node"
 	node2 "github.com/jin06/binlogo/v2/pkg/store/model/node"
 	"github.com/sirupsen/logrus"
 )
@@ -20,16 +20,16 @@ func List(c *gin.Context) {
 	name := c.Query("name")
 	ready := c.Query("ready")
 
-	all, err := dao_node.AllNodes()
+	all, err := dao.AllNodes()
 	if err != nil {
 		c.JSON(200, handler.Fail(err))
 		return
 	}
-	capacityMap, err := dao_node.CapacityMap()
+	capacityMap, err := dao.CapacityMap()
 	if err != nil {
 		logrus.Error(err)
 	}
-	statusMap, err := dao_node.StatusMap()
+	statusMap, err := dao.StatusMap()
 	if err != nil {
 		logrus.Error(err)
 	}

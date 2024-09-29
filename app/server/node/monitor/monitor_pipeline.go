@@ -86,7 +86,7 @@ func (m *Monitor) checkAllPipelineBind() {
 			logrus.Error("Check all pipeline bind error: ", err)
 		}
 	}()
-	pipes, err := dao_pipe.AllPipelinesMap()
+	pipes, err := dao_pipe.AllPipelinesMap(context.Background())
 	if err != nil {
 		return
 	}
@@ -136,7 +136,7 @@ func (m *Monitor) checkAllPipelineDelete() {
 			logrus.Error("Check all deleted pipelines error: ", err)
 		}
 	}()
-	pipes, err := dao_pipe.AllPipelines()
+	pipes, err := dao_pipe.AllPipelines(context.Background())
 	if err != nil {
 		return
 	}

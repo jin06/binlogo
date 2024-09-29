@@ -7,7 +7,6 @@ import (
 
 	"github.com/jin06/binlogo/v2/pkg/etcdclient"
 	"github.com/jin06/binlogo/v2/pkg/store/model/pipeline"
-	"github.com/sirupsen/logrus"
 	clientv3 "go.etcd.io/etcd/client/v3"
 )
 
@@ -81,26 +80,12 @@ func UpdatePipeline(pipeName string, opts ...pipeline.OptionPipeline) (ok bool, 
 }
 
 // AllPipelines get all info of pipelines from etcd in array form
-func AllPipelines() (list []*pipeline.Pipeline, err error) {
-	list = []*pipeline.Pipeline{}
-	key := PipelinePrefix()
-	res, err := etcdclient.Default().Get(context.TODO(), key, clientv3.WithPrefix())
-	if err != nil {
-		return
-	}
-	if len(res.Kvs) == 0 {
-		return
-	}
-	for _, v := range res.Kvs {
-		ele := &pipeline.Pipeline{}
-		er := ele.Unmarshal(v.Value)
-		if er != nil {
-			logrus.Error(er)
-			continue
-		}
-		list = append(list, ele)
-	}
-	return
+func AllPipelines(ctx context.Context) ([]*pipeline.Pipeline, error) {
+	list := []*pipeline.Pipeline{}
+	// if err := store_redis.Default.List(ctx, list); err != nil {
+	// 	return nil, err
+	// }
+	return list, nil
 }
 
 //type pipelineSlice []*pipeline.Pipeline
@@ -155,8 +140,8 @@ func AllPipelines() (list []*pipeline.Pipeline, err error) {
 //}
 
 // AllPipelinesMap returns all pipelines from etcd in map form
-func AllPipelinesMap() (mapping map[string]*pipeline.Pipeline, err error) {
-	list, err := AllPipelines()
+func AllPipelinesMap(ctx context.Context) (mapping map[string]*pipeline.Pipeline, err error) {
+	list, err := AllPipelines(ctx)
 	if err != nil {
 		return
 	}

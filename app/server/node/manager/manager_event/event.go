@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"github.com/jin06/binlogo/v2/app/server/node/manager"
+	"github.com/jin06/binlogo/v2/pkg/store/dao"
 	"github.com/jin06/binlogo/v2/pkg/store/dao/dao_event"
-	"github.com/jin06/binlogo/v2/pkg/store/dao/dao_node"
 	"github.com/jin06/binlogo/v2/pkg/store/dao/dao_pipe"
 	"github.com/sirupsen/logrus"
 )
@@ -59,11 +59,11 @@ func (m *Manager) Run(ctx context.Context) (err error) {
 }
 
 func (m *Manager) cleanHistoryEvent() (err error) {
-	pipes, err := dao_pipe.AllPipelines()
+	pipes, err := dao_pipe.AllPipelines(context.Background())
 	if err != nil {
 		return
 	}
-	nodes, err := dao_node.AllNodes()
+	nodes, err := dao.AllNodes()
 
 	if err != nil {
 		return

@@ -1,4 +1,4 @@
-package redis
+package store_redis
 
 import (
 	"context"

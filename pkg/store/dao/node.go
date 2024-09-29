@@ -1,4 +1,4 @@
-package dao_node
+package dao
 
 import (
 	"context"
@@ -7,6 +7,9 @@ import (
 
 	"github.com/jin06/binlogo/v2/pkg/etcdclient"
 	"github.com/jin06/binlogo/v2/pkg/store/model/node"
+	store_redis "github.com/jin06/binlogo/v2/pkg/store/redis"
+
+	// "github.com/jin06/binlogo/v2/pkg/store/store_redis"
 	"github.com/sirupsen/logrus"
 	clientv3 "go.etcd.io/etcd/client/v3"
 )
@@ -96,18 +99,16 @@ func UpdateNode(nodeName string, opts ...node.NodeOption) (ok bool, err error) {
 }
 
 // GetNode get node data from etcd
-func GetNode(name string) (n *node.Node, err error) {
-	key := NodePrefix() + "/" + name
-	res, err := etcdclient.Default().Get(context.Background(), key)
+func GetNode(ctx context.Context, name string) (*node.Node, error) {
+	n := &node.Node{}
+	exist, err := store_redis.Default.Get(ctx, n)
 	if err != nil {
-		return
+		return nil, err
 	}
-	if len(res.Kvs) == 0 {
-		return
+	if exist {
+		return n, nil
 	}
-	n = &node.Node{}
-	err = n.Unmarshal(res.Kvs[0].Value)
-	return
+	return nil, nil
 }
 
 // AllNodes return all node data from etcd

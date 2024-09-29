@@ -4,7 +4,7 @@ import (
 	"errors"
 	"time"
 
-	"github.com/jin06/binlogo/v2/pkg/store/dao/dao_node"
+	"github.com/jin06/binlogo/v2/pkg/store/dao"
 	"github.com/jin06/binlogo/v2/pkg/store/model/node"
 	"github.com/shirou/gopsutil/v3/cpu"
 	"github.com/shirou/gopsutil/v3/mem"
@@ -97,11 +97,11 @@ func (ns *NodeStatus) setStatus() (err error) {
 func (ns *NodeStatus) syncCap() (err error) {
 	//key := etcd.Prefix() + "/nodes/" + ns.NodeName + "/capacity"
 	//err = dao.UpdateCapacity(ns.Cap, dao.WithKey(key))
-	err = dao_node.UpdateCapacity(ns.Cap)
+	err = dao.UpdateCapacity(ns.Cap)
 	return
 }
 
 func (ns *NodeStatus) syncAllocatable() (err error) {
-	err = dao_node.UpdateAllocatable(ns.Allocatable)
+	err = dao.UpdateAllocatable(ns.Allocatable)
 	return
 }

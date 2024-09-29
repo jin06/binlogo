@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/jin06/binlogo/v2/pkg/store/dao/dao_node"
+	"github.com/jin06/binlogo/v2/pkg/store/dao"
 	"github.com/jin06/binlogo/v2/pkg/store/dao/dao_sche"
 	nodeModel "github.com/jin06/binlogo/v2/pkg/store/model/node"
 	"github.com/jin06/binlogo/v2/pkg/watcher"
@@ -17,7 +17,7 @@ func (m *Monitor) monitorNode(ctx context.Context) (err error) {
 	defer logrus.Info("monitor node stop")
 	stx, cancel := context.WithCancel(ctx)
 	defer cancel()
-	key := dao_node.NodePrefix()
+	key := dao.NodePrefix()
 
 	nodeWatcher, err := watcher.New(watcher.WithKey(key), watcher.WithHandler(watcher.WrapNode(key, "")))
 	defer nodeWatcher.Close()
@@ -29,7 +29,7 @@ func (m *Monitor) monitorNode(ctx context.Context) (err error) {
 		return
 	}
 
-	regKey := dao_node.NodeRegisterPrefix()
+	regKey := dao.NodeRegisterPrefix()
 	regWatcher, err := watcher.New(watcher.WithKey(regKey), watcher.WithHandler(watcher.WrapNode(regKey, "")))
 	defer regWatcher.Close()
 	if err != nil {
@@ -83,11 +83,11 @@ func (m *Monitor) monitorNode(ctx context.Context) (err error) {
 }
 
 func (m *Monitor) checkAllNode() (err error) {
-	regNodesMap, err := dao_node.AllRegisterNodesMap()
+	regNodesMap, err := dao.AllRegisterNodesMap()
 	if err != nil {
 		return
 	}
-	nodesMap, err := dao_node.AllNodesMap()
+	nodesMap, err := dao.AllNodesMap()
 	if err != nil {
 		return
 	}
@@ -99,18 +99,18 @@ func (m *Monitor) checkAllNode() (err error) {
 			readyStat = true
 			networkStat = false
 		}
-		_, err1 := dao_node.CreateOrUpdateStatus(k, nodeModel.WithReady(readyStat), nodeModel.WithNetworkUnavailable(networkStat))
+		_, err1 := dao.CreateOrUpdateStatus(k, nodeModel.WithReady(readyStat), nodeModel.WithNetworkUnavailable(networkStat))
 		if err1 != nil {
 			logrus.Error(err1)
 		}
 	}
-	statusMap, err := dao_node.StatusMap()
+	statusMap, err := dao.StatusMap()
 	if err != nil {
 		return
 	}
 	for k := range statusMap {
 		if _, ok := nodesMap[k]; !ok {
-			_, err1 := dao_node.DeleteStatus(k)
+			_, err1 := dao.DeleteStatus(k)
 			if err1 != nil {
 				logrus.Errorln(err1)
 			}
@@ -120,7 +120,7 @@ func (m *Monitor) checkAllNode() (err error) {
 }
 
 func (m *Monitor) checkAllNodeBind() (err error) {
-	nodes, err := dao_node.AllNodes()
+	nodes, err := dao.AllNodes()
 	if err != nil {
 		return
 	}
@@ -146,11 +146,11 @@ func (m *Monitor) checkAllNodeBind() (err error) {
 func handleEventRegNode(e *watcher.Event) (err error) {
 	if val, ok := e.Data.(*nodeModel.Node); ok {
 		if e.Event.Type == mvccpb.DELETE {
-			_, err = dao_node.CreateOrUpdateStatus(val.Name, nodeModel.WithReady(false), nodeModel.WithNetworkUnavailable(true))
+			_, err = dao.CreateOrUpdateStatus(val.Name, nodeModel.WithReady(false), nodeModel.WithNetworkUnavailable(true))
 			return
 		}
 		if e.Event.Type == mvccpb.PUT {
-			_, err = dao_node.CreateOrUpdateStatus(val.Name, nodeModel.WithReady(true), nodeModel.WithNetworkUnavailable(false))
+			_, err = dao.CreateOrUpdateStatus(val.Name, nodeModel.WithReady(true), nodeModel.WithNetworkUnavailable(false))
 			return
 		}
 	}

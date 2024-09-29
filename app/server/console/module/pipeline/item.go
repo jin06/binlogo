@@ -1,7 +1,9 @@
 package pipeline
 
 import (
-	"github.com/jin06/binlogo/v2/pkg/store/dao/dao_node"
+	"context"
+
+	"github.com/jin06/binlogo/v2/pkg/store/dao"
 	"github.com/jin06/binlogo/v2/pkg/store/dao/dao_pipe"
 	"github.com/jin06/binlogo/v2/pkg/store/dao/dao_sche"
 	"github.com/jin06/binlogo/v2/pkg/store/model/node"
@@ -79,7 +81,7 @@ func CompletePipelineBind(i *Item, pb *scheduler.PipelineBind) (err error) {
 		i.Info.BindNode = &node.Node{}
 		return
 	}
-	n, err := dao_node.GetNode(nodeName)
+	n, err := dao.GetNode(context.Background(), nodeName)
 	if err != nil {
 		return
 	}

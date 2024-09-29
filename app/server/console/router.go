@@ -1,6 +1,7 @@
 package console
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -12,6 +13,7 @@ import (
 	"github.com/jin06/binlogo/v2/app/server/console/handler/position"
 	"github.com/jin06/binlogo/v2/app/server/console/handler/user"
 	mid "github.com/jin06/binlogo/v2/app/server/console/middleware"
+	"github.com/jin06/binlogo/v2/static"
 )
 
 func router(g *gin.Engine) {
@@ -19,11 +21,18 @@ func router(g *gin.Engine) {
 	// g.GET("/metrics", gin.WrapH(promhttp.Handler()))
 	g.Use(mid.Cors)
 
-	g.GET("/", func(c *gin.Context) {
-		c.Redirect(http.StatusTemporaryRedirect, "/console")
-	})
-	g.Static("/console", "./assets/dist")
+	staticServer := http.FS(static.Content)
+
+	g.StaticFS("/console", staticServer)
+	// g.StaticFS("/assets")
 	g.Static("/assets", "./assets/dist/assets")
+
+	fmt.Println(static.Content.Open("console/index.html"))
+	// g.GET("/", func(c *gin.Context) {
+	// c.Redirect(http.StatusTemporaryRedirect, "/console")
+	// c.FileFromFS("console/index.html", staticServer)
+	// })
+
 	g.POST("/api/user/login", user.Login)
 	g.POST("/api/user/logout", user.Logout)
 	g.GET("/api/user/auth_type", user.AuthType)

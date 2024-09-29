@@ -7,7 +7,6 @@ import (
 	"github.com/jin06/binlogo/v2/pkg/watcher"
 
 	"github.com/jin06/binlogo/v2/pkg/store/dao"
-	"github.com/jin06/binlogo/v2/pkg/store/dao/dao_node"
 	"github.com/jin06/binlogo/v2/pkg/store/dao/dao_sche"
 	"github.com/jin06/binlogo/v2/pkg/store/model/node"
 	"github.com/sirupsen/logrus"
@@ -19,7 +18,7 @@ func (m *Monitor) monitorStatus(ctx context.Context) (err error) {
 	defer logrus.Info("monitor status stop")
 	stx, cancel := context.WithCancel(ctx)
 	defer cancel()
-	key := dao_node.StatusPrefix()
+	key := dao.StatusPrefix()
 	w, err := watcher.New(watcher.WithKey(key), watcher.WithHandler(watcher.WrapNodeStatus(key, "")))
 	defer w.Close()
 	if err != nil {
@@ -76,7 +75,7 @@ func (m *Monitor) monitorStatus(ctx context.Context) (err error) {
 }
 
 func checkAllNodeStatus() (err error) {
-	mapping, err := dao_node.StatusMap()
+	mapping, err := dao.StatusMap()
 	if err != nil {
 		return
 	}

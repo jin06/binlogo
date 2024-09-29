@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	message2 "github.com/jin06/binlogo/v2/app/pipeline/message"
+	"github.com/jin06/binlogo/v2/app/pipeline/message"
 	"github.com/jin06/binlogo/v2/pkg/pipeline/tool"
 	"github.com/jin06/binlogo/v2/pkg/store/model/pipeline"
 )
@@ -16,7 +16,7 @@ type tree struct {
 	TableWhite map[string]bool
 }
 
-func (t *tree) isFilter(msg *message2.Message) bool {
+func (t *tree) isFilter(msg *message.Message) bool {
 	if _, ok := t.DBWhite[msg.Content.Head.Database]; ok {
 		return false
 	}

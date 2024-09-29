@@ -13,3 +13,4 @@ profile.out
 coverage.txt
 codecov.yml
 data
+__debug_*

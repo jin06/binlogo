@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	message2 "github.com/jin06/binlogo/v2/app/pipeline/message"
+	"github.com/jin06/binlogo/v2/app/pipeline/message"
 	"github.com/jin06/binlogo/v2/pkg/store/model/pipeline"
 )
 
@@ -19,8 +19,8 @@ func TestRun(t *testing.T) {
 	}
 
 	f, err := New(WithPipe(&pipe))
-	f.InChan = make(chan *message2.Message, 1)
-	f.OutChan = make(chan *message2.Message, 1)
+	f.InChan = make(chan *message.Message, 1)
+	f.OutChan = make(chan *message.Message, 1)
 	if err != nil {
 		t.Error(err)
 	}
@@ -31,9 +31,9 @@ func TestRun(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	inMsg := &message2.Message{
-		Content: &message2.Content{
-			Head: &message2.Head{
+	inMsg := &message.Message{
+		Content: message.Content{
+			Head: message.Head{
 				Database: "mysql",
 				Table:    "user",
 			},

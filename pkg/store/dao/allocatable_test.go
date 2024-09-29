@@ -1,4 +1,4 @@
-package dao_node
+package dao
 
 import (
 	"testing"

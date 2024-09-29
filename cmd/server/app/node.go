@@ -8,7 +8,7 @@ import (
 	server_node "github.com/jin06/binlogo/v2/app/server/node"
 	"github.com/jin06/binlogo/v2/configs"
 	"github.com/jin06/binlogo/v2/pkg/event"
-	"github.com/jin06/binlogo/v2/pkg/store/dao/dao_node"
+	"github.com/jin06/binlogo/v2/pkg/store/dao"
 	model_event "github.com/jin06/binlogo/v2/pkg/store/model/event"
 	"github.com/jin06/binlogo/v2/pkg/store/model/node"
 	"github.com/sirupsen/logrus"
@@ -24,20 +24,20 @@ func RunNode(c context.Context) (err error) {
 		Role:       node.Role{Master: true, Admin: true, Worker: true},
 	}
 	nodeOpts.IP = configs.NodeIP
-	n, err := dao_node.GetNode(nodeOpts.Name)
+	n, err := dao.GetNode(c, nodeOpts.Name)
 	if err != nil {
 		return
 	}
 	if n != nil {
-		if _, err = dao_node.UpdateNode(nodeOpts.Name, node.WithNodeIP(nodeOpts.IP), node.WithNodeVersion(nodeOpts.Version)); err != nil {
+		if _, err = dao.UpdateNode(nodeOpts.Name, node.WithNodeIP(nodeOpts.IP), node.WithNodeVersion(nodeOpts.Version)); err != nil {
 			return
 		}
 	} else {
-		if err = dao_node.CreateNodeIfNotExist(nodeOpts); err != nil {
+		if err = dao.CreateNodeIfNotExist(nodeOpts); err != nil {
 			return
 		}
 	}
-	err = dao_node.CreateStatusIfNotExist(&node.Status{NodeName: nodeOpts.Name, Ready: true})
+	err = dao.CreateStatusIfNotExist(&node.Status{NodeName: nodeOpts.Name, Ready: true})
 	if err != nil {
 		logrus.Error(err)
 		return

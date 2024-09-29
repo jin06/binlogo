@@ -3,7 +3,7 @@ package filter
 import (
 	"testing"
 
-	message2 "github.com/jin06/binlogo/v2/app/pipeline/message"
+	"github.com/jin06/binlogo/v2/app/pipeline/message"
 	"github.com/jin06/binlogo/v2/pkg/store/model/pipeline"
 )
 
@@ -14,9 +14,9 @@ func TestIsFilter(t *testing.T) {
 		DBWhite:    map[string]bool{"pass": true},
 		TableWhite: map[string]bool{"mysql.pass": true},
 	}
-	testMsg := &message2.Message{
-		Content: &message2.Content{
-			Head: &message2.Head{
+	testMsg := &message.Message{
+		Content: message.Content{
+			Head: message.Head{
 				Database: "mysql",
 				Table:    "user",
 			},

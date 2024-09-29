@@ -15,7 +15,7 @@ import (
 	"github.com/jin06/binlogo/v2/app/server/node/scheduler"
 	"github.com/jin06/binlogo/v2/pkg/node/role"
 	"github.com/jin06/binlogo/v2/pkg/register"
-	"github.com/jin06/binlogo/v2/pkg/store/dao/dao_node"
+	"github.com/jin06/binlogo/v2/pkg/store/dao"
 	"github.com/jin06/binlogo/v2/pkg/store/model/node"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
@@ -82,7 +82,7 @@ func New(opts ...Option) (node *Node) {
 func (n *Node) init() {
 	n.Register = register.New(
 		register.WithTTL(5),
-		register.WithKey(dao_node.NodeRegisterPrefix()+"/"+n.Options.Node.Name),
+		register.WithKey(dao.NodeRegisterPrefix()+"/"+n.Options.Node.Name),
 		register.WithData(n.Options.Node),
 	)
 	n.electionManager = election.NewManager(n.Options.Node)
@@ -92,7 +92,7 @@ func (n *Node) init() {
 
 func (n *Node) refreshNode() (err error) {
 	var newest *node.Node
-	newest, err = dao_node.GetNode(n.Options.Node.Name)
+	newest, err = dao.GetNode(context.Background(), n.Options.Node.Name)
 	if err != nil {
 		return
 	}

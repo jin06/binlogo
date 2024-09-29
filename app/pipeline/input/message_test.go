@@ -7,7 +7,7 @@ import (
 	"github.com/go-mysql-org/go-mysql/canal"
 	"github.com/go-mysql-org/go-mysql/replication"
 	"github.com/go-mysql-org/go-mysql/schema"
-	message2 "github.com/jin06/binlogo/v2/app/pipeline/message"
+	"github.com/jin06/binlogo/v2/app/pipeline/message"
 )
 
 func TestRowsMessage(t *testing.T) {
@@ -39,7 +39,7 @@ func TestRowsMessage(t *testing.T) {
 	if msg.Content.Head.Type != "insert" {
 		t.Fail()
 	}
-	if val, ok := msg.Content.Data.(message2.Insert); !ok {
+	if val, ok := msg.Content.Data.(message.Insert); !ok {
 		t.Fail()
 	} else {
 		if val2, ok2 := val.New["id"].(int); !ok2 {
@@ -53,12 +53,12 @@ func TestRowsMessage(t *testing.T) {
 
 	rowsEvent.Action = canal.UpdateAction
 	msg = rowsMessage(rowsEvent)
-	if _, ok := msg.Content.Data.(message2.Update); !ok {
+	if _, ok := msg.Content.Data.(message.Update); !ok {
 		t.Fail()
 	}
 	rowsEvent.Action = canal.DeleteAction
 	msg = rowsMessage(rowsEvent)
-	if _, ok := msg.Content.Data.(message2.Delete); !ok {
+	if _, ok := msg.Content.Data.(message.Delete); !ok {
 		t.Fail()
 	}
 }

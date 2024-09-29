@@ -1,10 +1,12 @@
 package node
 
-import "github.com/jin06/binlogo/v2/pkg/store/dao/dao_node"
+import (
+	"github.com/jin06/binlogo/v2/pkg/store/dao"
+)
 
 // GetAllCount get all nodes count
 func GetAllCount() (count int, err error) {
-	res, err := dao_node.AllNodes()
+	res, err := dao.AllNodes()
 	if err != nil {
 		return
 	}
@@ -17,7 +19,7 @@ func GetAllCount() (count int, err error) {
 
 // GetAllRegCount get all nodes count that already registered
 func GetAllRegCount() (count int, err error) {
-	res, err := dao_node.ALLRegisterNodes()
+	res, err := dao.ALLRegisterNodes()
 	if err != nil {
 		return
 	}
