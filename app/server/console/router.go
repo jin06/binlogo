@@ -1,7 +1,6 @@
 package console
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -22,16 +21,14 @@ func router(g *gin.Engine) {
 	g.Use(mid.Cors)
 
 	staticServer := http.FS(static.Content)
-
 	g.StaticFS("/console", staticServer)
 	// g.StaticFS("/assets")
-	g.Static("/assets", "./assets/dist/assets")
+	// g.Static("/assets", "./assets/dist/assets")
 
-	fmt.Println(static.Content.Open("console/index.html"))
-	// g.GET("/", func(c *gin.Context) {
-	// c.Redirect(http.StatusTemporaryRedirect, "/console")
-	// c.FileFromFS("console/index.html", staticServer)
-	// })
+	g.GET("/", func(c *gin.Context) {
+		c.Redirect(http.StatusTemporaryRedirect, "/console")
+		// c.FileFromFS("console/index.html", staticServer)
+	})
 
 	g.POST("/api/user/login", user.Login)
 	g.POST("/api/user/logout", user.Logout)

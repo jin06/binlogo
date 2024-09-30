@@ -35,18 +35,25 @@ type Redis struct {
 	prefix string
 }
 
+func GetClient() *redis.Client {
+	return Default.GetClient()
+}
+
+func (r *Redis) GetClient() *redis.Client {
+	return r.client
+}
+
 func (r *Redis) key(m model.Model) string {
 	key := r.prefix + "/" + m.Key()
 	return key
 }
 
-func (r *Redis) Create(ctx context.Context, m model.Model) (success bool, err error) {
+func (r *Redis) Create(ctx context.Context, m model.Model) (bool, error) {
 	key := r.prefix + "/" + m.Key()
-	val := m.Val()
-	if err = r.client.Set(ctx, key, val, 0).Err(); err != nil {
-		return
+	if err := r.client.HMSet(ctx, key, m).Err(); err != nil {
+		return false, err
 	}
-	return
+	return true, nil
 }
 
 func (r *Redis) Update(ctx context.Context, m model.Model) (success bool, err error) {

@@ -7,6 +7,7 @@ import (
 
 	"github.com/jin06/binlogo/v2/pkg/etcdclient"
 	"github.com/jin06/binlogo/v2/pkg/store/model/pipeline"
+	store_redis "github.com/jin06/binlogo/v2/pkg/store/redis"
 	clientv3 "go.etcd.io/etcd/client/v3"
 )
 
@@ -33,16 +34,11 @@ func GetPipeline(name string) (p *pipeline.Pipeline, err error) {
 }
 
 // CreatePipeline write pipeline info to etcd
-func CreatePipeline(d *pipeline.Pipeline, opts ...clientv3.OpOption) (ok bool, err error) {
-	key := PipelinePrefix() + "/" + d.Name
-	txn := etcdclient.Default().Txn(context.TODO())
-	txn = txn.If(clientv3.Compare(clientv3.CreateRevision(key), "=", int64(0)))
-	txn = txn.Then(clientv3.OpPut(key, d.Val(), opts...))
-	resp, err := txn.Commit()
-	if err != nil {
-		return
+func CreatePipeline(ctx context.Context, d *pipeline.Pipeline) (ok bool, err error) {
+	key := d.Key()
+	if err := store_redis.GetClient().HSet(ctx, key, d).Err(); err != nil {
+		return false, err
 	}
-	ok = resp.Succeeded
 	return
 }
 

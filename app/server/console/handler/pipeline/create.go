@@ -34,7 +34,7 @@ func Create(c *gin.Context) {
 	}
 	q.Status = pipeline.STATUS_STOP
 	pipelineDefault(q)
-	if _, err := dao_pipe.CreatePipeline(q); err != nil {
+	if _, err := dao_pipe.CreatePipeline(c, q); err != nil {
 		c.JSON(200, handler.Fail(err))
 		return
 	}

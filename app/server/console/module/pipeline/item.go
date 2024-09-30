@@ -107,6 +107,9 @@ func completeEmpty(i *Item) {
 
 // CompleteInfoList complete pipeline list info
 func CompleteInfoList(list []*Item) (err error) {
+	if len(list) == 0 {
+		return nil
+	}
 	pb, err := dao_sche.GetPipelineBind()
 	if err != nil {
 		return
