@@ -30,11 +30,12 @@ func NewCommand() (cmd *cobra.Command) {
 		Short: "Generate mysql data increment",
 		Long:  "Generate mysql data increment",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			var err error
 			ctx := context.Background()
 			cfg, _ := cmd.Flags().GetString("config")
-			Init(cfg)
-			if err = store_redis.Init(ctx, configs.Default.Store.Redis); err != nil {
+			if err := Init(cfg); err != nil {
+				return err
+			}
+			if err := store_redis.Init(ctx, configs.Default.Store.Redis); err != nil {
 				return err
 			}
 			promeths.Init()
@@ -44,6 +45,7 @@ func NewCommand() (cmd *cobra.Command) {
 			go func() {
 				if err := RunNode(ctx); err != nil {
 					logrus.Error(err)
+					panic(err)
 					exit <- err
 				}
 			}()
@@ -51,12 +53,12 @@ func NewCommand() (cmd *cobra.Command) {
 				go func() {
 					if err := RunConsole(ctx); err != nil {
 						logrus.Error(err)
+						panic(err)
 						exit <- err
 					}
 				}()
 			}
-			err = <-exit
-			select {}
+			err := <-exit
 			return err
 		},
 	}

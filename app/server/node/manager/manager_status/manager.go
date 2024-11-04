@@ -80,7 +80,7 @@ func (m *Manager) syncIP() (err error) {
 	}
 	if m.Node.IP.String() != nip.String() {
 		var ok bool
-		if ok, err = dao.UpdateNode(m.Node.Name, node.WithNodeIP(nip)); err != nil {
+		if ok, err = dao.UpdateNode(context.Background(), m.Node.Name, node.WithNodeIP(nip)); err != nil {
 			return
 		}
 		if !ok {

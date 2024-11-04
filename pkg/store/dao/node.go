@@ -36,76 +36,40 @@ func CreateNode(n *node.Node) (err error) {
 }
 
 // CreateNodeIfNotExist create a node in etcd if that not exist
-func CreateNodeIfNotExist(n *node.Node) (err error) {
+func CreateNodeIfNotExist(ctx context.Context, n *node.Node) error {
 	if n == nil {
-		errors.New("empty node")
-		return
+		return errors.New("empty node")
 	}
-	if n.Name == "" {
-		errors.New("empty node name")
-		return
+	if len(n.Name) == 0 {
+		return errors.New("empty node name")
 	}
-	key := NodePrefix() + "/" + n.Name
-	b, err := json.Marshal(n)
-	if err != nil {
-		return
-	}
-	ctx := context.Background()
-	txn := etcdclient.Default().Txn(ctx).If(clientv3.Compare(clientv3.CreateRevision(key), "=", 0))
-	txn = txn.Then(clientv3.OpPut(key, string(b)))
-	resp, err := txn.Commit()
-
-	if err != nil {
-		logrus.Error(err)
-		logrus.Error(resp.Succeeded)
-	}
-	return
+	_, err := store_redis.Default.Create(ctx, n)
+	return err
 }
 
 // UpdateNode update a node data in etcd
-func UpdateNode(nodeName string, opts ...node.NodeOption) (ok bool, err error) {
+func UpdateNode(ctx context.Context, nodeName string, opts ...node.NodeOption) (bool, error) {
 	if nodeName == "" {
-		err = errors.New("empty node name")
-		return
+		return false, errors.New("empty node name")
 	}
-	key := NodePrefix() + "/" + nodeName
-	res, err := etcdclient.Default().Get(context.TODO(), key)
-	if err != nil {
-		return
-	}
-	if len(res.Kvs) <= 0 {
-		err = errors.New("empty node")
-		return
-	}
-	revision := int64(0)
-	revision = res.Kvs[0].CreateRevision
 	n := &node.Node{}
-	err = json.Unmarshal(res.Kvs[0].Value, n)
-	if err != nil {
-		return
-	}
 	for _, v := range opts {
 		v(n)
 	}
-
-	txn := etcdclient.Default().Txn(context.TODO()).If(clientv3.Compare(clientv3.CreateRevision(key), "=", revision))
-	txn = txn.Then(clientv3.OpPut(key, n.Val()))
-	resp, err := txn.Commit()
-	if err != nil {
-		return
+	if i, err := store_redis.Default.UpdateField(ctx, n); err != nil {
+		return false, err
+	} else if i == 0 {
+		return false, nil
 	}
-	ok = resp.Succeeded
-	return
+	return true, nil
 }
 
 // GetNode get node data from etcd
 func GetNode(ctx context.Context, name string) (*node.Node, error) {
 	n := &node.Node{}
-	exist, err := store_redis.Default.Get(ctx, n)
-	if err != nil {
+	if exist, err := store_redis.Default.Get(ctx, n); err != nil {
 		return nil, err
-	}
-	if exist {
+	} else if exist {
 		return n, nil
 	}
 	return nil, nil

@@ -48,12 +48,16 @@ func (r *Redis) key(m model.Model) string {
 	return key
 }
 
+func (r *Redis) getPrefix(m model.Model) string {
+	return fmt.Sprintf("%s/%s", r.prefix, m.Key())
+}
+
 func (r *Redis) Create(ctx context.Context, m model.Model) (bool, error) {
-	key := r.prefix + "/" + m.Key()
-	if err := r.client.HMSet(ctx, key, m).Err(); err != nil {
-		return false, err
-	}
-	return true, nil
+	return r.client.HMSet(ctx, m.Key(), m).Result()
+}
+
+func (r *Redis) UpdateField(ctx context.Context, m model.Model) (int64, error) {
+	return r.client.HSet(ctx, r.getPrefix(m), m).Result()
 }
 
 func (r *Redis) Update(ctx context.Context, m model.Model) (success bool, err error) {

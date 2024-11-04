@@ -16,9 +16,12 @@ var NodeName string
 // NodeIP current node's ip
 var NodeIP net.IP
 
-var Default Config
+var Default Config = Config{
+	Test: "1111",
+}
 
 type Config struct {
+	Test        string  `yaml:"test"`
 	ClusterName string  `yaml:"cluster_name"`
 	NodeName    string  `yaml:"node_name"`
 	Console     Console `yaml:"console"`
@@ -79,7 +82,7 @@ func InitConfig(file string) (err error) {
 	if file == "" {
 		file = "./etc/binlogo.yaml"
 	}
-	slog.Info("config file path: ", file)
+	slog.Info("config file path: %s", file)
 	data, err := os.ReadFile(file)
 	if err != nil {
 		return

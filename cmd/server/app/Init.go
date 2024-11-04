@@ -30,8 +30,9 @@ func SetConfig(path string) *Config {
 */
 // Init init run environment
 func Init(path string) error {
-	var err error
-	configs.Init(path)
+	if err := configs.Init(path); err != nil {
+		return err
+	}
 	blog.Env(configs.ENV)
 	logrus.Infoln("init configs finish")
 	if configs.ENV == configs.ENV_DEV {
@@ -39,7 +40,7 @@ func Init(path string) error {
 			logrus.Println(http.ListenAndServe("localhost:6060", nil))
 		}()
 	}
-	err = parseFileToConfig(path)
+	err := parseFileToConfig(path)
 	return err
 }
 

@@ -10,11 +10,15 @@ import (
 )
 
 // Init init configs
-func Init(file string) {
+func Init(file string) error {
+	if err := InitConfig(file); err != nil {
+		return err
+	}
 	initViperDefault()
 	initViperFromFile(file)
 	initViperFromEnv()
 	initConst()
+	return nil
 }
 
 // initViperFromFile read config file and write to viper

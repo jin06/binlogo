@@ -29,11 +29,11 @@ func RunNode(c context.Context) (err error) {
 		return
 	}
 	if n != nil {
-		if _, err = dao.UpdateNode(nodeOpts.Name, node.WithNodeIP(nodeOpts.IP), node.WithNodeVersion(nodeOpts.Version)); err != nil {
+		if _, err = dao.UpdateNode(c, nodeOpts.Name, node.WithNodeIP(nodeOpts.IP), node.WithNodeVersion(nodeOpts.Version)); err != nil {
 			return
 		}
 	} else {
-		if err = dao.CreateNodeIfNotExist(nodeOpts); err != nil {
+		if err = dao.CreateNodeIfNotExist(c, nodeOpts); err != nil {
 			return
 		}
 	}

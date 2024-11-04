@@ -1,6 +1,7 @@
 package dao
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -19,7 +20,7 @@ func TestNode(t *testing.T) {
 		Version:    "",
 		CreateTime: time.Time{},
 	}
-	err := CreateNodeIfNotExist(nModel)
+	err := CreateNodeIfNotExist(context.Background(), nModel)
 	if err != nil {
 		t.Error(err)
 	}
@@ -27,11 +28,11 @@ func TestNode(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	_, err = UpdateNode(nodeName, node2.WithNodeVersion(configs.VERSITON))
+	_, err = UpdateNode(context.Background(), nodeName, node2.WithNodeVersion(configs.VERSITON))
 	if err != nil {
 		t.Error(err)
 	}
-	nMode2, err := GetNode(nodeName)
+	nMode2, err := GetNode(context.Background(), nodeName)
 	if err != nil {
 		t.Error(err)
 	}
