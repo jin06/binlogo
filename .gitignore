@@ -1,5 +1,4 @@
 .idea/
-.vscode
 vendor/
 vendor2/
 etc/*test*.yaml
