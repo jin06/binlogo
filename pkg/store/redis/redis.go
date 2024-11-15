@@ -14,6 +14,7 @@ var Default *Redis
 
 func Init(ctx context.Context, cfg configs.Redis) error {
 	Default = NewRedis(ctx, cfg)
+
 	return Default.client.Ping(ctx).Err()
 }
 
@@ -53,7 +54,7 @@ func (r *Redis) getPrefix(m model.Model) string {
 }
 
 func (r *Redis) Create(ctx context.Context, m model.Model) (bool, error) {
-	return r.client.HMSet(ctx, m.Key(), m).Result()
+	return r.client.HMSet(ctx, r.getPrefix(m), m).Result()
 }
 
 func (r *Redis) UpdateField(ctx context.Context, m model.Model) (int64, error) {
@@ -68,9 +69,14 @@ func (r *Redis) Delete(ctx context.Context, m model.Model) (success bool, err er
 	return
 }
 
-func (r *Redis) Get(ctx context.Context, m model.Model) (success bool, err error) {
-	cmd := r.client.Get(ctx, r.key(m))
-	err = cmd.Err()
+func (r *Redis) Get(ctx context.Context, m model.Model) (has bool, err error) {
+	err = r.client.Get(ctx, r.key(m)).Err()
+	if err == redis.Nil {
+		err = nil
+	}
+	if err == nil {
+		has = true
+	}
 	return
 }
 

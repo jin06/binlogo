@@ -13,3 +13,4 @@ coverage.txt
 codecov.yml
 data
 __debug_*
+.vscode/launch.json

@@ -18,7 +18,7 @@ import (
 func RunNode(c context.Context) (err error) {
 	logrus.Info("init node")
 	nodeOpts := &node.Node{
-		Name:       configs.NodeName,
+		Name:       configs.Default.NodeName,
 		Version:    configs.Version,
 		CreateTime: time.Now(),
 		Role:       node.Role{Master: true, Admin: true, Worker: true},

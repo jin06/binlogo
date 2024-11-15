@@ -48,11 +48,13 @@ func CreateNodeIfNotExist(ctx context.Context, n *node.Node) error {
 }
 
 // UpdateNode update a node data in etcd
-func UpdateNode(ctx context.Context, nodeName string, opts ...node.NodeOption) (bool, error) {
-	if nodeName == "" {
+func UpdateNode(ctx context.Context, name string, opts ...node.NodeOption) (bool, error) {
+	if len(name) == 0 {
 		return false, errors.New("empty node name")
 	}
-	n := &node.Node{}
+	n := &node.Node{
+		Name: name,
+	}
 	for _, v := range opts {
 		v(n)
 	}
@@ -67,9 +69,11 @@ func UpdateNode(ctx context.Context, nodeName string, opts ...node.NodeOption) (
 // GetNode get node data from etcd
 func GetNode(ctx context.Context, name string) (*node.Node, error) {
 	n := &node.Node{}
-	if exist, err := store_redis.Default.Get(ctx, n); err != nil {
+	has, err := store_redis.Default.Get(ctx, n)
+	if err != nil {
 		return nil, err
-	} else if exist {
+	}
+	if has {
 		return n, nil
 	}
 	return nil, nil

@@ -5,8 +5,10 @@ import (
 	"encoding/json"
 	"errors"
 
+	"github.com/jin06/binlogo/v2/internal/consts"
 	"github.com/jin06/binlogo/v2/pkg/etcdclient"
 	"github.com/jin06/binlogo/v2/pkg/store/model/node"
+	store_redis "github.com/jin06/binlogo/v2/pkg/store/redis"
 	"github.com/sirupsen/logrus"
 	clientv3 "go.etcd.io/etcd/client/v3"
 )
@@ -69,24 +71,32 @@ func GetStatus(nodeName string) (s *node.Status, err error) {
 }
 
 // CreateStatusIfNotExist create status if not exist
-func CreateStatusIfNotExist(n *node.Status) (err error) {
-	if n.NodeName == "" {
-		return errors.New("empty name")
+func CreateStatusIfNotExist(ctx context.Context, n *node.Status) (err error) {
+	if n == nil {
+		return consts.NilNodeStatus
 	}
-	key := StatusPrefix() + "/" + n.NodeName
-	b, err := json.Marshal(n)
-	if err != nil {
-		return
+	if n == nil {
+		return consts.EmptyNodeName
 	}
-	txn := etcdclient.Default().Txn(context.TODO()).If(clientv3.Compare(clientv3.CreateRevision(key), "=", 0))
-	txn = txn.Then(clientv3.OpPut(key, string(b)))
-	resp, err := txn.Commit()
+	_, err = store_redis.Default.Create(ctx, n)
+	return err
+	// if n.NodeName == "" {
+	// 	return errors.New("empty name")
+	// }
+	// key := StatusPrefix() + "/" + n.NodeName
+	// b, err := json.Marshal(n)
+	// if err != nil {
+	// 	return
+	// }
+	// txn := etcdclient.Default().Txn(context.TODO()).If(clientv3.Compare(clientv3.CreateRevision(key), "=", 0))
+	// txn = txn.Then(clientv3.OpPut(key, string(b)))
+	// resp, err := txn.Commit()
 
-	if err != nil {
-		logrus.Error(err)
-		logrus.Error(resp.Succeeded)
-	}
-	return
+	// if err != nil {
+	// 	logrus.Error(err)
+	// 	logrus.Error(resp.Succeeded)
+	// }
+	// return
 }
 
 // StatusMap returns all node status in map form

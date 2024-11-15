@@ -10,11 +10,11 @@ import (
 
 // Node is node
 type Node struct {
-	Name       string    `json:"name"`
-	Role       Role      `json:"role"`
-	IP         net.IP    `json:"ip"`
-	Version    string    `json:"version"`
-	CreateTime time.Time `json:"create_time"`
+	Name       string    `json:"name" redis:"name"`
+	Role       Role      `json:"role" redis:"role"`
+	IP         net.IP    `json:"ip" redis:"ip"`
+	Version    string    `json:"version" redis:"version"`
+	CreateTime time.Time `json:"create_time" redis:"create_time"`
 }
 
 // NewNode returns a new node
