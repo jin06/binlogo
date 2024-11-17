@@ -57,26 +57,35 @@ func (r *Redis) Create(ctx context.Context, m model.Model) (bool, error) {
 	return r.client.HMSet(ctx, r.getPrefix(m), m).Result()
 }
 
-func (r *Redis) UpdateField(ctx context.Context, m model.Model) (int64, error) {
-	return r.client.HSet(ctx, r.getPrefix(m), m).Result()
+func (r *Redis) UpdateField(ctx context.Context, m model.Model, values map[string]any) (bool, error) {
+	return r.client.HMSet(ctx, r.getPrefix(m), values).Result()
 }
 
-func (r *Redis) Update(ctx context.Context, m model.Model) (success bool, err error) {
-	return
+func (r *Redis) Update(ctx context.Context, m model.Model) (bool, error) {
+	i, err := r.client.HSet(ctx, r.getPrefix(m), m).Result()
+	ok := (i > 0)
+	return ok, err
 }
 
-func (r *Redis) Delete(ctx context.Context, m model.Model) (success bool, err error) {
-	return
+func (r *Redis) Delete(ctx context.Context, m model.Model) (bool, error) {
+	i, err := r.client.Del(ctx, r.getPrefix(m)).Result()
+	ok := (i > 0)
+	return ok, err
 }
 
-func (r *Redis) Get(ctx context.Context, m model.Model) (has bool, err error) {
-	err = r.client.Get(ctx, r.key(m)).Err()
+func (r *Redis) Get(ctx context.Context, m model.Model) (ok bool, err error) {
+	cmd := r.client.HGetAll(ctx, r.key(m))
+	err = cmd.Err()
 	if err == redis.Nil {
+		ok = false
 		err = nil
+		return
 	}
-	if err == nil {
-		has = true
+	if err != nil {
+		return
 	}
+	ok = true
+	err = cmd.Scan(m)
 	return
 }
 

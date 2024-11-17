@@ -9,16 +9,16 @@ import (
 type Pipeline struct {
 	Name       string    `json:"name" redis:"name"`
 	Status     Status    `json:"status" redis:"status"`
-	AliasName  string    `json:"aliasName" redis:"aliasName"`
+	AliasName  string    `json:"aliasName" redis:"alias_name"`
 	Mysql      *Mysql    `json:"mysql" redis:"mysql"`
 	Filters    []*Filter `json:"filters" redis:"filters"`
 	Output     *Output   `json:"output" redis:"output"`
 	Replicas   int       `json:"replicas" redis:"replicas"`
-	CreateTime time.Time `json:"create_time" redis:"createTime"`
+	CreateTime time.Time `json:"create_time" redis:"create_time"`
 	Remark     string    `json:"remark" redis:"remark"`
-	IsDelete   bool      `json:"is_delete" redis:"isDelete"`
+	IsDelete   bool      `json:"is_delete" redis:"is_delete"`
 	// If use newest posion to sync mysql replication when get mysql error 1236 (could not find binary log index)
-	FixPosNewest bool `json:"fix_pos_newest" redis:"fixPosNewest"`
+	FixPosNewest bool `json:"fix_pos_newest" redis:"fix_pos_newest"`
 }
 
 // NewPipeline returns a new pipeline with default values

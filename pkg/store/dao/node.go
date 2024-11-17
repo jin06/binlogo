@@ -6,6 +6,7 @@ import (
 	"errors"
 
 	"github.com/jin06/binlogo/v2/pkg/etcdclient"
+	"github.com/jin06/binlogo/v2/pkg/store/model"
 	"github.com/jin06/binlogo/v2/pkg/store/model/node"
 	store_redis "github.com/jin06/binlogo/v2/pkg/store/redis"
 
@@ -52,18 +53,11 @@ func UpdateNode(ctx context.Context, name string, opts ...node.NodeOption) (bool
 	if len(name) == 0 {
 		return false, errors.New("empty node name")
 	}
-	n := &node.Node{
-		Name: name,
-	}
+	values := model.Values{}
 	for _, v := range opts {
-		v(n)
+		v(values)
 	}
-	if i, err := store_redis.Default.UpdateField(ctx, n); err != nil {
-		return false, err
-	} else if i == 0 {
-		return false, nil
-	}
-	return true, nil
+	return store_redis.Default.UpdateField(ctx, &node.Node{Name: name}, values)
 }
 
 // GetNode get node data from etcd

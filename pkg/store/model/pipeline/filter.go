@@ -2,8 +2,8 @@ package pipeline
 
 // Filter of pipeline
 type Filter struct {
-	Type FilterType `json:"type"`
-	Rule string     `json:"rule"`
+	Type FilterType `json:"type" redis:"type"`
+	Rule string     `json:"rule" redis:"rule"`
 }
 
 // FilterType types of filter

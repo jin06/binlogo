@@ -2,7 +2,7 @@ package pipeline
 
 // Output pipeline output
 type Output struct {
-	Sender *Sender `json:"sender"`
+	Sender *Sender `json:"sender" redis:"sender"`
 }
 
 // EmptyOutput return a new empty Output object

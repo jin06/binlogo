@@ -3,11 +3,11 @@ package dao
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 
 	"github.com/jin06/binlogo/v2/pkg/etcdclient"
 	"github.com/jin06/binlogo/v2/pkg/store/model/node"
+	store_redis "github.com/jin06/binlogo/v2/pkg/store/redis"
 	"github.com/sirupsen/logrus"
 	clientv3 "go.etcd.io/etcd/client/v3"
 )
@@ -18,18 +18,8 @@ func CapacityPrefix() string {
 }
 
 // UpdateCapacity update capacity data to etcd
-func UpdateCapacity(cap *node.Capacity) (err error) {
-	if cap.NodeName == "" {
-		err = errors.New("empty name")
-		return
-	}
-	key := CapacityPrefix() + "/" + cap.NodeName
-	b, err := json.Marshal(cap)
-	if err != nil {
-		return
-	}
-	_, err = etcdclient.Default().Put(context.TODO(), key, string(b))
-	return
+func UpdateCapacity(ctx context.Context, cap *node.Capacity) (bool, error) {
+	return store_redis.Default.Update(ctx, cap)
 }
 
 // CapacityMap returns capacity data in map form
@@ -65,18 +55,6 @@ func CapacityMap() (mapping map[string]*node.Capacity, err error) {
 }
 
 // DeleteCapacity delete capacity in etcd
-func DeleteCapacity(nodeName string) (ok bool, err error) {
-	if nodeName == "" {
-		err = errors.New("empty name")
-		return
-	}
-	key := CapacityPrefix() + "/" + nodeName
-	res, err := etcdclient.Default().Delete(context.Background(), key)
-	if err != nil {
-		return
-	}
-	if res.Deleted > 0 {
-		ok = true
-	}
-	return
+func DeleteCapacity(ctx context.Context, nodeName string) (bool, error) {
+	return store_redis.Default.Delete(ctx, &node.Capacity{NodeName: nodeName})
 }

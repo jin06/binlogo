@@ -2,10 +2,12 @@ package node
 
 import (
 	"encoding/json"
+	"fmt"
 	"net"
 	"time"
 
 	"github.com/jin06/binlogo/v2/configs"
+	"github.com/jin06/binlogo/v2/pkg/store/model"
 )
 
 // Node is node
@@ -27,37 +29,34 @@ func NewNode(name string) *Node {
 }
 
 // Key generate etcd key
-func (s *Node) Key() (key string) {
-	key = "node/" + s.Name
-	return
+func (s *Node) Key() string {
+	return fmt.Sprintf("node/%s", s.Name)
 }
 
 // Val generate etcd val
-func (s *Node) Val() (val string) {
+func (s *Node) Val() string {
 	b, _ := json.Marshal(s)
-	val = string(b)
-	return
+	return string(b)
 }
 
 // Unmarshal generate from json data
-func (s *Node) Unmarshal(val []byte) (err error) {
-	err = json.Unmarshal(val, s)
-	return
+func (s *Node) Unmarshal(data []byte) error {
+	return json.Unmarshal(data, s)
 }
 
 // NodeOption configure node
-type NodeOption func(s *Node)
+type NodeOption func(s model.Values)
 
 // WithNodeIP sets node's ip
 func WithNodeIP(i net.IP) NodeOption {
-	return func(s *Node) {
-		s.IP = i
+	return func(s model.Values) {
+		s["ip"] = i
 	}
 }
 
 // WithNodeVersion sets node's version
 func WithNodeVersion(v string) NodeOption {
-	return func(s *Node) {
-		s.Version = v
+	return func(s model.Values) {
+		s["version"] = v
 	}
 }

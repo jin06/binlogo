@@ -1,6 +1,8 @@
-package event
+package model
 
 import (
+	"encoding/json"
+	"fmt"
 	"net"
 	"time"
 
@@ -13,17 +15,30 @@ import (
 // Events include common information and error information,
 // which can be easily located when an error occurs
 type Event struct {
-	Key          string       `json:"key"`
-	Type         Type         `json:"type"`
-	ResourceType ResourceType `json:"resource_type"`
-	ResourceName string       `json:"resource_name"`
-	FirstTime    time.Time    `json:"first_time"`
-	LastTime     time.Time    `json:"last_time"`
-	Count        int          `json:"count"`
-	MessageType  MessageType  `json:"type_message"`
-	Message      string       `json:"message"`
-	NodeName     string       `json:"node_name"`
-	NodeIP       net.IP       `json:"node_ip"`
+	K            string       `json:"key" redis:"key"`
+	Type         Type         `json:"type" redis:"type"`
+	ResourceType ResourceType `json:"resource_type" redis:"resource_type"`
+	ResourceName string       `json:"resource_name" redis:"resource_name"`
+	FirstTime    time.Time    `json:"first_time" redis:"first_time"`
+	LastTime     time.Time    `json:"last_time" redis:"last_time"`
+	Count        int          `json:"count" redis:"count"`
+	MessageType  MessageType  `json:"type_message" redis:"type_message"`
+	Message      string       `json:"message" redis:"message"`
+	NodeName     string       `json:"node_name" redis:"node_name"`
+	NodeIP       net.IP       `json:"node_ip" redis:"node_ip"`
+}
+
+func (e *Event) Key() string {
+	return fmt.Sprintf("/event/%s", e.K)
+}
+
+func (e *Event) Val() string {
+	b, _ := json.Marshal(e)
+	return string(b)
+}
+
+func (e *Event) Unmarshal(data []byte) error {
+	return json.Unmarshal(data, e)
 }
 
 // ResourceType pipeline or node or etc.
@@ -60,7 +75,7 @@ const (
 
 func baseEvent() (e *Event) {
 	e = &Event{
-		Key:      key.GetKey(),
+		K:        key.GetKey(),
 		NodeName: configs.NodeName,
 		NodeIP:   configs.NodeIP,
 	}

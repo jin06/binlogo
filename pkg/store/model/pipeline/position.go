@@ -6,12 +6,12 @@ import (
 
 // Position mysql replication position
 type Position struct {
-	BinlogFile     string `json:"binlog_file"`
-	BinlogPosition uint32 `json:"binlog_position"`
-	GTIDSet        string `json:"gtid_set"`
-	PipelineName   string `json:"pipeline_name"`
-	TotalRows      int    `json:"total_rows"`
-	ConsumeRows    int    `json:"consume_rows"`
+	BinlogFile     string `json:"binlog_file" redis:"binlog_file"`
+	BinlogPosition uint32 `json:"binlog_position" redis:"binlog_position"`
+	GTIDSet        string `json:"gtid_set" redis:"gtid_set"`
+	PipelineName   string `json:"pipeline_name" redis:"pipeline_name"`
+	TotalRows      int    `json:"total_rows" redis:"total_rows"`
+	ConsumeRows    int    `json:"consume_rows" redis:"consume_rows"`
 }
 
 // Key get etcd key prefix

@@ -1,14 +1,31 @@
 package node
 
-import "time"
+import (
+	"encoding/json"
+	"fmt"
+	"time"
+)
 
 // Allocatable available resources for node
 type Allocatable struct {
-	NodeName   string    `json:"node_name"`
-	Cpu        float64   `json:"cpu"`
-	Disk       uint64    `json:"disk"`
-	Memory     uint64    `json:"memory"`
-	UpdateTime time.Time `json:"update_time"`
+	NodeName   string    `json:"node_name" redis:"node_name"`
+	Cpu        float64   `json:"cpu" redis:"cpu"`
+	Disk       uint64    `json:"disk" redis:"disk"`
+	Memory     uint64    `json:"memory" redis:"memory"`
+	UpdateTime time.Time `json:"update_time" redis:"update_time"`
+}
+
+func (a *Allocatable) Key() string {
+	return fmt.Sprintf("node/allocatable/%s", a.NodeName)
+}
+
+func (a *Allocatable) Val() string {
+	b, _ := json.Marshal(a)
+	return string(b)
+}
+
+func (a *Allocatable) Unmarshal(data []byte) error {
+	return json.Unmarshal(data, a)
 }
 
 // AllocatableOption Allocatable's options

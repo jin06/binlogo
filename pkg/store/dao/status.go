@@ -56,7 +56,8 @@ func CreateOrUpdateStatus(nodeName string, opts ...node.StatusOption) (ok bool, 
 }
 
 // GetStatus get node status from etcd
-func GetStatus(nodeName string) (s *node.Status, err error) {
+func GetStatus(ctx context.Context, nodeName string) (s *node.Status, err error) {
+	store_redis.Default.Get(ctx, &node.Status{NodeName: nodeName})
 	key := StatusPrefix() + "/" + nodeName
 	res, err := etcdclient.Default().Get(context.TODO(), key)
 	if err != nil {
@@ -80,23 +81,6 @@ func CreateStatusIfNotExist(ctx context.Context, n *node.Status) (err error) {
 	}
 	_, err = store_redis.Default.Create(ctx, n)
 	return err
-	// if n.NodeName == "" {
-	// 	return errors.New("empty name")
-	// }
-	// key := StatusPrefix() + "/" + n.NodeName
-	// b, err := json.Marshal(n)
-	// if err != nil {
-	// 	return
-	// }
-	// txn := etcdclient.Default().Txn(context.TODO()).If(clientv3.Compare(clientv3.CreateRevision(key), "=", 0))
-	// txn = txn.Then(clientv3.OpPut(key, string(b)))
-	// resp, err := txn.Commit()
-
-	// if err != nil {
-	// 	logrus.Error(err)
-	// 	logrus.Error(resp.Succeeded)
-	// }
-	// return
 }
 
 // StatusMap returns all node status in map form

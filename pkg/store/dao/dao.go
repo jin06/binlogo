@@ -7,7 +7,7 @@ import (
 	"github.com/jin06/binlogo/v2/pkg/etcdclient"
 	"github.com/jin06/binlogo/v2/pkg/store/dao/dao_pipe"
 	"github.com/jin06/binlogo/v2/pkg/store/dao/dao_sche"
-	"github.com/jin06/binlogo/v2/pkg/store/model/scheduler"
+	"github.com/jin06/binlogo/v2/pkg/store/model"
 	clientv3 "go.etcd.io/etcd/client/v3"
 )
 
@@ -23,7 +23,7 @@ func ClearOrDeleteBind(name string) (err error) {
 	if err != nil {
 		return
 	}
-	pb := scheduler.EmptyPipelineBind()
+	pb := model.EmptyPipelineBind()
 	var revision int64
 	if len(res.Kvs) > 0 {
 		revision = res.Kvs[0].CreateRevision

@@ -1,4 +1,4 @@
-package scheduler
+package model
 
 import "encoding/json"
 
@@ -6,7 +6,7 @@ import "encoding/json"
 // the node will watch pipeline bind, run pipeline instance if node get the bind,
 // stop instance if node lost bind
 type PipelineBind struct {
-	Bindings map[string]string `json:"bindings"`
+	Bindings map[string]string `json:"bindings" redis:"bindings"`
 }
 
 // EmptyPipelineBind returns a empty pipeline bind

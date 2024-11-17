@@ -1,4 +1,4 @@
-package dao_event
+package dao
 
 import (
 	"context"
@@ -6,7 +6,8 @@ import (
 	"errors"
 
 	"github.com/jin06/binlogo/v2/pkg/etcdclient"
-	"github.com/jin06/binlogo/v2/pkg/store/model/event"
+	"github.com/jin06/binlogo/v2/pkg/store/model"
+	store_redis "github.com/jin06/binlogo/v2/pkg/store/redis"
 	"github.com/sirupsen/logrus"
 	clientv3 "go.etcd.io/etcd/client/v3"
 )
@@ -22,19 +23,19 @@ func PipelinePrefix() string {
 }
 
 // NodePrefix returns node event prefix
-func NodePrefix() string {
+func EventNodePrefix() string {
 	return EventPrefix() + "/node"
 }
 
-func _list(key string, opts ...clientv3.OpOption) (list map[string]*event.Event, err error) {
+func _listEvent(key string, opts ...clientv3.OpOption) (list map[string]*model.Event, err error) {
 	opts = append(opts, clientv3.WithPrefix())
 	resp, err := etcdclient.Default().Get(context.Background(), key, opts...)
 	if err != nil {
 		return
 	}
-	list = map[string]*event.Event{}
+	list = map[string]*model.Event{}
 	for _, v := range resp.Kvs {
-		e := &event.Event{}
+		e := &model.Event{}
 		err1 := json.Unmarshal(v.Value, e)
 		if err1 != nil {
 			logrus.Errorln(err1)
@@ -46,7 +47,7 @@ func _list(key string, opts ...clientv3.OpOption) (list map[string]*event.Event,
 }
 
 // List returns event list by resource type and resource name
-func List(resType string, resName string, limit int64, sortTarget clientv3.SortTarget, sortOrder clientv3.SortOrder) (list map[string]*event.Event, err error) {
+func ListEvent(resType string, resName string, limit int64, sortTarget clientv3.SortTarget, sortOrder clientv3.SortOrder) (list map[string]*model.Event, err error) {
 	var key string
 	if resType == "" || resName == "" {
 		err = errors.New("empty resource type or resource name")
@@ -54,7 +55,7 @@ func List(resType string, resName string, limit int64, sortTarget clientv3.SortT
 	} else {
 		key = EventPrefix() + "/" + resType + "/" + resName
 	}
-	return _list(
+	return _listEvent(
 		key,
 		clientv3.WithLimit(limit),
 		clientv3.WithSort(sortTarget, sortOrder),
@@ -62,14 +63,14 @@ func List(resType string, resName string, limit int64, sortTarget clientv3.SortT
 }
 
 // ScrollList returns event list from key
-func ScrollList(key string, n int64, sortTarget clientv3.SortTarget, sortOrder clientv3.SortOrder) (list map[string]*event.Event, err error) {
+func ScrollListEvent(key string, n int64, sortTarget clientv3.SortTarget, sortOrder clientv3.SortOrder) (list map[string]*model.Event, err error) {
 	if key == "" {
 		key = EventPrefix()
 	}
 	if n <= 0 {
 		n = 20
 	}
-	return _list(
+	return _listEvent(
 		key,
 		clientv3.WithFromKey(),
 		clientv3.WithLimit(n),
@@ -78,21 +79,12 @@ func ScrollList(key string, n int64, sortTarget clientv3.SortTarget, sortOrder c
 }
 
 // Update create or update event
-func Update(e *event.Event) (err error) {
-	if e == nil {
-		return errors.New("event is null")
-	}
-	key := EventPrefix() + "/" + string(e.ResourceType) + "/" + e.ResourceName + "/" + e.Key
-	b, err := json.Marshal(e)
-	if err != nil {
-		return
-	}
-	_, err = etcdclient.Default().Put(context.Background(), key, string(b))
-	return
+func UpdateEvent(ctx context.Context, e *model.Event) (bool, error) {
+	return store_redis.Default.Update(ctx, e)
 }
 
 // DeleteRange deletes events
-func DeleteRange(fromKey string, endKey string) (deleted int64, err error) {
+func DeleteRangeEvent(ctx context.Context, fromKey string, endKey string) (deleted int64, err error) {
 	res, err := etcdclient.Default().Delete(context.Background(), fromKey, clientv3.WithRange(endKey))
 	if err != nil {
 		return
