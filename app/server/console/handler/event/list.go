@@ -4,9 +4,10 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/jin06/binlogo/pkg/store/dao/dao_event"
 	"github.com/jin06/binlogo/v2/app/server/console/handler"
-	"github.com/jin06/binlogo/v2/pkg/store/dao/dao_event"
-	"github.com/jin06/binlogo/v2/pkg/store/model/event"
+	"github.com/jin06/binlogo/v2/pkg/store/dao"
+	"github.com/jin06/binlogo/v2/pkg/store/model"
 	clientv3 "go.etcd.io/etcd/client/v3"
 )
 
@@ -14,7 +15,7 @@ import (
 func List(c *gin.Context) {
 	resType := c.Query("res_type")
 	resName := c.Query("res_name")
-	list, err := dao_event.List(
+	list, err := dao.ListEvent(
 		resType,
 		resName,
 		20,
@@ -25,7 +26,7 @@ func List(c *gin.Context) {
 		c.JSON(200, handler.Fail(err))
 		return
 	}
-	var resList []*event.Event
+	var resList []*model.Event
 	for _, v := range list {
 		resList = append(resList, v)
 	}

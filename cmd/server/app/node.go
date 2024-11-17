@@ -9,7 +9,7 @@ import (
 	"github.com/jin06/binlogo/v2/configs"
 	"github.com/jin06/binlogo/v2/pkg/event"
 	"github.com/jin06/binlogo/v2/pkg/store/dao"
-	model_event "github.com/jin06/binlogo/v2/pkg/store/model/event"
+	model_event "github.com/jin06/binlogo/v2/pkg/store/model"
 	"github.com/jin06/binlogo/v2/pkg/store/model/node"
 	"github.com/sirupsen/logrus"
 )
@@ -37,7 +37,7 @@ func RunNode(c context.Context) (err error) {
 			return
 		}
 	}
-	err = dao.CreateStatusIfNotExist(&node.Status{NodeName: nodeOpts.Name, Ready: true})
+	err = dao.CreateStatusIfNotExist(c, &node.Status{NodeName: nodeOpts.Name, Ready: true})
 	if err != nil {
 		logrus.Error(err)
 		return

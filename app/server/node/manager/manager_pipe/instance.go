@@ -6,13 +6,13 @@ import (
 	"sync"
 	"time"
 
-	"github.com/jin06/binlogo/app/pipeline/pipeline"
-	"github.com/jin06/binlogo/pkg/event"
-	"github.com/jin06/binlogo/pkg/register"
-	"github.com/jin06/binlogo/pkg/store/dao/dao_pipe"
-	"github.com/jin06/binlogo/pkg/store/dao/dao_register"
-	model_event "github.com/jin06/binlogo/pkg/store/model/event"
-	model_pipeline "github.com/jin06/binlogo/pkg/store/model/pipeline"
+	"github.com/jin06/binlogo/v2/app/pipeline/pipeline"
+	"github.com/jin06/binlogo/v2/pkg/event"
+	"github.com/jin06/binlogo/v2/pkg/register"
+	"github.com/jin06/binlogo/v2/pkg/store/dao/dao_pipe"
+	"github.com/jin06/binlogo/v2/pkg/store/dao/dao_register"
+	"github.com/jin06/binlogo/v2/pkg/store/model"
+	model_pipeline "github.com/jin06/binlogo/v2/pkg/store/model/pipeline"
 	"github.com/sirupsen/logrus"
 )
 
@@ -93,9 +93,9 @@ func (i *instance) start(ctx context.Context) (err error) {
 		}
 		logrus.Info("pipeline instance stopped: ", i.pipeName)
 		if err != nil {
-			event.Event(model_event.NewErrorPipeline(i.pipeName, "Pipeline instance stopped error: "+err.Error()))
+			event.Event(model.NewErrorPipeline(i.pipeName, "Pipeline instance stopped error: "+err.Error()))
 		}
-		event.Event(model_event.NewInfoPipeline(i.pipeName, "Pipeline instance stopped"))
+		event.Event(model.NewInfoPipeline(i.pipeName, "Pipeline instance stopped"))
 		close(i.stopped)
 		i.exit = true
 	}()
@@ -113,7 +113,7 @@ func (i *instance) start(ctx context.Context) (err error) {
 		i.pipeIns.Run(stx)
 		i.stop()
 	}()
-	event.Event(model_event.NewInfoPipeline(i.pipeName, "Pipeline instance start success"))
+	event.Event(model.NewInfoPipeline(i.pipeName, "Pipeline instance start success"))
 	close(i.started)
 
 	select {

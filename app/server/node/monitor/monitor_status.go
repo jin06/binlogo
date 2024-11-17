@@ -79,7 +79,7 @@ func checkAllNodeStatus() (err error) {
 	if err != nil {
 		return
 	}
-	pb, err := dao_sche.GetPipelineBind()
+	pb, err := dao_sche.GetPipelineBind(context.Background())
 	if err != nil {
 		return
 	}
@@ -103,7 +103,7 @@ func checkAllNodeStatus() (err error) {
 }
 
 func removePipelineBindIfBindNode(nodeName string) (err error) {
-	pb, err := dao_sche.GetPipelineBind()
+	pb, err := dao_sche.GetPipelineBind(context.Background())
 	if err != nil {
 		return
 	}

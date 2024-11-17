@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/golang/groupcache/lru"
-	"github.com/jin06/binlogo/v2/pkg/store/dao/dao_event"
-	"github.com/jin06/binlogo/v2/pkg/store/model/event"
+	"github.com/jin06/binlogo/v2/pkg/store/dao"
+	"github.com/jin06/binlogo/v2/pkg/store/model"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
@@ -15,21 +15,21 @@ import (
 // Recorder record event.
 // Aggregate events and delete old events regularly
 type Recorder struct {
-	incomeChan chan *event.Event
-	flushChan  chan *event.Event
+	incomeChan chan *model.Event
+	flushChan  chan *model.Event
 	cache      *lru.Cache
 	nodeName   string
-	flushMap   map[string]*event.Event
+	flushMap   map[string]*model.Event
 }
 
 // New Returns a new Recorder
 func New() (*Recorder, error) {
 	r := &Recorder{}
-	r.incomeChan = make(chan *event.Event, 16384)
-	r.flushChan = make(chan *event.Event, 4096)
+	r.incomeChan = make(chan *model.Event, 16384)
+	r.flushChan = make(chan *model.Event, 4096)
 	r.cache = lru.New(4096)
 	r.nodeName = viper.GetString("node.name")
-	r.flushMap = map[string]*event.Event{}
+	r.flushMap = map[string]*model.Event{}
 	return r, nil
 }
 
@@ -65,7 +65,7 @@ func (r Recorder) _send(ctx context.Context) {
 			}
 		case e := <-r.flushChan:
 			{
-				r.flushMap[e.Key] = e
+				r.flushMap[e.K] = e
 				r.flush(false)
 			}
 		case <-ticker.C:
@@ -79,26 +79,26 @@ func (r Recorder) _send(ctx context.Context) {
 func (r Recorder) flush(force bool) {
 	if force || len(r.flushMap) >= 100 {
 		for _, v := range r.flushMap {
-			er := dao_event.Update(v)
+			_, er := dao.UpdateEvent(context.Background(), v)
 			if er != nil {
 				logrus.Errorln("Write event to etcd failed: ", er)
 			}
 		}
-		r.flushMap = map[string]*event.Event{}
+		r.flushMap = map[string]*model.Event{}
 	}
 }
 
 // Event pass event to income chan
-func (r Recorder) Event(e *event.Event) {
+func (r Recorder) Event(e *model.Event) {
 	r.incomeChan <- e
 	return
 }
 
-func (r Recorder) dispatch(new *event.Event) {
+func (r Recorder) dispatch(new *model.Event) {
 	aggKey := aggregatorKey(new)
 	oldInter, ok := r.cache.Get(aggKey)
 	if ok {
-		if old, is := oldInter.(*event.Event); is {
+		if old, is := oldInter.(*model.Event); is {
 			if isExceedTime(time.Now(), old.FirstTime) {
 				old.Count = old.Count + 1
 				old.LastTime = time.Now()
@@ -119,11 +119,11 @@ func (r Recorder) dispatch(new *event.Event) {
 	r.update(new)
 }
 
-func (r Recorder) update(e *event.Event) {
+func (r Recorder) update(e *model.Event) {
 	r.flushChan <- e
 }
 
-func aggregatorKey(e *event.Event) string {
+func aggregatorKey(e *model.Event) string {
 	return strings.Join([]string{
 		string(e.Type),
 		string(e.ResourceType),

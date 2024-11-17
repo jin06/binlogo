@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/jin06/binlogo/v2/pkg/store/dao/dao_sche"
+	"github.com/jin06/binlogo/v2/pkg/store/model"
 	"github.com/jin06/binlogo/v2/pkg/store/model/node"
-	"github.com/jin06/binlogo/v2/pkg/store/model/scheduler"
 	"github.com/sirupsen/logrus"
 )
 
@@ -70,11 +70,11 @@ func (m *Manager) Run(ctx context.Context) {
 }
 
 // scanPipelines scan pipeline bind, find pipelines that should run in this node
-func (m *Manager) scanPipelines(pb *scheduler.PipelineBind) (err error) {
+func (m *Manager) scanPipelines(pb *model.PipelineBind) (err error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 	if pb == nil {
-		pb, err = dao_sche.GetPipelineBind()
+		pb, err = dao_sche.GetPipelineBind(context.Background())
 		if err != nil {
 			return
 		}

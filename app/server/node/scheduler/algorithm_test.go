@@ -5,9 +5,9 @@ import (
 	"time"
 
 	"github.com/jin06/binlogo/v2/configs"
+	"github.com/jin06/binlogo/v2/pkg/store/model"
 	"github.com/jin06/binlogo/v2/pkg/store/model/node"
 	"github.com/jin06/binlogo/v2/pkg/store/model/pipeline"
-	"github.com/jin06/binlogo/v2/pkg/store/model/scheduler"
 )
 
 func TestCal(t *testing.T) {
@@ -65,7 +65,7 @@ func TestCal(t *testing.T) {
 			nodeName1: &node1,
 			nodeName2: &node2,
 		}),
-		withAlgPipeBind(&scheduler.PipelineBind{Bindings: map[string]string{
+		withAlgPipeBind(&model.PipelineBind{Bindings: map[string]string{
 			pipeName1: nodeName1,
 		}}),
 		withAlgCapMap(map[string]*node.Capacity{

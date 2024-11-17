@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/jin06/binlogo/v2/pkg/store/model"
 	"github.com/jin06/binlogo/v2/pkg/store/model/node"
 	"github.com/jin06/binlogo/v2/pkg/store/model/pipeline"
-	"github.com/jin06/binlogo/v2/pkg/store/model/scheduler"
 	"github.com/sirupsen/logrus"
 	"go.etcd.io/etcd/api/v3/mvccpb"
 	clientv3 "go.etcd.io/etcd/client/v3"
@@ -34,7 +34,7 @@ func WrapStrHandler() Handler {
 func WrapSchedulerBinding() Handler {
 	return func(e *clientv3.Event) (ev *Event, err error) {
 		ev = &Event{}
-		m := &scheduler.PipelineBind{}
+		m := &model.PipelineBind{}
 		ev.Event = e
 		ev.Data = m
 		if e.Type != mvccpb.DELETE {

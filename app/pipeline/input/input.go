@@ -12,7 +12,7 @@ import (
 	"github.com/jin06/binlogo/v2/app/pipeline/message"
 	"github.com/jin06/binlogo/v2/pkg/event"
 	"github.com/jin06/binlogo/v2/pkg/store/dao/dao_pipe"
-	event_store "github.com/jin06/binlogo/v2/pkg/store/model/event"
+	event_store "github.com/jin06/binlogo/v2/pkg/store/model"
 	"github.com/jin06/binlogo/v2/pkg/store/model/pipeline"
 	"github.com/sirupsen/logrus"
 )

@@ -6,9 +6,9 @@ import (
 	"github.com/jin06/binlogo/v2/pkg/store/dao"
 	"github.com/jin06/binlogo/v2/pkg/store/dao/dao_pipe"
 	"github.com/jin06/binlogo/v2/pkg/store/dao/dao_sche"
+	"github.com/jin06/binlogo/v2/pkg/store/model"
 	"github.com/jin06/binlogo/v2/pkg/store/model/node"
 	"github.com/jin06/binlogo/v2/pkg/store/model/pipeline"
-	"github.com/jin06/binlogo/v2/pkg/store/model/scheduler"
 )
 
 // Item for front display
@@ -60,9 +60,9 @@ func completePipelineRun(i *Item, pMap map[string]*pipeline.Instance) (err error
 }
 
 // CompletePipelineBind complete pipeline bind info
-func CompletePipelineBind(i *Item, pb *scheduler.PipelineBind) (err error) {
+func CompletePipelineBind(i *Item, pb *model.PipelineBind) (err error) {
 	if pb == nil {
-		pb, err = dao_sche.GetPipelineBind()
+		pb, err = dao_sche.GetPipelineBind(context.Background())
 		if err != nil {
 			return
 		}
@@ -110,7 +110,7 @@ func CompleteInfoList(list []*Item) (err error) {
 	if len(list) == 0 {
 		return nil
 	}
-	pb, err := dao_sche.GetPipelineBind()
+	pb, err := dao_sche.GetPipelineBind(context.Background())
 	if err != nil {
 		return
 	}

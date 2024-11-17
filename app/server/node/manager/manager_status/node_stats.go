@@ -1,6 +1,7 @@
 package manager_status
 
 import (
+	"context"
 	"errors"
 	"time"
 
@@ -97,11 +98,11 @@ func (ns *NodeStatus) setStatus() (err error) {
 func (ns *NodeStatus) syncCap() (err error) {
 	//key := etcd.Prefix() + "/nodes/" + ns.NodeName + "/capacity"
 	//err = dao.UpdateCapacity(ns.Cap, dao.WithKey(key))
-	err = dao.UpdateCapacity(ns.Cap)
+	_, err = dao.UpdateCapacity(context.Background(), ns.Cap)
 	return
 }
 
 func (ns *NodeStatus) syncAllocatable() (err error) {
-	err = dao.UpdateAllocatable(ns.Allocatable)
+	_, err = dao.UpdateAllocatable(context.Background(), ns.Allocatable)
 	return
 }

@@ -20,7 +20,7 @@ import (
 	"github.com/jin06/binlogo/v2/pkg/event"
 	"github.com/jin06/binlogo/v2/pkg/promeths"
 	"github.com/jin06/binlogo/v2/pkg/store/dao/dao_pipe"
-	event_store "github.com/jin06/binlogo/v2/pkg/store/model/event"
+	event_store "github.com/jin06/binlogo/v2/pkg/store/model"
 	"github.com/jin06/binlogo/v2/pkg/store/model/pipeline"
 	"github.com/prometheus/client_golang/prometheus"
 )

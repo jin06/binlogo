@@ -10,8 +10,8 @@ import (
 
 	"github.com/jin06/binlogo/v2/pkg/event"
 	"github.com/jin06/binlogo/v2/pkg/store/dao/dao_sche"
+	"github.com/jin06/binlogo/v2/pkg/store/model"
 	"github.com/jin06/binlogo/v2/pkg/store/model/pipeline"
-	"github.com/jin06/binlogo/v2/pkg/store/model/scheduler"
 	"github.com/sirupsen/logrus"
 	"go.etcd.io/etcd/api/v3/mvccpb"
 )
@@ -72,7 +72,7 @@ func (s *Scheduler) schedule(ctx context.Context) {
 			}
 			{
 				if ev.Event.Type == mvccpb.PUT {
-					if val, ok := ev.Data.(*scheduler.PipelineBind); ok {
+					if val, ok := ev.Data.(*model.PipelineBind); ok {
 						schedulePipes(val)
 					}
 				}
@@ -109,9 +109,9 @@ func scheduleOne(p *pipeline.Pipeline) (err error) {
 }
 
 // noScheduledPipelines find pipelines that not be scheduled
-func noScheduledPipelines(pb *scheduler.PipelineBind) (pipes []*pipeline.Pipeline, err error) {
+func noScheduledPipelines(pb *model.PipelineBind) (pipes []*pipeline.Pipeline, err error) {
 	if pb == nil {
-		pb, err = dao_sche.GetPipelineBind()
+		pb, err = dao_sche.GetPipelineBind(context.Background())
 		if err != nil {
 			return
 		}
@@ -125,7 +125,7 @@ func noScheduledPipelines(pb *scheduler.PipelineBind) (pipes []*pipeline.Pipelin
 	return
 }
 
-func schedulePipes(pb *scheduler.PipelineBind) {
+func schedulePipes(pb *model.PipelineBind) {
 	pipes, err := noScheduledPipelines(pb)
 	if err != nil {
 		return

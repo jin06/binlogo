@@ -90,7 +90,7 @@ func (m *Monitor) checkAllPipelineBind() {
 	if err != nil {
 		return
 	}
-	pb, err := dao_sche.GetPipelineBind()
+	pb, err := dao_sche.GetPipelineBind(context.Background())
 	if err != nil {
 		return
 	}
@@ -113,7 +113,7 @@ func (m *Monitor) checkAllPipelineBind() {
 		}
 	}
 
-	pb, err = dao_sche.GetPipelineBind()
+	pb, err = dao_sche.GetPipelineBind(context.Background())
 	if err != nil {
 		return
 	}

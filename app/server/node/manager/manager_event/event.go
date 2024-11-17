@@ -8,7 +8,6 @@ import (
 
 	"github.com/jin06/binlogo/v2/app/server/node/manager"
 	"github.com/jin06/binlogo/v2/pkg/store/dao"
-	"github.com/jin06/binlogo/v2/pkg/store/dao/dao_event"
 	"github.com/jin06/binlogo/v2/pkg/store/dao/dao_pipe"
 	"github.com/sirupsen/logrus"
 )
@@ -73,13 +72,14 @@ func (m *Manager) cleanHistoryEvent() (err error) {
 		for _, n := range nodes {
 			from := n.Name + ".0"
 			end := n.Name + "." + strconv.FormatInt(deleteTime, 10)
-			prefix := dao_event.PipelinePrefix() + "/" + pipe.Name + "/"
-			_, err1 := dao_event.DeleteRange(prefix+from, prefix+end)
+			prefix := dao.PipelinePrefix() + "/" + pipe.Name + "/"
+
+			_, err1 := dao.DeleteRangeEvent(context.Background(), prefix+from, prefix+end)
 			if err1 != nil {
 				logrus.Errorln("Clean history events error: ", err1)
 			}
-			prefix = dao_event.NodePrefix() + "/" + n.Name + "/"
-			_, err2 := dao_event.DeleteRange(prefix+from, prefix+end)
+			prefix = dao.EventNodePrefix() + "/" + n.Name + "/"
+			_, err2 := dao.DeleteRangeEvent(context.Background(), prefix+from, prefix+end)
 			if err2 != nil {
 				logrus.Errorln("Clean history events error: ", err2)
 			}

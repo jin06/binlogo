@@ -7,13 +7,13 @@ import (
 
 	"github.com/jin06/binlogo/v2/configs"
 	"github.com/jin06/binlogo/v2/pkg/store/dao/dao_sche"
+	"github.com/jin06/binlogo/v2/pkg/store/model"
 	"github.com/jin06/binlogo/v2/pkg/store/model/node"
-	"github.com/jin06/binlogo/v2/pkg/store/model/scheduler"
 )
 
 func TestScanPipelines(t *testing.T) {
 	configs.InitGoTest()
-	pb := &scheduler.PipelineBind{
+	pb := &model.PipelineBind{
 		Bindings: map[string]string{
 			"apple":  "test",
 			"banana": "test2",
@@ -39,7 +39,7 @@ func TestScanPipelines(t *testing.T) {
 	if m.mapping["tomato"] == true {
 		t.Fail()
 	}
-	m.dispatch()
+	m.dispatch(context.Background())
 	time.Sleep(time.Millisecond * 100)
 	for _, v := range m.mappingIns {
 		if v != nil {

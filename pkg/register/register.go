@@ -117,7 +117,6 @@ func (r *Register) reg(ctx context.Context) (err error) {
 		return
 	}
 	r.leaseID = rep.ID
-	//err = dao_register.Reg(r.registerKey, r.registerData, r.leaseID)
 	b, err := json.Marshal(r.registerData)
 	if err != nil {
 		return

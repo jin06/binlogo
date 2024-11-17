@@ -1,13 +1,14 @@
 package scheduler
 
 import (
+	"context"
 	"errors"
 
 	"github.com/jin06/binlogo/v2/pkg/store/dao"
 	"github.com/jin06/binlogo/v2/pkg/store/dao/dao_sche"
+	"github.com/jin06/binlogo/v2/pkg/store/model"
 	"github.com/jin06/binlogo/v2/pkg/store/model/node"
 	"github.com/jin06/binlogo/v2/pkg/store/model/pipeline"
-	"github.com/jin06/binlogo/v2/pkg/store/model/scheduler"
 )
 
 type algorithm struct {
@@ -16,7 +17,7 @@ type algorithm struct {
 	potentialNodes map[string]*node.Node
 	nodesScores    map[string]int
 	bestNode       *node.Node
-	pb             *scheduler.PipelineBind
+	pb             *model.PipelineBind
 	capacityMap    map[string]*node.Capacity
 }
 
@@ -40,7 +41,7 @@ func (a *algorithm) cal() (err error) {
 		}
 	}
 	if a.pb == nil {
-		a.pb, err = dao_sche.GetPipelineBind()
+		a.pb, err = dao_sche.GetPipelineBind(context.Background())
 		if err != nil {
 			return
 		}
@@ -217,7 +218,7 @@ func withAlgAllNodes(allNodes map[string]*node.Node) optionAlgorithm {
 	}
 }
 
-func withAlgPipeBind(pb *scheduler.PipelineBind) optionAlgorithm {
+func withAlgPipeBind(pb *model.PipelineBind) optionAlgorithm {
 	return func(alg *algorithm) {
 		alg.pb = pb
 	}
