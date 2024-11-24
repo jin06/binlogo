@@ -28,6 +28,10 @@ func NewNode(name string) *Node {
 	}
 }
 
+func (s *Node) RegisterName() string {
+	return fmt.Sprintf("/%s/%s/%s", configs.APP, configs.Default.ClusterName, s.Name)
+}
+
 // Key generate etcd key
 func (s *Node) Key() string {
 	return fmt.Sprintf("node/%s", s.Name)

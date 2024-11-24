@@ -32,10 +32,11 @@ func (m *Manager) Run(ctx context.Context) {
 	stx, cancel := context.WithCancel(ctx)
 	defer cancel()
 	for {
-		election := New(
-			OptionNode(m.optNode),
-			OptionTTL(5),
-		)
+		// election := New(
+		// 	OptionNode(m.optNode),
+		// 	OptionTTL(5),
+		// )
+		election := NewElection(m.optNode)
 		election.Run(stx, m.roleCh)
 	}
 }

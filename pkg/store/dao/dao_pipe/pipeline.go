@@ -35,11 +35,7 @@ func GetPipeline(name string) (p *pipeline.Pipeline, err error) {
 
 // CreatePipeline write pipeline info to etcd
 func CreatePipeline(ctx context.Context, d *pipeline.Pipeline) (ok bool, err error) {
-	key := d.Key()
-	if err := store_redis.GetClient().HSet(ctx, key, d).Err(); err != nil {
-		return false, err
-	}
-	return
+	return store_redis.Default.Create(ctx, d)
 }
 
 // UpdatePipeline update pipeline info in etcd
@@ -149,29 +145,17 @@ func AllPipelinesMap(ctx context.Context) (mapping map[string]*pipeline.Pipeline
 }
 
 // DeletePipeline delete pipeline info by name
-func DeletePipeline(name string) (ok bool, err error) {
-	if name == "" {
-		err = errors.New("empty name")
-		return
-	}
-	key := PipelinePrefix() + "/" + name
-	res, err := etcdclient.Default().Delete(context.Background(), key)
-	if err != nil {
-		return
-	}
-	if res.Deleted > 0 {
-		ok = true
-	}
-	return
+func DeletePipeline(ctx context.Context, name string) (ok bool, err error) {
+	return store_redis.Default.Delete(ctx, &pipeline.Pipeline{Name: name})
 }
 
 // DeleteCompletePipeline delete pipeline, contains pipeline info, pipeline position
-func DeleteCompletePipeline(name string) (ok bool, err error) {
+func DeleteCompletePipeline(ctx context.Context, name string) (ok bool, err error) {
 	if name == "" {
 		err = errors.New("empty name")
 		return
 	}
-	ok, err = DeletePipeline(name)
+	ok, err = DeletePipeline(ctx, name)
 	if err != nil {
 		return
 	}

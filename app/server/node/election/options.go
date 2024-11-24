@@ -15,8 +15,3 @@ func OptionNode(node *node.Node) Option {
 }
 
 // OptionTTL sets election ttl
-func OptionTTL(ttl int) Option {
-	return func(e *Election) {
-		e.ttl = ttl
-	}
-}

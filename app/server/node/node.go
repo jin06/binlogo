@@ -14,7 +14,6 @@ import (
 	"github.com/jin06/binlogo/v2/app/server/node/monitor"
 	"github.com/jin06/binlogo/v2/app/server/node/scheduler"
 	"github.com/jin06/binlogo/v2/pkg/node/role"
-	"github.com/jin06/binlogo/v2/pkg/register"
 	"github.com/jin06/binlogo/v2/pkg/store/dao"
 	"github.com/jin06/binlogo/v2/pkg/store/model/node"
 	"github.com/sirupsen/logrus"
@@ -25,10 +24,11 @@ import (
 // Running pipeline, reporting status, etc.
 // if it becomes the master node, it will run tasks such as scheduling pipeline, monitoring, event management, etc
 type Node struct {
-	Mode     *NodeMode
-	Options  *Options
-	Name     string
-	Register *register.Register
+	Mode    *NodeMode
+	Options *Options
+	Name    string
+	// Register *register.Register
+	Register *Register
 	//election       *election.Election
 	electionManager *election.Manager
 	Scheduler       *scheduler.Scheduler
@@ -80,11 +80,12 @@ func New(opts ...Option) (node *Node) {
 }
 
 func (n *Node) init() {
-	n.Register = register.New(
-		register.WithTTL(5),
-		register.WithKey(dao.NodeRegisterPrefix()+"/"+n.Options.Node.Name),
-		register.WithData(n.Options.Node),
-	)
+	// n.Register = register.New(
+	// 	register.WithTTL(5),
+	// 	register.WithKey(dao.NodeRegisterPrefix()+"/"+n.Options.Node.Name),
+	// 	register.WithData(n.Options.Node),
+	// )
+	n.Register = NewRegister(n.Options.Node)
 	n.electionManager = election.NewManager(n.Options.Node)
 	n.pipeManager = manager_pipe.New(n.Options.Node)
 	n.StatusManager = manager_status.NewManager(n.Options.Node)
