@@ -42,7 +42,7 @@ func (e *Event) Unmarshal(data []byte) error {
 }
 
 // ResourceType pipeline or node or etc.
-type ResourceType string
+type ResourceType = string
 
 const (
 	// PIPELINE resource type
@@ -54,7 +54,7 @@ const (
 )
 
 // Type event level
-type Type string
+type Type = string
 
 const (
 	// WARN level
@@ -66,7 +66,7 @@ const (
 )
 
 // MessageType todo
-type MessageType string
+type MessageType = string
 
 const (
 	// MSG_EMPTY default type

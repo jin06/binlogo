@@ -74,9 +74,30 @@ func UpdatePipeline(pipeName string, opts ...pipeline.OptionPipeline) (ok bool, 
 // AllPipelines get all info of pipelines from etcd in array form
 func AllPipelines(ctx context.Context) ([]*pipeline.Pipeline, error) {
 	list := []*pipeline.Pipeline{}
-	// if err := store_redis.Default.List(ctx, list); err != nil {
-	// 	return nil, err
-	// }
+	var err error
+	var keys []string
+	var cursor uint64
+	match := PipelinePrefix() + ":*"
+	for {
+		keys, cursor, err = store_redis.GetClient().Scan(ctx, cursor, match, 0).Result()
+		if err != nil {
+			return nil, err
+		}
+		if cursor == 0 {
+			break
+		}
+	}
+	for _, key := range keys {
+		cmd := store_redis.GetClient().HGetAll(ctx, key)
+		if cmd.Err() != nil {
+			return nil, cmd.Err()
+		}
+		item := &pipeline.Pipeline{}
+		if err := cmd.Scan(item); err != nil {
+			continue
+		}
+		list = append(list, item)
+	}
 	return list, nil
 }
 

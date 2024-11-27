@@ -34,7 +34,7 @@ func (t *tree) isFilter(msg *message.Message) bool {
 	return false
 }
 
-func newTree(filters []*pipeline.Filter) (res tree) {
+func newTree(filters []pipeline.Filter) (res tree) {
 	res = tree{
 		DBBlack:    map[string]bool{},
 		TableBlack: map[string]bool{},
@@ -45,7 +45,7 @@ func newTree(filters []*pipeline.Filter) (res tree) {
 		return
 	}
 	for _, v := range filters {
-		if !tool.FilterVerify(v) {
+		if !tool.FilterVerify(&v) {
 			continue
 		}
 		arr := strings.Split(v.Rule, ".")

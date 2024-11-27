@@ -11,7 +11,7 @@ type Pipeline struct {
 	Status     Status    `json:"status" redis:"status"`
 	AliasName  string    `json:"aliasName" redis:"alias_name"`
 	Mysql      *Mysql    `json:"mysql" redis:"mysql"`
-	Filters    []*Filter `json:"filters" redis:"filters"`
+	Filters    Filters   `json:"filters" redis:"filters"`
 	Output     *Output   `json:"output" redis:"output"`
 	Replicas   int       `json:"replicas" redis:"replicas"`
 	CreateTime time.Time `json:"create_time" redis:"create_time"`
@@ -28,7 +28,7 @@ func NewPipeline(name string) (pipe *Pipeline) {
 		Status:    STATUS_STOP,
 		AliasName: name,
 		Mysql:     &Mysql{},
-		Filters:   []*Filter{},
+		Filters:   Filters{},
 		Output: &Output{
 			Sender: &Sender{
 				Type:     SNEDER_TYPE_STDOUT,
@@ -48,7 +48,7 @@ func NewPipeline(name string) (pipe *Pipeline) {
 }
 
 // Status of Pipeline
-type Status string
+type Status = string
 
 const (
 	// STATUS_RUN run
@@ -127,14 +127,14 @@ func WithPipeMode(mode Mode) OptionPipeline {
 
 func WithAddFilter(filter *Filter) OptionPipeline {
 	return func(p *Pipeline) {
-		p.Filters = append(p.Filters, filter)
+		p.Filters = append(p.Filters, *filter)
 	}
 }
 
 func WithUpdateFilter(index int, filter *Filter) OptionPipeline {
 	return func(p *Pipeline) {
 		if len(p.Filters) > index {
-			p.Filters[index] = filter
+			p.Filters[index] = *filter
 		}
 	}
 }

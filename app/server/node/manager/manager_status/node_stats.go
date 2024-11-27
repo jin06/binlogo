@@ -15,10 +15,10 @@ import (
 // NodeStatus reporting work
 type NodeStatus struct {
 	NodeName    string
-	Node        *node.Node
-	Cap         *node.Capacity
-	Allocatable *node.Allocatable
-	Conditions  *node.Condition
+	Node        *node.Node        `json:"node" redis:"node"`
+	Cap         *node.Capacity    `json:"cap" redis:"cap"`
+	Allocatable *node.Allocatable `json:"allocatable" redis:"allocatable"`
+	Conditions  *node.Condition   `json:"conditions" redis:"conditions"`
 }
 
 // NewNodeStatus returns a new NodeStatus
