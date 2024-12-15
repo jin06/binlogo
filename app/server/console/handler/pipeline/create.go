@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/jin06/binlogo/v2/app/server/console/handler"
 	"github.com/jin06/binlogo/v2/pkg/pipeline/tool"
-	"github.com/jin06/binlogo/v2/pkg/store/dao/dao_pipe"
+	"github.com/jin06/binlogo/v2/pkg/store/dao"
 	"github.com/jin06/binlogo/v2/pkg/store/model/pipeline"
 	"github.com/jin06/binlogo/v2/pkg/util/random"
 	"github.com/sirupsen/logrus"
@@ -29,12 +29,11 @@ func Create(c *gin.Context) {
 
 	logrus.Debugf("%v \n", *q)
 	if q.Mysql.ServerId == 0 {
-		//q.Mysql.ServerId = uint32(rand.New(rand.NewSource(time.Now().UnixNano())).Int31n(100000000))
 		q.Mysql.ServerId = random.Uint32()
 	}
 	q.Status = pipeline.STATUS_STOP
 	pipelineDefault(q)
-	if _, err := dao_pipe.CreatePipeline(c, q); err != nil {
+	if _, err := dao.CreatePipeline(c, q); err != nil {
 		c.JSON(200, handler.Fail(err))
 		return
 	}

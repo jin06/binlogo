@@ -1,4 +1,4 @@
-package dao_pipe
+package dao
 
 import (
 	"context"
@@ -13,7 +13,11 @@ import (
 
 // PipelinePrefix returns etcd prefix of pipeline info
 func PipelinePrefix() string {
-	return etcdclient.Prefix() + "/pipeline/info"
+	return store_redis.Prefix() + "/pipeline"
+}
+
+func PipelinesKey() string {
+	return store_redis.Prefix() + "/pipelines"
 }
 
 // GetPipeline get pipeline info from etcd
@@ -35,7 +39,12 @@ func GetPipeline(name string) (p *pipeline.Pipeline, err error) {
 
 // CreatePipeline write pipeline info to etcd
 func CreatePipeline(ctx context.Context, d *pipeline.Pipeline) (ok bool, err error) {
-	return store_redis.Default.Create(ctx, d)
+	cmd := store_redis.GetClient().HSet(ctx, PipelinesKey(), d.Name, d.Val())
+	i, err := cmd.Result()
+	if err != nil {
+		return false, err
+	}
+	return i > 0, nil
 }
 
 // UpdatePipeline update pipeline info in etcd
@@ -72,85 +81,21 @@ func UpdatePipeline(pipeName string, opts ...pipeline.OptionPipeline) (ok bool, 
 }
 
 // AllPipelines get all info of pipelines from etcd in array form
-func AllPipelines(ctx context.Context) ([]*pipeline.Pipeline, error) {
-	list := []*pipeline.Pipeline{}
-	var err error
-	var keys []string
-	var cursor uint64
-	match := PipelinePrefix() + ":*"
-	for {
-		keys, cursor, err = store_redis.GetClient().Scan(ctx, cursor, match, 0).Result()
-		if err != nil {
-			return nil, err
-		}
-		if cursor == 0 {
-			break
-		}
+func AllPipelines(ctx context.Context) (list []*pipeline.Pipeline, err error) {
+	var result map[string]string
+	result, err = store_redis.GetClient().HGetAll(ctx, PipelinesKey()).Result()
+	if err != nil {
+		return
 	}
-	for _, key := range keys {
-		cmd := store_redis.GetClient().HGetAll(ctx, key)
-		if cmd.Err() != nil {
-			return nil, cmd.Err()
-		}
-		item := &pipeline.Pipeline{}
-		if err := cmd.Scan(item); err != nil {
+	for _, v := range result {
+		pipe := &pipeline.Pipeline{}
+		if err := pipe.Unmarshal([]byte(v)); err != nil {
 			continue
 		}
-		list = append(list, item)
+		list = append(list, pipe)
 	}
-	return list, nil
+	return
 }
-
-//type pipelineSlice []*pipeline.Pipeline
-//
-//func (ps pipelineSlice) Len() int { return len(ps) }
-//
-//func (ps pipelineSlice) Swap(i, j int) { ps[i], ps[j] = ps[j], ps[i] }
-//
-//func (ps pipelineSlice) Less(i, j int) bool {
-//	return ps[i].CreateTime.Before(ps[i].CreateTime)
-//}
-
-// PagePipeline for pipeline pages
-//type PagePipeline struct {
-//	Page  int
-//	Total int
-//	Data  []*pipeline.Pipeline
-//}
-
-// PagePipelines get a PagePipeline by page and size
-//func PagePipelines(page int, size int) (res *PagePipeline, err error) {
-//	if page < 1 {
-//		page = 1
-//	}
-//	if size < 1 {
-//		size = 10
-//	}
-//	all, err := AllPipelines()
-//	if err != nil {
-//		return
-//	}
-//	sort.Sort(pipelineSlice(all))
-//
-//	total := len(all)
-//	totalPage := total / size
-//	if page > totalPage {
-//		page = totalPage
-//	}
-//	start := (page - 1) * size
-//	end := start + size
-//	if end > total {
-//		end = total
-//	}
-//	resList := all[start:end]
-//
-//	res = &PagePipeline{
-//		Page:  page,
-//		Total: len(all),
-//		Data:  resList,
-//	}
-//	return
-//}
 
 // AllPipelinesMap returns all pipelines from etcd in map form
 func AllPipelinesMap(ctx context.Context) (mapping map[string]*pipeline.Pipeline, err error) {

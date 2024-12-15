@@ -10,9 +10,9 @@ type Pipeline struct {
 	Name       string    `json:"name" redis:"name"`
 	Status     Status    `json:"status" redis:"status"`
 	AliasName  string    `json:"aliasName" redis:"alias_name"`
-	Mysql      *Mysql    `json:"mysql" redis:"mysql"`
+	Mysql      Mysql     `json:"mysql" redis:"mysql"`
 	Filters    Filters   `json:"filters" redis:"filters"`
-	Output     *Output   `json:"output" redis:"output"`
+	Output     Output    `json:"output" redis:"output"`
 	Replicas   int       `json:"replicas" redis:"replicas"`
 	CreateTime time.Time `json:"create_time" redis:"create_time"`
 	Remark     string    `json:"remark" redis:"remark"`
@@ -27,16 +27,10 @@ func NewPipeline(name string) (pipe *Pipeline) {
 		Name:      name,
 		Status:    STATUS_STOP,
 		AliasName: name,
-		Mysql:     &Mysql{},
 		Filters:   Filters{},
-		Output: &Output{
-			Sender: &Sender{
-				Type:     SNEDER_TYPE_STDOUT,
-				Kafka:    nil,
-				Stdout:   nil,
-				Http:     nil,
-				RabbitMQ: nil,
-				Redis:    nil,
+		Output: Output{
+			Sender: Sender{
+				Type: SNEDER_TYPE_STDOUT,
 			},
 		},
 		Replicas:   0,
@@ -119,9 +113,7 @@ func WithPipeDelete(d bool) OptionPipeline {
 
 func WithPipeMode(mode Mode) OptionPipeline {
 	return func(p *Pipeline) {
-		if p.Mysql != nil {
-			p.Mysql.Mode = mode
-		}
+		p.Mysql.Mode = mode
 	}
 }
 

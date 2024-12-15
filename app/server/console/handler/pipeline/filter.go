@@ -4,7 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/jin06/binlogo/v2/app/server/console/handler"
 	"github.com/jin06/binlogo/v2/pkg/pipeline/tool"
-	"github.com/jin06/binlogo/v2/pkg/store/dao/dao_pipe"
+	"github.com/jin06/binlogo/v2/pkg/store/dao"
 	"github.com/jin06/binlogo/v2/pkg/store/model/pipeline"
 )
 
@@ -19,7 +19,7 @@ func IsFilter(c *gin.Context) {
 		c.JSON(200, handler.Fail("fatal error, refresh page and try again"))
 		return
 	}
-	pipe, err := dao_pipe.GetPipeline(name)
+	pipe, err := dao.GetPipeline(name)
 	if err != nil {
 		c.JSON(200, handler.Fail(err))
 		return
@@ -43,7 +43,7 @@ func AddFilter(c *gin.Context) {
 		c.JSON(200, handler.Fail(err))
 		return
 	}
-	ok, err := dao_pipe.UpdatePipeline(q.PipeName, pipeline.WithAddFilter(q.Filter))
+	ok, err := dao.UpdatePipeline(q.PipeName, pipeline.WithAddFilter(q.Filter))
 	if err != nil || !ok {
 		c.JSON(200, handler.Fail("Add filter failed."))
 		return
@@ -61,7 +61,7 @@ func UpdateFilter(c *gin.Context) {
 		c.JSON(200, handler.Fail(err))
 		return
 	}
-	ok, err := dao_pipe.UpdatePipeline(q.PipeName, pipeline.WithUpdateFilter(q.Index, q.Filter))
+	ok, err := dao.UpdatePipeline(q.PipeName, pipeline.WithUpdateFilter(q.Index, q.Filter))
 	if err != nil || !ok {
 		c.JSON(200, handler.Fail("Update filter failed."))
 		return

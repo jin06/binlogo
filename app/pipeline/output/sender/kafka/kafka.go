@@ -17,8 +17,8 @@ type Kafka struct {
 }
 
 // New returns a new Kafka
-func New(kafka *pipeline.Kafka) (kaf *Kafka, err error) {
-	kaf = &Kafka{Kafka: kafka}
+func New(kafka pipeline.Kafka) (kaf *Kafka, err error) {
+	kaf = &Kafka{Kafka: &kafka}
 	err = kaf.init()
 	return
 }

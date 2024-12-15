@@ -15,9 +15,9 @@ type RabbitMQ struct {
 }
 
 // New returns a new RabbitMQ object
-func New(rq *pipeline.RabbitMQ) (r *RabbitMQ, err error) {
+func New(rq pipeline.RabbitMQ) (r *RabbitMQ, err error) {
 	r = &RabbitMQ{
-		RabbitMQ:   rq,
+		RabbitMQ:   &rq,
 		Connection: nil,
 		Channel:    nil,
 	}

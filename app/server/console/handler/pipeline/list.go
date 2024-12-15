@@ -1,7 +1,6 @@
 package pipeline
 
 import (
-	"fmt"
 	"sort"
 	"strings"
 
@@ -9,8 +8,7 @@ import (
 	"github.com/jin06/binlogo/v2/app/server/console/handler"
 	"github.com/jin06/binlogo/v2/app/server/console/module/pipeline"
 	"github.com/jin06/binlogo/v2/app/server/console/util"
-	"github.com/jin06/binlogo/v2/pkg/store/dao/dao_pipe"
-	pipeline2 "github.com/jin06/binlogo/v2/pkg/store/model/pipeline"
+	"github.com/jin06/binlogo/v2/pkg/store/dao"
 )
 
 func List(c *gin.Context) {
@@ -18,9 +16,7 @@ func List(c *gin.Context) {
 	name := c.Query("name")
 	status := c.Query("status")
 
-	all, err := dao_pipe.AllPipelines(c)
-	fmt.Println(all)
-
+	all, err := dao.AllPipelines(c)
 	if err != nil {
 		c.JSON(200, handler.Fail(err))
 		return
@@ -30,16 +26,10 @@ func List(c *gin.Context) {
 		if v.IsDelete {
 			continue
 		}
-		if v.Output == nil {
-			v.Output = pipeline2.EmptyOutput()
-		}
-		if v.Output.Sender.Http == nil {
-			v.Output.Sender.Http = pipeline2.EmptyHttp()
-		}
 		items = append(items, &pipeline.Item{Pipeline: v})
 	}
 
-	if err = pipeline.CompleteInfoList(items); err != nil {
+	if err = pipeline.CompleteInfoList(c, items); err != nil {
 		c.JSON(200, handler.Fail(err))
 		return
 	}

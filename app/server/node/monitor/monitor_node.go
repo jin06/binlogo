@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/jin06/binlogo/v2/pkg/store/dao"
-	"github.com/jin06/binlogo/v2/pkg/store/dao/dao_sche"
 	nodeModel "github.com/jin06/binlogo/v2/pkg/store/model/node"
 	"github.com/jin06/binlogo/v2/pkg/watcher"
 	"github.com/sirupsen/logrus"
@@ -104,7 +103,7 @@ func (m *Monitor) checkAllNode() (err error) {
 			logrus.Error(err1)
 		}
 	}
-	statusMap, err := dao.StatusMap()
+	statusMap, err := dao.StatusMap(context.Background())
 	if err != nil {
 		return
 	}
@@ -120,11 +119,11 @@ func (m *Monitor) checkAllNode() (err error) {
 }
 
 func (m *Monitor) checkAllNodeBind() (err error) {
-	nodes, err := dao.AllNodes()
+	nodes, err := dao.AllNodes(context.Background())
 	if err != nil {
 		return
 	}
-	pb, err := dao_sche.GetPipelineBind(context.Background())
+	pb, err := dao.GetPipelineBind(context.Background())
 	if err != nil {
 		return
 	}
@@ -134,7 +133,7 @@ func (m *Monitor) checkAllNodeBind() (err error) {
 	}
 	for k, v := range pb.Bindings {
 		if _, ok := mNodes[v]; !ok {
-			_, err = dao_sche.UpdatePipelineBind(k, "")
+			_, err = dao.UpdatePipelineBind(k, "")
 			if err != nil {
 				return
 			}

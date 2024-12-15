@@ -14,14 +14,14 @@ const SENDER_TYPE_Elastic = "elastic"
 
 // Sender output configuration
 type Sender struct {
-	Name     string    `json:"name" redis:"name"`
-	Type     string    `json:"type" redis:"type"`
-	Kafka    *Kafka    `json:"kafka" redis:"kafka"`
-	Stdout   *Stdout   `json:"stdout" redis:"stdout"`
-	Http     *Http     `json:"http" redis:"http"`
-	RabbitMQ *RabbitMQ `json:"rabbitMQ" redis:"rabbitMQ"`
-	Redis    *Redis    `json:"redis" redis:"redis"`
-	RocketMQ *RocketMQ `json:"rocketMQ" redis:"rocketMQ"`
+	Name     string   `json:"name" redis:"name"`
+	Type     string   `json:"type" redis:"type"`
+	Kafka    Kafka    `json:"kafka" redis:"kafka"`
+	Stdout   Stdout   `json:"stdout" redis:"stdout"`
+	Http     Http     `json:"http" redis:"http"`
+	RabbitMQ RabbitMQ `json:"rabbitMQ" redis:"rabbitMQ"`
+	Redis    Redis    `json:"redis" redis:"redis"`
+	RocketMQ RocketMQ `json:"rocketMQ" redis:"rocketMQ"`
 	// todo use interface for sender params
 	Elastic Elastic `json:"elastic" redis:"elastic"`
 }

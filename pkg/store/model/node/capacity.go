@@ -37,7 +37,7 @@ type Capacity struct {
 }
 
 func (c *Capacity) Key() string {
-	return fmt.Sprintf("/node/capacity/%s", c.NodeName)
+	return fmt.Sprintf("node_capacity/%s", c.NodeName)
 }
 
 func (c *Capacity) Val() string {

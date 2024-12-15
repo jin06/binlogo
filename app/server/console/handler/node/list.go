@@ -10,7 +10,6 @@ import (
 	"github.com/jin06/binlogo/v2/app/server/console/util"
 	"github.com/jin06/binlogo/v2/pkg/node/role"
 	"github.com/jin06/binlogo/v2/pkg/store/dao"
-	"github.com/jin06/binlogo/v2/pkg/store/dao/dao_cluster"
 	node2 "github.com/jin06/binlogo/v2/pkg/store/model/node"
 	"github.com/sirupsen/logrus"
 )
@@ -20,20 +19,21 @@ func List(c *gin.Context) {
 	name := c.Query("name")
 	ready := c.Query("ready")
 
-	all, err := dao.AllNodes()
+	all, err := dao.AllNodes(c)
 	if err != nil {
 		c.JSON(200, handler.Fail(err))
 		return
 	}
-	capacityMap, err := dao.CapacityMap()
+	capacityMap, err := dao.CapacityMap(c)
 	if err != nil {
 		logrus.Error(err)
 	}
-	statusMap, err := dao.StatusMap()
+	statusMap, err := dao.StatusMap(c)
 	if err != nil {
 		logrus.Error(err)
 	}
-	leaderNode, err := dao_cluster.LeaderNode()
+	leaderNode, err := dao.LeaderNode(c)
+	// leaderNode := "myNode"
 	if err != nil {
 		logrus.Error(err)
 	}

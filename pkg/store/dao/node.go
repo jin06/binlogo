@@ -81,25 +81,25 @@ func UpdateNode(ctx context.Context, name string, opts ...node.NodeOption) (bool
 	return store_redis.Default.UpdateField(ctx, &node.Node{Name: name}, values)
 }
 
+func RefreshNode(ctx context.Context, n *node.Node) (bool, error) {
+	return myDao.RefreshNode(ctx, n)
+}
+
+func UpdateNodeIP(ctx context.Context, name string, ip string) (ok bool, err error) {
+	return myDao.UpdateNodeIP(ctx, name, ip)
+}
+
 // GetNode get node data from etcd
 func GetNode(ctx context.Context, name string) (*node.Node, error) {
-	n := &node.Node{}
-	has, err := store_redis.Default.Get(ctx, n)
-	if err != nil {
-		return nil, err
-	}
-	if has {
-		return n, nil
-	}
-	return nil, nil
+	return myDao.GetNode(ctx, name)
 }
 
 // AllNodes return all node data from etcd
-func AllNodes() (list []*node.Node, err error) {
-	return _allNodes(NodePrefix() + "/")
+func AllNodes(ctx context.Context) (list []*node.Node, err error) {
+	return myDao.AllNodes(ctx)
 }
 
-func _allNodes(key string) (list []*node.Node, err error) {
+func allNodes(key string) (list []*node.Node, err error) {
 	list = []*node.Node{}
 	//key := NodePrefix() + "/"
 	res, err := etcdclient.Default().Get(context.TODO(), key, clientv3.WithPrefix())
@@ -124,12 +124,12 @@ func _allNodes(key string) (list []*node.Node, err error) {
 // ALLRegisterNodes returns all register nodes
 func ALLRegisterNodes() (list []*node.Node, err error) {
 	key := NodeRegisterPrefix()
-	return _allNodes(key)
+	return allNodes(key)
 }
 
 // AllNodesMap  returns all register nodes in map form
 func AllNodesMap() (mapping map[string]*node.Node, err error) {
-	list, err := AllNodes()
+	list, err := AllNodes(context.Background())
 	if err != nil {
 		return
 	}

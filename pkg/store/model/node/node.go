@@ -12,11 +12,13 @@ import (
 
 // Node is node
 type Node struct {
-	Name       string    `json:"name" redis:"name"`
-	Role       Role      `json:"role" redis:"role"`
-	IP         net.IP    `json:"ip" redis:"ip"`
-	Version    string    `json:"version" redis:"version"`
-	CreateTime time.Time `json:"create_time" redis:"create_time"`
+	Name        string    `json:"name" redis:"name"`
+	Role        Role      `json:"role" redis:"role"`
+	IP          string    `json:"ip" redis:"ip"`
+	Version     string    `json:"version" redis:"version"`
+	CreateTime  time.Time `json:"create_time" redis:"create_time"`
+	UpdateTime  time.Time `json:"update_time" redis:"update_time"`
+	LastRunTime time.Time `json:"last_run_time" redis:"last_run_time"`
 }
 
 // NewNode returns a new node
@@ -62,5 +64,11 @@ func WithNodeIP(i net.IP) NodeOption {
 func WithNodeVersion(v string) NodeOption {
 	return func(s model.Values) {
 		s["version"] = v
+	}
+}
+
+func WithNodeLastRunTime(t time.Time) NodeOption {
+	return func(s model.Values) {
+		s["version"] = t
 	}
 }

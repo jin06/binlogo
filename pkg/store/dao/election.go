@@ -45,6 +45,10 @@ func AcquireMasterLock(ctx context.Context, node *node.Node) error {
 	return err
 }
 
+func LeaderNode(ctx context.Context) (nodeName string, err error) {
+	return myDao.LeaderNode(ctx)
+}
+
 func IsMaster(ctx context.Context, nodeName string) (bool, error) {
 	value, err := store_redis.GetClient().Get(ctx, masterKey()).Result()
 	if err == redis.Nil {

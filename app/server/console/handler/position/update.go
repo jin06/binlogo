@@ -4,7 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/jin06/binlogo/v2/app/server/console/handler"
 	pipeline2 "github.com/jin06/binlogo/v2/app/server/console/module/pipeline"
-	"github.com/jin06/binlogo/v2/pkg/store/dao/dao_pipe"
+	"github.com/jin06/binlogo/v2/pkg/store/dao"
 	"github.com/jin06/binlogo/v2/pkg/store/model/pipeline"
 )
 
@@ -34,7 +34,7 @@ func Update(c *gin.Context) {
 	case pipeline.MODE_GTID:
 		{
 			var ok bool
-			ok, err = dao_pipe.UpdateRecordSafe(
+			ok, err = dao.UpdateRecordSafe(
 				q.Position.PipelineName,
 				pipeline.WithPre(&pipeline.Position{
 					PipelineName: q.Position.PipelineName,
@@ -50,7 +50,7 @@ func Update(c *gin.Context) {
 	case pipeline.MODE_POSITION:
 		{
 			var ok bool
-			ok, err = dao_pipe.UpdateRecordSafe(
+			ok, err = dao.UpdateRecordSafe(
 				q.Position.PipelineName,
 				pipeline.WithPre(&pipeline.Position{
 					BinlogFile:     q.Position.BinlogFile,

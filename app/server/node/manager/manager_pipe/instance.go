@@ -9,8 +9,7 @@ import (
 	"github.com/jin06/binlogo/v2/app/pipeline/pipeline"
 	"github.com/jin06/binlogo/v2/pkg/event"
 	"github.com/jin06/binlogo/v2/pkg/register"
-	"github.com/jin06/binlogo/v2/pkg/store/dao/dao_pipe"
-	"github.com/jin06/binlogo/v2/pkg/store/dao/dao_register"
+	"github.com/jin06/binlogo/v2/pkg/store/dao"
 	"github.com/jin06/binlogo/v2/pkg/store/model"
 	model_pipeline "github.com/jin06/binlogo/v2/pkg/store/model/pipeline"
 	"github.com/sirupsen/logrus"
@@ -47,7 +46,7 @@ func newInstance(pipeName string, nodeName string) *instance {
 }
 
 func (i *instance) init() (err error) {
-	pipeInfo, err := dao_pipe.GetPipeline(i.pipeName)
+	pipeInfo, err := dao.GetPipeline(i.pipeName)
 	if err != nil {
 		return
 	}
@@ -55,7 +54,7 @@ func (i *instance) init() (err error) {
 		err = errors.New("no pipeline: " + i.pipeName)
 		return
 	}
-	posPos, err := dao_pipe.GetPosition(i.pipeName)
+	posPos, err := dao.GetPosition(i.pipeName)
 	if err != nil {
 		return
 	}
@@ -75,7 +74,7 @@ func (i *instance) init() (err error) {
 		CreateTime:   time.Now(),
 	}
 	reg := register.New(
-		register.WithKey(dao_register.PipeInstancePrefix()+"/"+i.pipeName),
+		register.WithKey(dao.PipeInstancePrefix()+"/"+i.pipeName),
 		register.WithData(insModel),
 	)
 	i.pipeInfo = pipeInfo

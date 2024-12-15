@@ -8,17 +8,17 @@ import (
 
 // Http send message to http api
 type Http struct {
-	Http   *pipeline.Http
-	Client *resty.Client
+	Http   *pipeline.Http `json:"http"`
+	Client *resty.Client  `json:"-"`
 }
 
 // New returns a new Http
-func New(cfg *pipeline.Http) (h *Http, err error) {
+func New(cfg pipeline.Http) (h *Http, err error) {
 	if cfg.Retries < 0 {
 		cfg.Retries = 0
 	}
 	h = &Http{
-		Http: cfg,
+		Http: &cfg,
 	}
 	h.Client = resty.New()
 	return

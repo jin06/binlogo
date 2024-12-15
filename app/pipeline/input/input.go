@@ -11,7 +11,7 @@ import (
 	"github.com/go-mysql-org/go-mysql/mysql"
 	"github.com/jin06/binlogo/v2/app/pipeline/message"
 	"github.com/jin06/binlogo/v2/pkg/event"
-	"github.com/jin06/binlogo/v2/pkg/store/dao/dao_pipe"
+	"github.com/jin06/binlogo/v2/pkg/store/dao"
 	event_store "github.com/jin06/binlogo/v2/pkg/store/model"
 	"github.com/jin06/binlogo/v2/pkg/store/model/pipeline"
 	"github.com/sirupsen/logrus"
@@ -101,7 +101,7 @@ func (r *Input) close() {
 }
 
 func (r *Input) prepareCanal() (err error) {
-	pipe, err := dao_pipe.GetPipeline(r.Options.PipeName)
+	pipe, err := dao.GetPipeline(r.Options.PipeName)
 	if err != nil {
 		return
 	}
@@ -131,7 +131,7 @@ func (r *Input) runCanal() (err error) {
 			logrus.Errorln("canal run failed with error, ", err.Error())
 		}
 	}()
-	record, err := dao_pipe.GetRecord(r.Options.PipeName)
+	record, err := dao.GetRecord(r.Options.PipeName)
 	if err != nil {
 		return
 	}
@@ -231,7 +231,7 @@ func (r *Input) storeNewestGTID() (gtidSet mysql.GTIDSet, err error) {
 	if gtidSet, err = r.canal.GetMasterGTIDSet(); err != nil {
 		return
 	}
-	err = dao_pipe.UpdateRecord(&pipeline.RecordPosition{
+	err = dao.UpdateRecord(&pipeline.RecordPosition{
 		PipelineName: r.Options.PipeName,
 		Pre: &pipeline.Position{
 			GTIDSet:      gtidSet.String(),
@@ -247,7 +247,7 @@ func (r *Input) storeNewestPosition() (pos mysql.Position, err error) {
 		logrus.Errorln(err)
 		return
 	}
-	err = dao_pipe.UpdateRecord(&pipeline.RecordPosition{
+	err = dao.UpdateRecord(&pipeline.RecordPosition{
 		PipelineName: r.Options.PipeName,
 		Pre: &pipeline.Position{
 			BinlogFile:     pos.Name,

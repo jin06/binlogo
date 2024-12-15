@@ -7,7 +7,6 @@ import (
 	"github.com/jin06/binlogo/v2/pkg/watcher"
 
 	"github.com/jin06/binlogo/v2/pkg/store/dao"
-	"github.com/jin06/binlogo/v2/pkg/store/dao/dao_sche"
 	"github.com/jin06/binlogo/v2/pkg/store/model/node"
 	"github.com/sirupsen/logrus"
 	"go.etcd.io/etcd/api/v3/mvccpb"
@@ -75,11 +74,11 @@ func (m *Monitor) monitorStatus(ctx context.Context) (err error) {
 }
 
 func checkAllNodeStatus() (err error) {
-	mapping, err := dao.StatusMap()
+	mapping, err := dao.StatusMap(context.Background())
 	if err != nil {
 		return
 	}
-	pb, err := dao_sche.GetPipelineBind(context.Background())
+	pb, err := dao.GetPipelineBind(context.Background())
 	if err != nil {
 		return
 	}
@@ -103,7 +102,7 @@ func checkAllNodeStatus() (err error) {
 }
 
 func removePipelineBindIfBindNode(nodeName string) (err error) {
-	pb, err := dao_sche.GetPipelineBind(context.Background())
+	pb, err := dao.GetPipelineBind(context.Background())
 	if err != nil {
 		return
 	}

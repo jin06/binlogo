@@ -8,7 +8,6 @@ import (
 
 	"github.com/jin06/binlogo/v2/app/server/node/manager"
 	"github.com/jin06/binlogo/v2/pkg/store/dao"
-	"github.com/jin06/binlogo/v2/pkg/store/dao/dao_pipe"
 	"github.com/sirupsen/logrus"
 )
 
@@ -58,11 +57,11 @@ func (m *Manager) Run(ctx context.Context) (err error) {
 }
 
 func (m *Manager) cleanHistoryEvent() (err error) {
-	pipes, err := dao_pipe.AllPipelines(context.Background())
+	pipes, err := dao.AllPipelines(context.Background())
 	if err != nil {
 		return
 	}
-	nodes, err := dao.AllNodes()
+	nodes, err := dao.AllNodes(context.Background())
 
 	if err != nil {
 		return
@@ -72,7 +71,7 @@ func (m *Manager) cleanHistoryEvent() (err error) {
 		for _, n := range nodes {
 			from := n.Name + ".0"
 			end := n.Name + "." + strconv.FormatInt(deleteTime, 10)
-			prefix := dao.PipelinePrefix() + "/" + pipe.Name + "/"
+			prefix := dao.EventPipelinePrefix() + "/" + pipe.Name + "/"
 
 			_, err1 := dao.DeleteRangeEvent(context.Background(), prefix+from, prefix+end)
 			if err1 != nil {

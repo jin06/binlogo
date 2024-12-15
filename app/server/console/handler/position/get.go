@@ -3,7 +3,7 @@ package position
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/jin06/binlogo/v2/app/server/console/handler"
-	"github.com/jin06/binlogo/v2/pkg/store/dao/dao_pipe"
+	"github.com/jin06/binlogo/v2/pkg/store/dao"
 	"github.com/jin06/binlogo/v2/pkg/store/model/pipeline"
 )
 
@@ -14,8 +14,8 @@ func Get(c *gin.Context) {
 		c.JSON(200, handler.Fail("pipe_name is empty"))
 		return
 	}
-	//pos, err := dao_pipe.GetPosition(name)
-	record, err := dao_pipe.GetRecord(name)
+	//pos, err := dao.GetPosition(name)
+	record, err := dao.GetRecord(name)
 	if err != nil {
 		c.JSON(200, handler.Fail(err))
 		return

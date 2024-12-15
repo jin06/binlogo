@@ -29,7 +29,7 @@ type Event struct {
 }
 
 func (e *Event) Key() string {
-	return fmt.Sprintf("/event/%s", e.K)
+	return fmt.Sprintf("event/%s", e.K)
 }
 
 func (e *Event) Val() string {

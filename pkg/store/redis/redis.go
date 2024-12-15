@@ -7,7 +7,6 @@ import (
 	"github.com/jin06/binlogo/v2/configs"
 	"github.com/jin06/binlogo/v2/pkg/store/model"
 	"github.com/redis/go-redis/v9"
-	"github.com/spf13/viper"
 )
 
 var Default *Redis
@@ -27,17 +26,17 @@ func NewRedis(ctx context.Context, cfg configs.Redis) *Redis {
 	r := &Redis{
 		client: rdb,
 	}
-	r.prefix = fmt.Sprintf("/%s/%s", configs.APP, viper.GetString("cluster.name"))
+	r.prefix = Prefix()
 	return r
+}
+
+func GetClient() *redis.Client {
+	return Default.GetClient()
 }
 
 type Redis struct {
 	client *redis.Client
 	prefix string
-}
-
-func GetClient() *redis.Client {
-	return Default.GetClient()
 }
 
 func (r *Redis) GetClient() *redis.Client {
@@ -54,7 +53,9 @@ func (r *Redis) getPrefix(m model.Model) string {
 }
 
 func (r *Redis) Create(ctx context.Context, m model.Model) (bool, error) {
-	return r.client.HMSet(ctx, r.getPrefix(m), m).Result()
+	i, err := r.client.HSet(ctx, r.getPrefix(m), m).Result()
+	ok := (i > 0)
+	return ok, err
 }
 
 func (r *Redis) UpdateField(ctx context.Context, m model.Model, values map[string]any) (bool, error) {
@@ -67,10 +68,11 @@ func (r *Redis) Update(ctx context.Context, m model.Model) (bool, error) {
 	return ok, err
 }
 
-func (r *Redis) Delete(ctx context.Context, m model.Model) (bool, error) {
-	i, err := r.client.Del(ctx, r.getPrefix(m)).Result()
-	ok := (i > 0)
-	return ok, err
+func (r *Redis) Delete(ctx context.Context, m model.Model) (ok bool, err error) {
+	var i int64
+	i, err = r.client.Del(ctx, r.getPrefix(m)).Result()
+	ok = (i > 0)
+	return
 }
 
 func (r *Redis) Get(ctx context.Context, m model.Model) (ok bool, err error) {

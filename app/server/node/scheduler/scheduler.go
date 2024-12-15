@@ -9,7 +9,7 @@ import (
 	"github.com/jin06/binlogo/v2/pkg/watcher"
 
 	"github.com/jin06/binlogo/v2/pkg/event"
-	"github.com/jin06/binlogo/v2/pkg/store/dao/dao_sche"
+	"github.com/jin06/binlogo/v2/pkg/store/dao"
 	"github.com/jin06/binlogo/v2/pkg/store/model"
 	"github.com/jin06/binlogo/v2/pkg/store/model/pipeline"
 	"github.com/sirupsen/logrus"
@@ -47,7 +47,7 @@ func (s *Scheduler) Run(ctx context.Context) (err error) {
 func (s *Scheduler) schedule(ctx context.Context) {
 	stx, cancel := context.WithCancel(ctx)
 	defer cancel()
-	key := fmt.Sprintf("%s/%s", dao_sche.SchedulerPrefix(), "pipeline_bind")
+	key := fmt.Sprintf("%s/%s", dao.SchedulerPrefix(), "pipeline_bind")
 	w, err := watcher.New(watcher.WithHandler(watcher.WrapSchedulerBinding()), watcher.WithKey(key))
 	defer w.Close()
 	if err != nil {
@@ -101,7 +101,7 @@ func scheduleOne(p *pipeline.Pipeline) (err error) {
 	if err != nil {
 		return
 	}
-	_, err = dao_sche.UpdatePipelineBind(p.Name, a.bestNode.Name)
+	_, err = dao.UpdatePipelineBind(p.Name, a.bestNode.Name)
 	if err != nil {
 		return
 	}
@@ -111,7 +111,7 @@ func scheduleOne(p *pipeline.Pipeline) (err error) {
 // noScheduledPipelines find pipelines that not be scheduled
 func noScheduledPipelines(pb *model.PipelineBind) (pipes []*pipeline.Pipeline, err error) {
 	if pb == nil {
-		pb, err = dao_sche.GetPipelineBind(context.Background())
+		pb, err = dao.GetPipelineBind(context.Background())
 		if err != nil {
 			return
 		}

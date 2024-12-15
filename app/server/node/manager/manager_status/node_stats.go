@@ -96,8 +96,6 @@ func (ns *NodeStatus) setStatus() (err error) {
 }
 
 func (ns *NodeStatus) syncCap() (err error) {
-	//key := etcd.Prefix() + "/nodes/" + ns.NodeName + "/capacity"
-	//err = dao.UpdateCapacity(ns.Cap, dao.WithKey(key))
 	_, err = dao.UpdateCapacity(context.Background(), ns.Cap)
 	return
 }

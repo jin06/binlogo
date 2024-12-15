@@ -1,8 +1,6 @@
 package pipeline
 
 import (
-	"encoding/json"
-
 	"github.com/go-mysql-org/go-mysql/mysql"
 )
 
@@ -17,13 +15,17 @@ type Mysql struct {
 	Mode     Mode   `json:"mode" redis:"mode"`
 }
 
-func (m *Mysql) MarshalBinary() (data []byte, err error) {
-	return json.Marshal(m)
-}
+// func (m *Mysql) MarshalBinary() (data []byte, err error) {
+// 	return json.Marshal(m)
+// }
 
-func (m *Mysql) UnmarshalBinary(data []byte) error {
-	return json.Unmarshal(data, m)
-}
+// func (m *Mysql) UnmarshalBinary(data []byte) error {
+// 	return json.Unmarshal(data, &m)
+// }
+
+// func (m *Mysql) UnmarshalText(data []byte) error {
+// 	return json.Unmarshal(data, m)
+// }
 
 // Mode mysql replication mode
 type Mode string

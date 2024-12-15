@@ -1,4 +1,4 @@
-package dao_sche
+package dao
 
 import (
 	"context"

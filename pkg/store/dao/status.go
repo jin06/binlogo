@@ -9,7 +9,6 @@ import (
 	"github.com/jin06/binlogo/v2/pkg/etcdclient"
 	"github.com/jin06/binlogo/v2/pkg/store/model/node"
 	store_redis "github.com/jin06/binlogo/v2/pkg/store/redis"
-	"github.com/sirupsen/logrus"
 	clientv3 "go.etcd.io/etcd/client/v3"
 )
 
@@ -76,35 +75,13 @@ func CreateStatusIfNotExist(ctx context.Context, n *node.Status) (err error) {
 	if n == nil {
 		return consts.NilNodeStatus
 	}
-	if n == nil {
-		return consts.EmptyNodeName
-	}
 	_, err = store_redis.Default.Create(ctx, n)
 	return err
 }
 
 // StatusMap returns all node status in map form
-func StatusMap() (mapping map[string]*node.Status, err error) {
-	key := StatusPrefix()
-	res, err := etcdclient.Default().Get(context.TODO(), key, clientv3.WithPrefix())
-	if err != nil {
-		return
-	}
-	if len(res.Kvs) == 0 {
-		return
-	}
-	mapping = map[string]*node.Status{}
-	for _, v := range res.Kvs {
-		ele := &node.Status{}
-		er := json.Unmarshal(v.Value, ele)
-		if er != nil {
-			logrus.Error(er)
-			continue
-		}
-		mapping[ele.NodeName] = ele
-	}
-
-	return
+func StatusMap(ctx context.Context) (mapping map[string]*node.Status, err error) {
+	return myDao.StatusMap(ctx)
 }
 
 // DeleteStatus delete node status in etcd

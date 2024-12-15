@@ -5,7 +5,7 @@ import (
 	"github.com/jin06/binlogo/v2/app/server/console/handler"
 	pipeline2 "github.com/jin06/binlogo/v2/app/server/console/module/pipeline"
 	"github.com/jin06/binlogo/v2/pkg/pipeline/tool"
-	"github.com/jin06/binlogo/v2/pkg/store/dao/dao_pipe"
+	"github.com/jin06/binlogo/v2/pkg/store/dao"
 	"github.com/jin06/binlogo/v2/pkg/store/model/pipeline"
 )
 
@@ -23,7 +23,7 @@ func Update(c *gin.Context) {
 		}
 	}
 
-	pipe, err := dao_pipe.GetPipeline(q.Name)
+	pipe, err := dao.GetPipeline(q.Name)
 	if err != nil {
 		c.JSON(200, handler.Fail(err.Error()))
 		return
@@ -33,7 +33,7 @@ func Update(c *gin.Context) {
 		return
 	}
 	pipelineDefault(q)
-	ok, err := dao_pipe.UpdatePipeline(q.Name, pipeline.WithPipeSafe(q))
+	ok, err := dao.UpdatePipeline(q.Name, pipeline.WithPipeSafe(q))
 	if err != nil || !ok {
 		c.JSON(200, "update failed")
 		return
@@ -58,7 +58,7 @@ func UpdateStatus(c *gin.Context) {
 		return
 	}
 
-	ok, err := dao_pipe.UpdatePipeline(q.PipeName, pipeline.WithPipeStatus(q.Status))
+	ok, err := dao.UpdatePipeline(q.PipeName, pipeline.WithPipeStatus(q.Status))
 	if err != nil || !ok {
 		c.JSON(200, handler.Fail("Update status failed "))
 		return
@@ -79,7 +79,7 @@ func UpdateMode(c *gin.Context) {
 		c.JSON(200, handler.Fail("Wrong param mode: "+q.Mode))
 		return
 	}
-	pipe, err := dao_pipe.GetPipeline(q.PipeName)
+	pipe, err := dao.GetPipeline(q.PipeName)
 	if err != nil {
 		c.JSON(200, handler.Fail(err.Error()))
 		return
@@ -88,7 +88,7 @@ func UpdateMode(c *gin.Context) {
 		c.JSON(200, handler.Fail("Only stopped pipeline can be updated"))
 		return
 	}
-	ok, err := dao_pipe.UpdatePipeline(q.PipeName, pipeline.WithPipeMode(q.Mode))
+	ok, err := dao.UpdatePipeline(q.PipeName, pipeline.WithPipeMode(q.Mode))
 	if err != nil || !ok {
 		c.JSON(200, handler.Fail("Update mode failed"))
 		return

@@ -15,9 +15,9 @@ type Options struct {
 type Option func(options *Options)
 
 // OptionOutput sets Output
-func OptionOutput(val *pipeline.Output) Option {
+func OptionOutput(val pipeline.Output) Option {
 	return func(options *Options) {
-		options.Output = val
+		options.Output = &val
 	}
 }
 

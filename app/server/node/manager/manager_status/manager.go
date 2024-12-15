@@ -78,15 +78,15 @@ func (m *Manager) syncIP() (err error) {
 	if nip, err = ip.LocalIp(); err != nil {
 		return
 	}
-	if m.Node.IP.String() != nip.String() {
+	if m.Node.IP != nip.String() {
 		var ok bool
-		if ok, err = dao.UpdateNode(context.Background(), m.Node.Name, node.WithNodeIP(nip)); err != nil {
+		if ok, err = dao.UpdateNodeIP(context.Background(), m.Node.Name, nip.String()); err != nil {
 			return
 		}
 		if !ok {
 			return
 		}
-		m.Node.IP = nip
+		m.Node.IP = nip.String()
 	}
 	return
 }

@@ -15,8 +15,8 @@ type Redis struct {
 }
 
 // New returns a new Reids instance
-func New(rs *pipeline.Redis) (r *Redis, err error) {
-	r = &Redis{Redis: rs}
+func New(rs pipeline.Redis) (r *Redis, err error) {
+	r = &Redis{Redis: &rs}
 	err = r.init()
 	return
 }

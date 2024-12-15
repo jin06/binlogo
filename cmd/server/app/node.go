@@ -11,32 +11,27 @@ import (
 	"github.com/jin06/binlogo/v2/pkg/store/dao"
 	model_event "github.com/jin06/binlogo/v2/pkg/store/model"
 	"github.com/jin06/binlogo/v2/pkg/store/model/node"
+	"github.com/jin06/binlogo/v2/pkg/util/ip"
 	"github.com/sirupsen/logrus"
 )
 
 // RunNode run node.
 func RunNode(c context.Context) (err error) {
 	logrus.Info("init node")
+	nip, _ := ip.LocalIp()
 	nodeOpts := &node.Node{
-		Name:       configs.Default.NodeName,
-		Version:    configs.Version,
-		CreateTime: time.Now(),
-		Role:       node.Role{Master: true, Admin: true, Worker: true},
+		Name:        configs.Default.NodeName,
+		Version:     configs.Version,
+		CreateTime:  time.Now(),
+		Role:        node.Role{Master: true, Admin: true, Worker: true},
+		LastRunTime: time.Now(),
+		IP:          nip.String(),
 	}
-	nodeOpts.IP = configs.NodeIP
-	n, err := dao.GetNode(c, nodeOpts.Name)
-	if err != nil {
+	// nodeOpts.IP = configs.NodeIP
+	if _, err = dao.RefreshNode(c, nodeOpts); err != nil {
 		return
 	}
-	if n != nil {
-		if _, err = dao.UpdateNode(c, nodeOpts.Name, node.WithNodeIP(nodeOpts.IP), node.WithNodeVersion(nodeOpts.Version)); err != nil {
-			return
-		}
-	} else {
-		if err = dao.CreateNodeIfNotExist(c, nodeOpts); err != nil {
-			return
-		}
-	}
+
 	err = dao.CreateStatusIfNotExist(c, &node.Status{NodeName: nodeOpts.Name, Ready: true})
 	if err != nil {
 		logrus.Error(err)

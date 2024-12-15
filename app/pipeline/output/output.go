@@ -19,7 +19,7 @@ import (
 	"github.com/jin06/binlogo/v2/configs"
 	"github.com/jin06/binlogo/v2/pkg/event"
 	"github.com/jin06/binlogo/v2/pkg/promeths"
-	"github.com/jin06/binlogo/v2/pkg/store/dao/dao_pipe"
+	"github.com/jin06/binlogo/v2/pkg/store/dao"
 	event_store "github.com/jin06/binlogo/v2/pkg/store/model"
 	"github.com/jin06/binlogo/v2/pkg/store/model/pipeline"
 	"github.com/prometheus/client_golang/prometheus"
@@ -196,7 +196,7 @@ func (o *Output) prepareRecord(msg *message.Message) (pass bool, err error) {
 	defer o.recordMutex.Unlock()
 	pass = true
 	if o.record == nil {
-		o.record, err = dao_pipe.GetRecord(o.Options.PipelineName)
+		o.record, err = dao.GetRecord(o.Options.PipelineName)
 		if err != nil {
 			return
 		}
@@ -289,7 +289,7 @@ func (o *Output) syncRecord() (err error) {
 	o.recordMutex.Lock()
 	defer o.recordMutex.Unlock()
 	if o.recordSynced {
-		err = dao_pipe.UpdateRecord(o.record)
+		err = dao.UpdateRecord(o.record)
 	}
 	return
 }

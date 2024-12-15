@@ -20,13 +20,17 @@ func (m *Filter) UnmarshalBinary(data []byte) error {
 
 type Filters []Filter
 
-func (m Filters) MarshalBinary() (data []byte, err error) {
-	return json.Marshal(m)
-}
+// func (m Filters) MarshalBinary() (data []byte, err error) {
+// 	return json.Marshal(m)
+// }
 
-func (m Filters) UnmarshalBinary(data []byte) error {
-	return json.Unmarshal(data, m)
-}
+// func (m Filters) UnmarshalBinary(data []byte) error {
+// 	return json.Unmarshal(data, &m)
+// }
+
+// func (m Filters) UnmarshalText(data []byte) error {
+// 	return json.Unmarshal(data, m)
+// }
 
 // FilterType types of filter
 type FilterType string

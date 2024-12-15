@@ -14,18 +14,18 @@ func ElectionPrefix() string {
 }
 
 // LeaderNode return current name of current leader node
-func LeaderNode() (nodeName string, err error) {
-	key := ElectionPrefix()
-	resp, err := etcdclient.Default().Get(context.Background(), key, clientv3.WithFirstCreate()...)
-	if err != nil {
-		return
-	}
-	if len(resp.Kvs) == 0 {
-		return
-	}
-	nodeName = string(resp.Kvs[0].Value)
-	return
-}
+// func LeaderNode() (nodeName string, err error) {
+// 	key := ElectionPrefix()
+// 	resp, err := etcdclient.Default().Get(context.Background(), key, clientv3.WithFirstCreate()...)
+// 	if err != nil {
+// 		return
+// 	}
+// 	if len(resp.Kvs) == 0 {
+// 		return
+// 	}
+// 	nodeName = string(resp.Kvs[0].Value)
+// 	return
+// }
 
 // AllElections returns all nodes in the election
 func AllElections() (res []map[string]interface{}, err error) {

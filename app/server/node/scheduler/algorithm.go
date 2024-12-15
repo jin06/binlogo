@@ -5,7 +5,6 @@ import (
 	"errors"
 
 	"github.com/jin06/binlogo/v2/pkg/store/dao"
-	"github.com/jin06/binlogo/v2/pkg/store/dao/dao_sche"
 	"github.com/jin06/binlogo/v2/pkg/store/model"
 	"github.com/jin06/binlogo/v2/pkg/store/model/node"
 	"github.com/jin06/binlogo/v2/pkg/store/model/pipeline"
@@ -41,13 +40,13 @@ func (a *algorithm) cal() (err error) {
 		}
 	}
 	if a.pb == nil {
-		a.pb, err = dao_sche.GetPipelineBind(context.Background())
+		a.pb, err = dao.GetPipelineBind(context.Background())
 		if err != nil {
 			return
 		}
 	}
 	if a.capacityMap == nil {
-		a.capacityMap, err = dao.CapacityMap()
+		a.capacityMap, err = dao.CapacityMap(context.Background())
 		if err != nil {
 			return
 		}

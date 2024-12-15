@@ -1,4 +1,4 @@
-package dao_register
+package dao
 
 import (
 	"github.com/jin06/binlogo/v2/pkg/etcdclient"

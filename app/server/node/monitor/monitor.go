@@ -2,8 +2,9 @@ package monitor
 
 import (
 	"context"
-	"github.com/sirupsen/logrus"
 	"sync"
+
+	"github.com/sirupsen/logrus"
 )
 
 // Monitor monitor the operation of pipelines, nodes and other resources
@@ -20,7 +21,7 @@ func NewMonitor() (m *Monitor) {
 	m = &Monitor{
 		stopping: make(chan struct{}),
 	}
-	//m.pipeWatcher, err = pipeline.New(dao_pipe.PipelinePrefix())
+	//m.pipeWatcher, err = pipeline.New(dao.PipelinePrefix())
 	//m.nodeWatcher, err = node.New(dao_node.NodePrefix())
 	//m.registerWatcher, err = node.New(dao_cluster.RegisterPrefix())
 	return
