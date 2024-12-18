@@ -96,6 +96,9 @@ func (r *Redis) List(ctx context.Context, list []model.Model) error {
 	return nil
 }
 
+func (r *Redis) HashSet(ctx context.Context) {
+}
+
 func (r *Redis) getAllHashKeys(ctx context.Context) ([]string, error) {
 	var hashKeys []string
 	var cursor uint64
@@ -130,4 +133,15 @@ func (r *Redis) getAllHashKeys(ctx context.Context) ([]string, error) {
 	}
 
 	return hashKeys, nil
+}
+
+func (r *Redis) GetField(ctx context.Context, key string, field string) (string, error) {
+	str, err := r.client.HGet(ctx, key, field).Result()
+	if err != nil {
+		if err == redis.Nil {
+			return "", nil
+		}
+		return "", err
+	}
+	return str, nil
 }

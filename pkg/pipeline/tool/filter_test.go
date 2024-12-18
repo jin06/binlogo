@@ -8,7 +8,7 @@ import (
 )
 
 func TestIsFilterWithName(t *testing.T) {
-	filters := []*pipeline.Filter{
+	filters := []pipeline.Filter{
 		{pipeline.FILTER_BLACK, "mysql"},
 		{pipeline.FILTER_BLACK, "base1"},
 		{pipeline.FILTER_WHITE, "base2"},
@@ -46,7 +46,7 @@ func TestIsFilterWithName(t *testing.T) {
 }
 
 func TestIsFilter(t *testing.T) {
-	filters := []*pipeline.Filter{
+	filters := []pipeline.Filter{
 		{pipeline.FILTER_BLACK, "mysql"},
 		{pipeline.FILTER_BLACK, "base1"},
 		{pipeline.FILTER_WHITE, "base2"},

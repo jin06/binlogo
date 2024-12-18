@@ -7,13 +7,12 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/jin06/binlogo/v2/app/server/console/handler"
 	"github.com/jin06/binlogo/v2/pkg/store/dao"
-	"github.com/jin06/binlogo/v2/pkg/store/dao/dao_cluster"
 )
 
 func RegisterList(c *gin.Context) {
 	page, _ := strconv.Atoi(c.Query("page"))
 	limit, _ := strconv.Atoi(c.Query("limit"))
-	all, err := dao.ALLRegisterNodes()
+	all, err := dao.AllNodes(c)
 	if err != nil {
 		c.JSON(200, handler.Fail(err))
 		return
@@ -38,7 +37,7 @@ func RegisterList(c *gin.Context) {
 }
 
 func ElectionList(c *gin.Context) {
-	all, err := dao_cluster.AllElections()
+	all, err := dao.AllElections()
 	if err != nil {
 		c.JSON(200, handler.Fail(err))
 		return

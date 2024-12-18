@@ -80,7 +80,7 @@ func (o *Output) loopHandle(ctx context.Context, msg *message.Message) (err erro
 		if err = o.handle(msg); err == nil {
 			return
 		}
-		promeths.MessageSendErrCounter.With(prometheus.Labels{"pipeline": o.Options.PipelineName, "node": configs.NodeName}).Inc()
+		promeths.MessageSendErrCounter.With(prometheus.Labels{"pipeline": o.Options.PipelineName, "node": configs.GetNodeName()}).Inc()
 		ticker := time.NewTicker(time.Second)
 		defer ticker.Stop()
 		select {
@@ -182,9 +182,9 @@ func (o *Output) Run(ctx context.Context) (err error) {
 					message.Put(msg)
 					return
 				}
-				promeths.MessageSendCounter.With(prometheus.Labels{"pipeline": o.Options.PipelineName, "node": configs.NodeName}).Inc()
+				promeths.MessageSendCounter.With(prometheus.Labels{"pipeline": o.Options.PipelineName, "node": configs.GetNodeName()}).Inc()
 				pass := uint32(time.Now().Unix()) - msg.Content.Head.Time
-				promeths.MessageSendHistogram.With(prometheus.Labels{"pipeline": o.Options.PipelineName, "node": configs.NodeName}).Observe(float64(pass))
+				promeths.MessageSendHistogram.With(prometheus.Labels{"pipeline": o.Options.PipelineName, "node": configs.GetNodeName()}).Observe(float64(pass))
 				message.Put(msg)
 			}
 		}

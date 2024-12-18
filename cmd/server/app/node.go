@@ -53,7 +53,7 @@ func RunNode(c context.Context) (err error) {
 				}
 				cancel()
 			}()
-			logrus.WithField("node name", configs.NodeName).Info("Running node")
+			logrus.WithField("node name", configs.GetNodeName()).Info("Running node")
 			err = server.Run(ctx)
 		}()
 		time.Sleep(time.Second * 5)

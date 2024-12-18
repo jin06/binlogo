@@ -31,10 +31,3 @@ func FailCode(code Code) Result {
 		Msg:  code.String(),
 	}
 }
-
-func FaileReason(code Code, reason string) Result {
-	return Result{
-		Code: code,
-		Msg:  fmt.Sprintf("%s。 %s", code.String(), reason),
-	}
-}

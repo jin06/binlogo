@@ -2,19 +2,13 @@ package dao
 
 import (
 	"context"
-	"encoding/json"
-	"errors"
 	"time"
 
 	"github.com/jin06/binlogo/v2/pkg/etcdclient"
-	"github.com/jin06/binlogo/v2/pkg/store/model"
 	"github.com/jin06/binlogo/v2/pkg/store/model/node"
 	store_redis "github.com/jin06/binlogo/v2/pkg/store/redis"
 	"github.com/redis/go-redis/v9"
-
 	// "github.com/jin06/binlogo/v2/pkg/store/store_redis"
-	"github.com/sirupsen/logrus"
-	clientv3 "go.etcd.io/etcd/client/v3"
 )
 
 const (
@@ -46,41 +40,6 @@ func LeaseNode(ctx context.Context, n *node.Node) (bool, error) {
 	return true, nil
 }
 
-// CreateNode create a node in etcd
-func CreateNode(n *node.Node) (err error) {
-	key := NodePrefix() + "/" + n.Name
-	v, err := json.Marshal(n)
-	if err != nil {
-		return
-	}
-	_, err = etcdclient.Default().Put(context.Background(), key, string(v))
-	return
-}
-
-// CreateNodeIfNotExist create a node in etcd if that not exist
-func CreateNodeIfNotExist(ctx context.Context, n *node.Node) error {
-	if n == nil {
-		return errors.New("empty node")
-	}
-	if len(n.Name) == 0 {
-		return errors.New("empty node name")
-	}
-	_, err := store_redis.Default.Create(ctx, n)
-	return err
-}
-
-// UpdateNode update a node data in etcd
-func UpdateNode(ctx context.Context, name string, opts ...node.NodeOption) (bool, error) {
-	if len(name) == 0 {
-		return false, errors.New("empty node name")
-	}
-	values := model.Values{}
-	for _, v := range opts {
-		v(values)
-	}
-	return store_redis.Default.UpdateField(ctx, &node.Node{Name: name}, values)
-}
-
 func RefreshNode(ctx context.Context, n *node.Node) (bool, error) {
 	return myDao.RefreshNode(ctx, n)
 }
@@ -99,34 +58,6 @@ func AllNodes(ctx context.Context) (list []*node.Node, err error) {
 	return myDao.AllNodes(ctx)
 }
 
-func allNodes(key string) (list []*node.Node, err error) {
-	list = []*node.Node{}
-	//key := NodePrefix() + "/"
-	res, err := etcdclient.Default().Get(context.TODO(), key, clientv3.WithPrefix())
-	if err != nil {
-		return
-	}
-	if len(res.Kvs) == 0 {
-		return
-	}
-	for _, v := range res.Kvs {
-		ele := &node.Node{}
-		er := ele.Unmarshal(v.Value)
-		if er != nil {
-			logrus.Error(er)
-			continue
-		}
-		list = append(list, ele)
-	}
-	return
-}
-
-// ALLRegisterNodes returns all register nodes
-func ALLRegisterNodes() (list []*node.Node, err error) {
-	key := NodeRegisterPrefix()
-	return allNodes(key)
-}
-
 // AllNodesMap  returns all register nodes in map form
 func AllNodesMap() (mapping map[string]*node.Node, err error) {
 	list, err := AllNodes(context.Background())
@@ -142,7 +73,7 @@ func AllNodesMap() (mapping map[string]*node.Node, err error) {
 
 // AllRegisterNodesMap returns all register nodes from etcd in map form
 func AllRegisterNodesMap() (mapping map[string]*node.Node, err error) {
-	list, err := ALLRegisterNodes()
+	list, err := AllNodes(context.Background())
 	if err != nil {
 		return
 	}
@@ -167,23 +98,6 @@ func AllWorkNodesMap() (res map[string]*node.Node, err error) {
 		if _, ok := regMap[k]; !ok {
 			delete(res, k)
 		}
-	}
-	return
-}
-
-// DeleteNode delete a node by node name
-func DeleteNode(name string) (ok bool, err error) {
-	if name == "" {
-		err = errors.New("empty node name")
-		return
-	}
-	key := NodePrefix() + "/" + name
-	res, err := etcdclient.Default().Delete(context.Background(), key)
-	if err != nil {
-		return
-	}
-	if res.Deleted > 0 {
-		ok = true
 	}
 	return
 }

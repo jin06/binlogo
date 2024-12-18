@@ -7,27 +7,16 @@ import (
 )
 
 const (
-	NodeKey     = "node"
-	CapacityKey = "node_capacity"
-	StatusKey   = "status"
-	ClusterKey  = "cluster"
-	ElectionKey = "election"
+	NodeKey        = "node"
+	CapacityKey    = "capacity"
+	StatusKey      = "status"
+	ClusterKey     = "cluster"
+	ElectionKey    = "election"
+	AllocatableKey = "allocatable"
 )
 
 func Prefix() string {
 	return fmt.Sprintf("/%s/%s", configs.APP, configs.Default.ClusterName)
-}
-
-func NodePrefix() string {
-	return fmt.Sprintf("%s/%s", Prefix(), NodeKey)
-}
-
-func CapacityPrefix() string {
-	return fmt.Sprintf("%s/%s", Prefix(), CapacityKey)
-}
-
-func StatusPrefix() string {
-	return fmt.Sprintf("%s/%s", Prefix(), StatusKey)
 }
 
 func ClusterPrefix() string {
@@ -36,4 +25,21 @@ func ClusterPrefix() string {
 
 func ElectionPrefix() string {
 	return fmt.Sprintf("%s/%s", ClusterPrefix(), ElectionKey)
+}
+
+func NodePrefix() string {
+	return fmt.Sprintf("%s/%s", Prefix(), NodeKey)
+}
+
+func CapacityPrefix() string {
+	return fmt.Sprintf("%s/%s", NodePrefix(), CapacityKey)
+}
+
+func StatusPrefix() string {
+	return fmt.Sprintf("%s/%s", NodePrefix(), StatusKey)
+}
+
+// AllocatablePrefix returns prefix key of redis for allocatable
+func AllocatablePrefix() string {
+	return fmt.Sprintf("%s/%s", NodePrefix(), AllocatableKey)
 }

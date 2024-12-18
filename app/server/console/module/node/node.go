@@ -21,7 +21,7 @@ func GetAllCount() (count int, err error) {
 
 // GetAllRegCount get all nodes count that already registered
 func GetAllRegCount() (count int, err error) {
-	res, err := dao.ALLRegisterNodes()
+	res, err := dao.AllNodes(context.Background())
 	if err != nil {
 		return
 	}

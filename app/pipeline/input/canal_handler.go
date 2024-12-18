@@ -57,7 +57,7 @@ func (h *canalHandler) OnPosSynced(pos mysql.Position, set mysql.GTIDSet, force 
 			msg.Content.Head.Position.GTIDSet = set.String()
 		}
 		h.ch <- msg
-		promeths.MessageTotalCounter.With(prometheus.Labels{"pipeline": h.pipe.Name, "node": configs.NodeName}).Inc()
+		promeths.MessageTotalCounter.With(prometheus.Labels{"pipeline": h.pipe.Name, "node": configs.GetNodeName()}).Inc()
 	}
 	return nil
 }

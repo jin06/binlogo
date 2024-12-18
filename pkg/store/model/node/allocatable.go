@@ -15,12 +15,16 @@ type Allocatable struct {
 	UpdateTime time.Time `json:"update_time" redis:"update_time"`
 }
 
-func (a *Allocatable) MarshalBinary() (data []byte, err error) {
+func (a Allocatable) MarshalBinary() (data []byte, err error) {
 	// encoding.BinaryMarshaler
 	return json.Marshal(a)
 }
 
 func (a *Allocatable) UnmarshalBinary(data []byte) error {
+	return json.Unmarshal(data, a)
+}
+
+func (a *Allocatable) UnmarshalText(data []byte) error {
 	return json.Unmarshal(data, a)
 }
 

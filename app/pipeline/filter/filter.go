@@ -54,7 +54,7 @@ func (f *Filter) handle(msg *message.Message) {
 		return
 	}
 	if msg.Filter {
-		promeths.MessageFilterCounter.With(prometheus.Labels{"pipeline": f.Options.Pipe.Name, "node": configs.NodeName}).Inc()
+		promeths.MessageFilterCounter.With(prometheus.Labels{"pipeline": f.Options.Pipe.Name, "node": configs.GetNodeName()}).Inc()
 	}
 }
 

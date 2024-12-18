@@ -67,3 +67,8 @@ func MasterTTL(ctx context.Context) (time.Duration, error) {
 func Lease(ctx context.Context) {
 	// store_redis.GetClient().SetNX()
 }
+
+// AllElections returns all nodes in the election
+func AllElections() (res []map[string]interface{}, err error) {
+	return myDao.AllElections()
+}

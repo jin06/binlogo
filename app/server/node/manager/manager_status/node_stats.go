@@ -36,10 +36,12 @@ func (ns *NodeStatus) syncNodeStatus() (err error) {
 	}
 	err = ns.syncCap()
 	if err != nil {
+		logrus.Errorf("sync cap error: %s", err)
 		return
 	}
 	err = ns.syncAllocatable()
 	if err != nil {
+		logrus.Errorf("sync allocatable error: %s", err)
 		return
 	}
 	return

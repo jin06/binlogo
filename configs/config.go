@@ -31,6 +31,10 @@ type Config struct {
 	Auth        Auth    `yaml:"auth"`
 }
 
+func (cfg *Config) GetNodeName() string {
+	return cfg.NodeName
+}
+
 type Console struct {
 	Port   int    `yaml:"port"`
 	Listen string `yaml:"listen"`
@@ -89,4 +93,8 @@ func InitConfig(file string) (err error) {
 	}
 	err = yaml.Unmarshal(data, &Default)
 	return err
+}
+
+func GetNodeName() string {
+	return Default.GetNodeName()
 }

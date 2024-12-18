@@ -38,10 +38,6 @@ func (e *Election) setRole(r role.Role) {
 	e.roleCh <- r
 }
 
-func (e *Election) getRole() role.Role {
-	return e.role
-}
-
 func (e *Election) Run(ctx context.Context, ch chan role.Role) error {
 	defer e.close()
 	e.roleCh = ch

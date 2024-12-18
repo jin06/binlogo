@@ -76,7 +76,7 @@ const (
 func baseEvent() (e *Event) {
 	e = &Event{
 		K:        key.GetKey(),
-		NodeName: configs.NodeName,
+		NodeName: configs.GetNodeName(),
 		NodeIP:   configs.NodeIP,
 	}
 	return
@@ -85,7 +85,7 @@ func baseEvent() (e *Event) {
 func newNode(msg string) (e *Event) {
 	e = baseEvent()
 	e.ResourceType = NODE
-	e.ResourceName = configs.NodeName
+	e.ResourceName = configs.GetNodeName()
 	e.Message = msg
 	return
 }

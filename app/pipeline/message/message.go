@@ -46,11 +46,6 @@ type Content struct {
 	Data interface{} `json:"data"`
 }
 
-func (c *Content) reset() {
-	c.Data = nil
-	c.Head.reset()
-}
-
 // Head of Message
 type Head struct {
 	Type     string            `json:"type"`
@@ -106,13 +101,6 @@ func (msg *Message) ToString() string {
 // Table returns table with database
 func (msg *Message) Table() string {
 	return fmt.Sprintf("%s.%s", msg.Content.Head.Database, msg.Content.Head.Table)
-}
-
-// reset
-func (msg *Message) reset() {
-	msg.Status = STATUS_NEW
-	msg.Filter = false
-	msg.Content.reset()
 }
 
 // Pool reuse message object

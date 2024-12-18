@@ -26,10 +26,6 @@ type DaoRedis struct {
 	store *store_redis.Redis
 }
 
-func (d *DaoRedis) NodePrefix() string {
-	return store_redis.Prefix() + "/node"
-}
-
 func (d *DaoRedis) client() *redis.Client {
 	return d.store.GetClient()
 }
@@ -48,10 +44,6 @@ func (d *DaoRedis) instancePrefix() string {
 
 func (d *DaoRedis) instanceKey(name string) string {
 	return fmt.Sprintf("%s/%s", d.instancePrefix(), name)
-}
-
-func (d *DaoRedis) nodePrefix() string {
-	return fmt.Sprint("%s/%s", d.clusterPrefix(), "node")
 }
 
 func scanKeysWithPrefix(ctx context.Context, client *redis.Client, prefix string) ([]string, error) {
@@ -224,12 +216,13 @@ func (d *DaoRedis) UpdateNodeIP(ctx context.Context, name string, ip string) (ok
 }
 
 func (d *DaoRedis) UpdateCapacity(ctx context.Context, cap *node.Capacity) (bool, error) {
-	return d.store.Update(ctx, cap)
+	i, err := d.client().HSet(ctx, store_redis.CapacityPrefix(), cap.NodeName, cap.Val()).Result()
+	return (i > 0), err
 }
 
 func (d *DaoRedis) AllCapacity(ctx context.Context) (list []*node.Capacity, err error) {
 	var result map[string]string
-	result, err = d.client().HGetAll(ctx, CapacityPrefix()).Result()
+	result, err = d.client().HGetAll(ctx, store_redis.CapacityPrefix()).Result()
 	if err != nil {
 		return
 	}
@@ -256,7 +249,19 @@ func (d *DaoRedis) CapacityMap(ctx context.Context) (mapping map[string]*node.Ca
 }
 
 func (d *DaoRedis) AllStatus(ctx context.Context) (list []*node.Status, err error) {
-	return getAllHashDatas[*node.Status](ctx, d.client(), store_redis.StatusPrefix())
+	var result map[string]string
+	result, err = d.client().HGetAll(ctx, store_redis.StatusPrefix()).Result()
+	if err != nil {
+		return
+	}
+	for _, v := range result {
+		item := &node.Status{}
+		if err := item.Unmarshal([]byte(v)); err != nil {
+			continue
+		}
+		list = append(list, item)
+	}
+	return
 }
 
 func (d *DaoRedis) StatusMap(ctx context.Context) (mapping map[string]*node.Status, err error) {
@@ -271,10 +276,47 @@ func (d *DaoRedis) StatusMap(ctx context.Context) (mapping map[string]*node.Stat
 	return
 }
 
+func (d *DaoRedis) CreateOrUpdateStatus(ctx context.Context, nodeName string, opts ...node.StatusOption) (ok bool, err error) {
+	old, err := d.GetStatus(ctx, nodeName)
+	if err != nil {
+		return false, err
+	}
+	s := &node.Status{}
+	for _, v := range opts {
+		v(s)
+	}
+
+}
+
+func (d *DaoRedis) GetStatus(ctx context.Context, nodeName string) (s *node.Status, err error) {
+	var str string
+	d.client().HSet(ctx, store_redis.StatusPrefix())
+	if str, err = d.client().HGet(ctx, store_redis.StatusPrefix(), nodeName).Result(); err != nil {
+		if err == redis.Nil {
+			return nil, nil
+		}
+		return
+	}
+	s = &node.Status{}
+	if err = json.Unmarshal([]byte(str), s); err != nil {
+		return
+	}
+	return
+}
+
 func (d *DaoRedis) LeaderNode(ctx context.Context) (node string, err error) {
 	str, err := d.client().Get(ctx, store_redis.ElectionPrefix()).Result()
 	if err == redis.Nil {
 		err = nil
 	}
 	return str, err
+}
+
+func (d *DaoRedis) AllElections() (res []map[string]any, err error) {
+	return []map[string]any{}, nil
+}
+
+func (d *DaoRedis) UpdateAllocatable(ctx context.Context, al *node.Allocatable) (ok bool, err error) {
+	i, err := d.client().HSet(ctx, store_redis.AllocatablePrefix(), al.NodeName, al.Val()).Result()
+	return (i > 0), err
 }

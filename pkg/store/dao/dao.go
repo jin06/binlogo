@@ -3,13 +3,12 @@ package dao
 import (
 	"context"
 	"errors"
-	"fmt"
 
-	"github.com/jin06/binlogo/v2/configs"
 	"github.com/jin06/binlogo/v2/pkg/etcdclient"
 	"github.com/jin06/binlogo/v2/pkg/store/model"
 	"github.com/jin06/binlogo/v2/pkg/store/model/node"
 	"github.com/jin06/binlogo/v2/pkg/store/model/pipeline"
+	"github.com/sirupsen/logrus"
 	clientv3 "go.etcd.io/etcd/client/v3"
 )
 
@@ -34,10 +33,8 @@ type Dao interface {
 	AllStatus(ctx context.Context) (list []*node.Status, err error)
 	StatusMap(ctx context.Context) (mapping map[string]*node.Status, err error)
 	LeaderNode(ctx context.Context) (node string, err error)
-}
-
-func Prefix() string {
-	return fmt.Sprintf("/%s/%s", configs.APP, configs.Default.ClusterName)
+	UpdateAllocatable(ctx context.Context, al *node.Allocatable) (ok bool, err error)
+	AllElections() (res []map[string]any, err error)
 }
 
 // ClearOrDeleteBind clear or delete pipeline bind
@@ -78,14 +75,6 @@ func ClearOrDeleteBind(name string) (err error) {
 
 // DeleteCluster delete whole cluster
 func DeleteCluster(clusterName string) (deleted int64, err error) {
-	if clusterName == "" {
-		err = errors.New("empty cluster name")
-	}
-	key := etcdclient.Prefix()
-	res, err := etcdclient.Default().Delete(context.Background(), key)
-	if err != nil {
-		return
-	}
-	deleted = res.Deleted
+	logrus.Warn("DeleteCluster unimplemented!")
 	return
 }

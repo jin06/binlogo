@@ -51,21 +51,6 @@ const (
 	MODE_SINGLE  NodeMode = 2
 )
 
-// NodeMode todo
-func (n NodeMode) String() string {
-	switch n {
-	case MODE_CLUSTER:
-		{
-			return "cluster"
-		}
-	case MODE_SINGLE:
-		{
-			return "single"
-		}
-	}
-	return ""
-}
-
 // New return a new node
 func New(opts ...Option) (node *Node) {
 	options := &Options{}

@@ -3,14 +3,8 @@ package dao
 import (
 	"context"
 
-	"github.com/jin06/binlogo/v2/pkg/etcdclient"
 	"github.com/jin06/binlogo/v2/pkg/store/model/pipeline"
 )
-
-// InstancePrefix returns etcd prefix of pipeline instance
-func InstancePrefix() string {
-	return etcdclient.Prefix() + "/pipeline/instance"
-}
 
 // GetInstance get a pipeline instance from etcd
 // get by pipeline name pipeName
