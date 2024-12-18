@@ -1,6 +1,5 @@
-package role
+package constant
 
-// Role node's role
 type Role string
 
 const (

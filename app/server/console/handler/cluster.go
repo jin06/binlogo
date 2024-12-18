@@ -1,20 +1,31 @@
-package cluster
+package handler
 
 import (
 	"sort"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/jin06/binlogo/v2/app/server/console/handler"
+	"github.com/jin06/binlogo/v2/app/server/console/basic"
+	"github.com/jin06/binlogo/v2/configs"
 	"github.com/jin06/binlogo/v2/pkg/store/dao"
 )
+
+func ClusterGet(c *gin.Context) {
+	data := &struct {
+		Name string `json:"name"`
+	}{}
+
+	data.Name = configs.Default.ClusterName
+
+	c.JSON(200, basic.Success(data))
+}
 
 func RegisterList(c *gin.Context) {
 	page, _ := strconv.Atoi(c.Query("page"))
 	limit, _ := strconv.Atoi(c.Query("limit"))
 	all, err := dao.AllNodes(c)
 	if err != nil {
-		c.JSON(200, handler.Fail(err))
+		c.JSON(200, basic.Fail(err))
 		return
 	}
 	sort.Slice(all, func(i, j int) bool {
@@ -29,7 +40,7 @@ func RegisterList(c *gin.Context) {
 		end = len(all)
 	}
 
-	c.JSON(200, handler.Success(map[string]interface{}{
+	c.JSON(200, basic.Success(map[string]interface{}{
 		"items": all[start:end],
 		"total": len(all),
 	}))
@@ -39,7 +50,7 @@ func RegisterList(c *gin.Context) {
 func ElectionList(c *gin.Context) {
 	all, err := dao.AllElections()
 	if err != nil {
-		c.JSON(200, handler.Fail(err))
+		c.JSON(200, basic.Fail(err))
 		return
 	}
 	sort.Slice(all, func(i, j int) bool {
@@ -50,7 +61,7 @@ func ElectionList(c *gin.Context) {
 		}
 		return false
 	})
-	c.JSON(200, handler.Success(map[string]interface{}{
+	c.JSON(200, basic.Success(map[string]interface{}{
 		"items": all,
 		"total": len(all),
 	}))

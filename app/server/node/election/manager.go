@@ -4,14 +4,14 @@ import (
 	"context"
 	"sync"
 
-	"github.com/jin06/binlogo/v2/pkg/node/role"
+	"github.com/jin06/binlogo/v2/internal/constant"
 	"github.com/jin06/binlogo/v2/pkg/store/model/node"
 )
 
 // Manager is election cycle manager
 type Manager struct {
 	optNode   *node.Node
-	roleCh    chan role.Role
+	roleCh    chan constant.Role
 	closeOnce sync.Once
 	stopped   chan struct{}
 }
@@ -20,7 +20,7 @@ type Manager struct {
 func NewManager(optNode *node.Node) (m *Manager) {
 	m = &Manager{
 		optNode: optNode,
-		roleCh:  make(chan role.Role, 1000),
+		roleCh:  make(chan constant.Role, 1000),
 		stopped: make(chan struct{}),
 	}
 	return
@@ -42,7 +42,7 @@ func (m *Manager) Run(ctx context.Context) {
 }
 
 // RoleCh return role chan
-func (m *Manager) RoleCh() chan role.Role {
+func (m *Manager) RoleCh() chan constant.Role {
 	return m.roleCh
 }
 

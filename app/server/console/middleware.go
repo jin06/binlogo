@@ -3,7 +3,7 @@ package console
 import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"github.com/jin06/binlogo/v2/app/server/console/handler"
+	"github.com/jin06/binlogo/v2/app/server/console/basic"
 	"github.com/jin06/binlogo/v2/app/server/console/service"
 )
 
@@ -18,7 +18,7 @@ func auth() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token := c.GetHeader("x-token")
 		if !service.DefaultStore().Get(token) {
-			c.AbortWithStatusJSON(200, handler.FailCode(handler.CodeTokenExpired))
+			c.AbortWithStatusJSON(200, basic.FailCode(basic.CodeTokenExpired))
 		}
 	}
 }

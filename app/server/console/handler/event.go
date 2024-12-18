@@ -1,18 +1,18 @@
-package event
+package handler
 
 import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jin06/binlogo/pkg/store/dao/dao_event"
-	"github.com/jin06/binlogo/v2/app/server/console/handler"
+	"github.com/jin06/binlogo/v2/app/server/console/basic"
 	"github.com/jin06/binlogo/v2/pkg/store/dao"
 	"github.com/jin06/binlogo/v2/pkg/store/model"
 	clientv3 "go.etcd.io/etcd/client/v3"
 )
 
 // List  event list api
-func List(c *gin.Context) {
+func EventList(c *gin.Context) {
 	resType := c.Query("res_type")
 	resName := c.Query("res_name")
 	list, err := dao.ListEvent(
@@ -23,22 +23,21 @@ func List(c *gin.Context) {
 		clientv3.SortDescend,
 	)
 	if err != nil {
-		c.JSON(200, handler.Fail(err))
+		c.JSON(200, basic.Fail(err))
 		return
 	}
 	var resList []*model.Event
 	for _, v := range list {
 		resList = append(resList, v)
 	}
-	c.JSON(200, handler.Success(map[string]interface{}{
+	c.JSON(200, basic.Success(map[string]interface{}{
 		"items": resList,
 		"total": len(resList),
 	}))
-	return
 }
 
 // ScrollList event scroll api
-func ScrollList(c *gin.Context) {
+func EventScrollList(c *gin.Context) {
 	key := c.Query("key")
 	num := c.Query("num")
 	n, err := strconv.Atoi(num)
@@ -56,12 +55,11 @@ func ScrollList(c *gin.Context) {
 	)
 
 	if err != nil {
-		c.JSON(200, handler.Fail(err))
+		c.JSON(200, basic.Fail(err))
 		return
 	}
-	c.JSON(200, handler.Success(map[string]interface{}{
+	c.JSON(200, basic.Success(map[string]interface{}{
 		"items": list,
 		"total": len(list),
 	}))
-	return
 }

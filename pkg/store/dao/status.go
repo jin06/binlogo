@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 
-	"github.com/jin06/binlogo/v2/internal/consts"
 	"github.com/jin06/binlogo/v2/pkg/etcdclient"
 	"github.com/jin06/binlogo/v2/pkg/store/model/node"
 	store_redis "github.com/jin06/binlogo/v2/pkg/store/redis"
@@ -71,12 +70,8 @@ func GetStatus(ctx context.Context, nodeName string) (s *node.Status, err error)
 }
 
 // CreateStatusIfNotExist create status if not exist
-func CreateStatusIfNotExist(ctx context.Context, n *node.Status) (err error) {
-	if n == nil {
-		return consts.NilNodeStatus
-	}
-	_, err = store_redis.Default.Create(ctx, n)
-	return err
+func CreateStatusIfNotExist(ctx context.Context, nodeName string, opts ...node.StatusOption) (ok bool, err error) {
+	return myDao.CreateOrUpdateStatus(ctx, nodeName, opts...)
 }
 
 // StatusMap returns all node status in map form

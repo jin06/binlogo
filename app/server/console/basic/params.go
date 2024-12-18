@@ -1,17 +1,18 @@
-package util
+package basic
 
 import (
-	"github.com/gin-gonic/gin"
 	"strconv"
+
+	"github.com/gin-gonic/gin"
 )
 
 func StartEnd(c *gin.Context) (start int, end int) {
 	page, _ := strconv.Atoi(c.Query("page"))
 	limit, _ := strconv.Atoi(c.Query("limit"))
-	return _StartEnd(page, limit)
+	return startEnd(page, limit)
 }
 
-func _StartEnd(page int, limit int) (start int, end int) {
+func startEnd(page int, limit int) (start int, end int) {
 	if limit <= 0 {
 		limit = 10
 	}

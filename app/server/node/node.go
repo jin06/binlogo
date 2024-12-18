@@ -13,7 +13,7 @@ import (
 	"github.com/jin06/binlogo/v2/app/server/node/manager/manager_status"
 	"github.com/jin06/binlogo/v2/app/server/node/monitor"
 	"github.com/jin06/binlogo/v2/app/server/node/scheduler"
-	"github.com/jin06/binlogo/v2/pkg/node/role"
+	"github.com/jin06/binlogo/v2/internal/constant"
 	"github.com/jin06/binlogo/v2/pkg/store/dao"
 	"github.com/jin06/binlogo/v2/pkg/store/model/node"
 	"github.com/sirupsen/logrus"
@@ -131,7 +131,7 @@ func (n *Node) pollLeaderRun(ctx context.Context) {
 		defer cancel()
 		n.stop()
 	}()
-	curRole := role.FOLLOWER
+	curRole := constant.FOLLOWER
 	ticker := time.NewTicker(time.Second)
 	defer ticker.Stop()
 	for {
@@ -160,11 +160,11 @@ func (n *Node) pollLeaderRun(ctx context.Context) {
 	}
 }
 
-func (n *Node) leaderRun(ctx context.Context, r role.Role) {
+func (n *Node) leaderRun(ctx context.Context, r constant.Role) {
 	n.leaderRunMutex.Lock()
 	defer n.leaderRunMutex.Unlock()
 	//logrus.Debug("node run leader ", r)
-	if r == role.FOLLOWER {
+	if r == constant.FOLLOWER {
 		if n.Scheduler != nil {
 			n.Scheduler.Stop()
 			n.Scheduler = nil
@@ -178,7 +178,7 @@ func (n *Node) leaderRun(ctx context.Context, r role.Role) {
 			n.eventManager = nil
 		}
 	}
-	if r == role.LEADER {
+	if r == constant.LEADER {
 		if n.Scheduler == nil || n.Scheduler.Exit {
 			n.Scheduler = scheduler.New()
 			go n.Scheduler.Run(ctx)

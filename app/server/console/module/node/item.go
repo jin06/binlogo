@@ -1,7 +1,7 @@
 package node
 
 import (
-	"github.com/jin06/binlogo/v2/pkg/node/role"
+	"github.com/jin06/binlogo/v2/internal/constant"
 	"github.com/jin06/binlogo/v2/pkg/store/model/node"
 )
 
@@ -16,5 +16,5 @@ type Item struct {
 
 // Info item info
 type Info struct {
-	Role role.Role `json:"role"`
+	Role constant.Role `json:"role"`
 }

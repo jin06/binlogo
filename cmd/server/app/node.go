@@ -27,13 +27,10 @@ func RunNode(c context.Context) (err error) {
 		LastRunTime: time.Now(),
 		IP:          nip.String(),
 	}
-	// nodeOpts.IP = configs.NodeIP
 	if _, err = dao.RefreshNode(c, nodeOpts); err != nil {
 		return
 	}
-
-	err = dao.CreateStatusIfNotExist(c, &node.Status{NodeName: nodeOpts.Name, Ready: true})
-	if err != nil {
+	if _, err = dao.CreateStatusIfNotExist(c, nodeOpts.Name, node.WithReady(true)); err != nil {
 		logrus.Error(err)
 		return
 	}

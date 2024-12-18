@@ -32,6 +32,7 @@ type Dao interface {
 	CapacityMap(ctx context.Context) (mapping map[string]*node.Capacity, err error)
 	AllStatus(ctx context.Context) (list []*node.Status, err error)
 	StatusMap(ctx context.Context) (mapping map[string]*node.Status, err error)
+	CreateOrUpdateStatus(ctx context.Context, nodeName string, opts ...node.StatusOption) (ok bool, err error)
 	LeaderNode(ctx context.Context) (node string, err error)
 	UpdateAllocatable(ctx context.Context, al *node.Allocatable) (ok bool, err error)
 	AllElections() (res []map[string]any, err error)

@@ -277,20 +277,25 @@ func (d *DaoRedis) StatusMap(ctx context.Context) (mapping map[string]*node.Stat
 }
 
 func (d *DaoRedis) CreateOrUpdateStatus(ctx context.Context, nodeName string, opts ...node.StatusOption) (ok bool, err error) {
-	old, err := d.GetStatus(ctx, nodeName)
+	status, err := d.GetStatus(ctx, nodeName)
 	if err != nil {
 		return false, err
 	}
-	s := &node.Status{}
-	for _, v := range opts {
-		v(s)
+	if status == nil {
+		status = &node.Status{}
 	}
-
+	for _, v := range opts {
+		v(status)
+	}
+	i, err := d.client().HSet(ctx, store_redis.StatusPrefix(), nodeName, status.Val()).Result()
+	if err != nil {
+		return false, err
+	}
+	return (i > 0), nil
 }
 
 func (d *DaoRedis) GetStatus(ctx context.Context, nodeName string) (s *node.Status, err error) {
 	var str string
-	d.client().HSet(ctx, store_redis.StatusPrefix())
 	if str, err = d.client().HGet(ctx, store_redis.StatusPrefix(), nodeName).Result(); err != nil {
 		if err == redis.Nil {
 			return nil, nil
@@ -298,7 +303,7 @@ func (d *DaoRedis) GetStatus(ctx context.Context, nodeName string) (s *node.Stat
 		return
 	}
 	s = &node.Status{}
-	if err = json.Unmarshal([]byte(str), s); err != nil {
+	if err = s.Unmarshal([]byte(str)); err != nil {
 		return
 	}
 	return
