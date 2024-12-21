@@ -7,7 +7,7 @@ import (
 
 	"github.com/jin06/binlogo/v2/pkg/etcdclient"
 	"github.com/jin06/binlogo/v2/pkg/store/model/node"
-	store_redis "github.com/jin06/binlogo/v2/pkg/store/redis"
+	storeredis "github.com/jin06/binlogo/v2/pkg/store/redis"
 	clientv3 "go.etcd.io/etcd/client/v3"
 )
 
@@ -55,7 +55,7 @@ func CreateOrUpdateStatus(nodeName string, opts ...node.StatusOption) (ok bool, 
 
 // GetStatus get node status from etcd
 func GetStatus(ctx context.Context, nodeName string) (s *node.Status, err error) {
-	store_redis.Default.Get(ctx, &node.Status{NodeName: nodeName})
+	storeredis.Default.Get(ctx, &node.Status{NodeName: nodeName})
 	key := StatusPrefix() + "/" + nodeName
 	res, err := etcdclient.Default().Get(context.TODO(), key)
 	if err != nil {

@@ -2,17 +2,10 @@ package dao
 
 import (
 	"context"
-	"time"
 
 	"github.com/jin06/binlogo/v2/pkg/etcdclient"
 	"github.com/jin06/binlogo/v2/pkg/store/model/node"
-	store_redis "github.com/jin06/binlogo/v2/pkg/store/redis"
-	"github.com/redis/go-redis/v9"
-	// "github.com/jin06/binlogo/v2/pkg/store/store_redis"
-)
-
-const (
-	registerDuration = time.Second * 5
+	// "github.com/jin06/binlogo/v2/pkg/store/storeredis"
 )
 
 // NodePrefix returns etcd prefix of node
@@ -26,18 +19,11 @@ func NodeRegisterPrefix() string {
 }
 
 func RegisterNode(ctx context.Context, n *node.Node) (bool, error) {
-	return store_redis.GetClient().SetNX(ctx, n.RegisterName(), n.Name, registerDuration).Result()
+	return myDao.RegisterNode(ctx, n)
 }
 
-func LeaseNode(ctx context.Context, n *node.Node) (bool, error) {
-	err := store_redis.GetClient().SetEx(ctx, n.RegisterName(), n.Name, registerDuration).Err()
-	if err == redis.Nil {
-		return false, nil
-	}
-	if err != nil {
-		return false, err
-	}
-	return true, nil
+func LeaseNode(ctx context.Context, n *node.Node) error {
+	return myDao.LeaseNode(ctx, n)
 }
 
 func RefreshNode(ctx context.Context, n *node.Node) (bool, error) {

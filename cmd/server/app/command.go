@@ -7,7 +7,7 @@ import (
 	"github.com/jin06/binlogo/v2/configs"
 	"github.com/jin06/binlogo/v2/pkg/promeths"
 	"github.com/jin06/binlogo/v2/pkg/store/dao"
-	store_redis "github.com/jin06/binlogo/v2/pkg/store/redis"
+	storeredis "github.com/jin06/binlogo/v2/pkg/store/redis"
 	"github.com/sirupsen/logrus"
 
 	"github.com/spf13/cobra"
@@ -36,7 +36,7 @@ func NewCommand() (cmd *cobra.Command) {
 			if err := Init(cfg); err != nil {
 				return err
 			}
-			if err := store_redis.Init(ctx, configs.Default.Store.Redis); err != nil {
+			if err := storeredis.Init(ctx, configs.Default.Store.Redis); err != nil {
 				return err
 			}
 			dao.Init()

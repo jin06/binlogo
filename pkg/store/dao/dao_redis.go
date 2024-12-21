@@ -8,22 +8,25 @@ import (
 	"time"
 
 	"github.com/jin06/binlogo/v2/configs"
-	"github.com/jin06/binlogo/v2/pkg/etcdclient"
 	"github.com/jin06/binlogo/v2/pkg/store/model/node"
 	"github.com/jin06/binlogo/v2/pkg/store/model/pipeline"
-	store_redis "github.com/jin06/binlogo/v2/pkg/store/redis"
+	storeredis "github.com/jin06/binlogo/v2/pkg/store/redis"
 	"github.com/redis/go-redis/v9"
 	"github.com/sirupsen/logrus"
 )
 
 func NewDaoRedis() *DaoRedis {
 	return &DaoRedis{
-		store: store_redis.Default,
+		store:       storeredis.Default,
+		registerTTL: time.Second * 5,
+		masterTTL:   time.Second * 5,
 	}
 }
 
 type DaoRedis struct {
-	store *store_redis.Redis
+	store       *storeredis.Redis
+	registerTTL time.Duration
+	masterTTL   time.Duration
 }
 
 func (d *DaoRedis) client() *redis.Client {
@@ -112,14 +115,33 @@ func (d *DaoRedis) AllInstanceMap(ctx context.Context) (maps map[string]*pipelin
 	return
 }
 
-func (d *DaoRedis) CreateNode(ctx context.Context, n *node.Node) (err error) {
-	key := NodePrefix() + "/" + n.Name
-	v, err := json.Marshal(n)
-	if err != nil {
-		return
+// Compete to become the master node of the cluster by obtaining a key.
+// The one who gets it first will become the master node.
+func (d *DaoRedis) AcquireMasterLock(ctx context.Context, node *node.Node) error {
+	return d.store.GetClient().SetNX(ctx, storeredis.MasterPreifx(), node.Name, d.masterTTL).Err()
+}
+
+func (d *DaoRedis) GetMasterLock(ctx context.Context) (string, error) {
+	val, err := d.store.GetClient().Get(ctx, storeredis.MasterPreifx()).Result()
+	if err == redis.Nil {
+		return "", nil
 	}
-	_, err = etcdclient.Default().Put(context.Background(), key, string(v))
-	return
+	if err != nil {
+		return "", err
+	}
+	return val, nil
+}
+
+func (d *DaoRedis) LeaseMasterLock(ctx context.Context) error {
+	return d.store.GetClient().Expire(ctx, storeredis.MasterPreifx(), d.masterTTL).Err()
+}
+
+func (d *DaoRedis) RegisterNode(ctx context.Context, n *node.Node) (bool, error) {
+	return d.store.GetClient().SetNX(ctx, storeredis.GetRegisterKey(n.Name), n.Name, d.registerTTL).Result()
+}
+
+func (d *DaoRedis) LeaseNode(ctx context.Context, n *node.Node) error {
+	return d.store.GetClient().SetEx(ctx, storeredis.GetRegisterKey(n.Name), n.Name, d.registerTTL).Err()
 }
 
 func (d *DaoRedis) CreateNodeIfNotExist(ctx context.Context, n *node.Node) (err error) {
@@ -135,7 +157,7 @@ func (d *DaoRedis) CreateNodeIfNotExist(ctx context.Context, n *node.Node) (err 
 
 func (d *DaoRedis) GetNode(ctx context.Context, name string) (n *node.Node, err error) {
 	var str string
-	str, err = d.client().HGet(ctx, store_redis.NodePrefix(), name).Result()
+	str, err = d.client().HGet(ctx, storeredis.NodePrefix(), name).Result()
 	if err == redis.Nil {
 		err = nil
 	}
@@ -164,7 +186,7 @@ func (d *DaoRedis) GetNodeNoEmpty(ctx context.Context, name string) (n *node.Nod
 
 func (d *DaoRedis) AllNodes(ctx context.Context) (list []*node.Node, err error) {
 	var result map[string]string
-	result, err = d.client().HGetAll(ctx, store_redis.NodePrefix()).Result()
+	result, err = d.client().HGetAll(ctx, storeredis.NodePrefix()).Result()
 	if err != nil {
 		return
 	}
@@ -188,7 +210,7 @@ func (d *DaoRedis) RefreshNode(ctx context.Context, n *node.Node) (ok bool, err 
 		n.CreateTime = old.CreateTime
 	}
 	var i int64
-	if i, err = d.client().HSet(ctx, store_redis.NodePrefix(), n.Name, n.Val()).Result(); err != nil {
+	if i, err = d.client().HSet(ctx, storeredis.NodePrefix(), n.Name, n.Val()).Result(); err != nil {
 		return
 	} else {
 		ok = (i > 0)
@@ -208,7 +230,7 @@ func (d *DaoRedis) UpdateNodeIP(ctx context.Context, name string, ip string) (ok
 	old.IP = ip
 	old.UpdateTime = time.Now()
 	var i int64
-	i, err = d.client().HSet(ctx, store_redis.NodePrefix(), name, old.Val()).Result()
+	i, err = d.client().HSet(ctx, storeredis.NodePrefix(), name, old.Val()).Result()
 	if err != nil {
 		return false, err
 	}
@@ -216,13 +238,13 @@ func (d *DaoRedis) UpdateNodeIP(ctx context.Context, name string, ip string) (ok
 }
 
 func (d *DaoRedis) UpdateCapacity(ctx context.Context, cap *node.Capacity) (bool, error) {
-	i, err := d.client().HSet(ctx, store_redis.CapacityPrefix(), cap.NodeName, cap.Val()).Result()
+	i, err := d.client().HSet(ctx, storeredis.CapacityPrefix(), cap.NodeName, cap.Val()).Result()
 	return (i > 0), err
 }
 
 func (d *DaoRedis) AllCapacity(ctx context.Context) (list []*node.Capacity, err error) {
 	var result map[string]string
-	result, err = d.client().HGetAll(ctx, store_redis.CapacityPrefix()).Result()
+	result, err = d.client().HGetAll(ctx, storeredis.CapacityPrefix()).Result()
 	if err != nil {
 		return
 	}
@@ -250,7 +272,7 @@ func (d *DaoRedis) CapacityMap(ctx context.Context) (mapping map[string]*node.Ca
 
 func (d *DaoRedis) AllStatus(ctx context.Context) (list []*node.Status, err error) {
 	var result map[string]string
-	result, err = d.client().HGetAll(ctx, store_redis.StatusPrefix()).Result()
+	result, err = d.client().HGetAll(ctx, storeredis.StatusPrefix()).Result()
 	if err != nil {
 		return
 	}
@@ -287,7 +309,7 @@ func (d *DaoRedis) CreateOrUpdateStatus(ctx context.Context, nodeName string, op
 	for _, v := range opts {
 		v(status)
 	}
-	i, err := d.client().HSet(ctx, store_redis.StatusPrefix(), nodeName, status.Val()).Result()
+	i, err := d.client().HSet(ctx, storeredis.StatusPrefix(), nodeName, status.Val()).Result()
 	if err != nil {
 		return false, err
 	}
@@ -296,7 +318,7 @@ func (d *DaoRedis) CreateOrUpdateStatus(ctx context.Context, nodeName string, op
 
 func (d *DaoRedis) GetStatus(ctx context.Context, nodeName string) (s *node.Status, err error) {
 	var str string
-	if str, err = d.client().HGet(ctx, store_redis.StatusPrefix(), nodeName).Result(); err != nil {
+	if str, err = d.client().HGet(ctx, storeredis.StatusPrefix(), nodeName).Result(); err != nil {
 		if err == redis.Nil {
 			return nil, nil
 		}
@@ -310,7 +332,7 @@ func (d *DaoRedis) GetStatus(ctx context.Context, nodeName string) (s *node.Stat
 }
 
 func (d *DaoRedis) LeaderNode(ctx context.Context) (node string, err error) {
-	str, err := d.client().Get(ctx, store_redis.ElectionPrefix()).Result()
+	str, err := d.client().Get(ctx, storeredis.ElectionPrefix()).Result()
 	if err == redis.Nil {
 		err = nil
 	}
@@ -322,6 +344,6 @@ func (d *DaoRedis) AllElections() (res []map[string]any, err error) {
 }
 
 func (d *DaoRedis) UpdateAllocatable(ctx context.Context, al *node.Allocatable) (ok bool, err error) {
-	i, err := d.client().HSet(ctx, store_redis.AllocatablePrefix(), al.NodeName, al.Val()).Result()
+	i, err := d.client().HSet(ctx, storeredis.AllocatablePrefix(), al.NodeName, al.Val()).Result()
 	return (i > 0), err
 }

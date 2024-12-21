@@ -18,7 +18,8 @@ type Election struct {
 	roleCh    chan constant.Role
 	ttl       time.Duration
 	closeOnce sync.Once
-	stopped   chan struct{}
+	closing   chan struct{}
+	closed    chan struct{}
 }
 
 func NewElection(node *node.Node) *Election {
@@ -26,7 +27,8 @@ func NewElection(node *node.Node) *Election {
 		node:    node,
 		ttl:     5,
 		roleCh:  make(chan constant.Role, 100),
-		stopped: make(chan struct{}, 0),
+		closing: make(chan struct{}),
+		closed:  make(chan struct{}),
 	}
 	return e
 }
@@ -39,7 +41,8 @@ func (e *Election) setRole(r constant.Role) {
 }
 
 func (e *Election) Run(ctx context.Context, ch chan constant.Role) error {
-	defer e.close()
+	defer close(e.closed)
+	defer close(e.roleCh)
 	e.roleCh = ch
 	return nil
 }
@@ -52,7 +55,7 @@ func (e *Election) campaign(ctx context.Context) {
 		select {
 		case <-ctx.Done():
 			return
-		case <-e.stopped:
+		case <-e.closing:
 			return
 		case <-ticker.C:
 			err := dao.AcquireMasterLock(ctx, e.node)
@@ -65,21 +68,14 @@ func (e *Election) campaign(ctx context.Context) {
 	}
 }
 
-func (e *Election) lease(ctx context.Context) {
-	ticker := time.NewTicker(time.Second * 1)
-	for {
-		select {
-		case <-ctx.Done():
-		case <-e.stopped:
-		case <-ticker.C:
-		}
-	}
-}
-
-func (e *Election) close() (err error) {
+func (e *Election) Close() (err error) {
 	e.closeOnce.Do(func() {
 		e.setRole(constant.FOLLOWER)
-		close(e.stopped)
+		close(e.closing)
 	})
 	return
+}
+
+func (e *Election) Closed() chan struct{} {
+	return e.closed
 }

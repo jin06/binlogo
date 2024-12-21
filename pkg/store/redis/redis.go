@@ -1,4 +1,4 @@
-package store_redis
+package storeredis
 
 import (
 	"context"

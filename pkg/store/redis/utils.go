@@ -1,4 +1,4 @@
-package store_redis
+package storeredis
 
 import (
 	"fmt"
@@ -13,10 +13,20 @@ const (
 	ClusterKey     = "cluster"
 	ElectionKey    = "election"
 	AllocatableKey = "allocatable"
+	RegisterKey    = "register"
+	MasterKey      = "master"
 )
 
 func Prefix() string {
 	return fmt.Sprintf("/%s/%s", configs.APP, configs.Default.ClusterName)
+}
+
+func GetRegisterKey(s string) string {
+	return fmt.Sprintf("%s/%s", RegisterPrefix(), s)
+}
+
+func RegisterPrefix() string {
+	return fmt.Sprintf("%s/%s", NodePrefix(), RegisterKey)
 }
 
 func ClusterPrefix() string {
@@ -42,4 +52,8 @@ func StatusPrefix() string {
 // AllocatablePrefix returns prefix key of redis for allocatable
 func AllocatablePrefix() string {
 	return fmt.Sprintf("%s/%s", NodePrefix(), AllocatableKey)
+}
+
+func MasterPreifx() string {
+	return fmt.Sprintf("%s/%s", NodePrefix, MasterKey)
 }

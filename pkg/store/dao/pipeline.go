@@ -7,17 +7,17 @@ import (
 
 	"github.com/jin06/binlogo/v2/pkg/etcdclient"
 	"github.com/jin06/binlogo/v2/pkg/store/model/pipeline"
-	store_redis "github.com/jin06/binlogo/v2/pkg/store/redis"
+	storeredis "github.com/jin06/binlogo/v2/pkg/store/redis"
 	clientv3 "go.etcd.io/etcd/client/v3"
 )
 
 // PipelinePrefix returns etcd prefix of pipeline info
 func PipelinePrefix() string {
-	return store_redis.Prefix() + "/pipeline"
+	return storeredis.Prefix() + "/pipeline"
 }
 
 func PipelinesKey() string {
-	return store_redis.Prefix() + "/pipelines"
+	return storeredis.Prefix() + "/pipelines"
 }
 
 // GetPipeline get pipeline info from etcd
@@ -39,7 +39,7 @@ func GetPipeline(name string) (p *pipeline.Pipeline, err error) {
 
 // CreatePipeline write pipeline info to etcd
 func CreatePipeline(ctx context.Context, d *pipeline.Pipeline) (ok bool, err error) {
-	cmd := store_redis.GetClient().HSet(ctx, PipelinesKey(), d.Name, d.Val())
+	cmd := storeredis.GetClient().HSet(ctx, PipelinesKey(), d.Name, d.Val())
 	i, err := cmd.Result()
 	if err != nil {
 		return false, err
@@ -83,7 +83,7 @@ func UpdatePipeline(pipeName string, opts ...pipeline.OptionPipeline) (ok bool, 
 // AllPipelines get all info of pipelines from etcd in array form
 func AllPipelines(ctx context.Context) (list []*pipeline.Pipeline, err error) {
 	var result map[string]string
-	result, err = store_redis.GetClient().HGetAll(ctx, PipelinesKey()).Result()
+	result, err = storeredis.GetClient().HGetAll(ctx, PipelinesKey()).Result()
 	if err != nil {
 		return
 	}
@@ -112,7 +112,7 @@ func AllPipelinesMap(ctx context.Context) (mapping map[string]*pipeline.Pipeline
 
 // DeletePipeline delete pipeline info by name
 func DeletePipeline(ctx context.Context, name string) (ok bool, err error) {
-	return store_redis.Default.Delete(ctx, &pipeline.Pipeline{Name: name})
+	return storeredis.Default.Delete(ctx, &pipeline.Pipeline{Name: name})
 }
 
 // DeleteCompletePipeline delete pipeline, contains pipeline info, pipeline position

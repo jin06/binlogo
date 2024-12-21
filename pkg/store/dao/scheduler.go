@@ -5,7 +5,7 @@ import (
 
 	"github.com/jin06/binlogo/v2/pkg/etcdclient"
 	"github.com/jin06/binlogo/v2/pkg/store/model"
-	store_redis "github.com/jin06/binlogo/v2/pkg/store/redis"
+	storeredis "github.com/jin06/binlogo/v2/pkg/store/redis"
 	clientv3 "go.etcd.io/etcd/client/v3"
 )
 
@@ -22,7 +22,7 @@ func SchedulerPrefix() string {
 // GetPipelineBind get pipeline bind from etcd
 func GetPipelineBind(ctx context.Context) (*model.PipelineBind, error) {
 	pb := &model.PipelineBind{}
-	ok, err := store_redis.Default.Get(ctx, pb)
+	ok, err := storeredis.Default.Get(ctx, pb)
 	if err != nil {
 		return nil, err
 	}

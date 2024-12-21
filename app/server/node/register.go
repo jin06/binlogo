@@ -11,14 +11,14 @@ import (
 
 type Register struct {
 	node      *node.Node
-	stopped   chan struct{}
+	closed    chan struct{}
 	closeOnce sync.Once
 }
 
 func NewRegister(n *node.Node) *Register {
 	r := &Register{
-		node:    n,
-		stopped: make(chan struct{}),
+		node:   n,
+		closed: make(chan struct{}),
 	}
 	return r
 }
@@ -26,26 +26,25 @@ func NewRegister(n *node.Node) *Register {
 func (r *Register) Run(ctx context.Context) error {
 	defer r.close()
 	ticker := time.NewTicker(time.Second * 1)
+	defer ticker.Stop()
 	ok, err := dao.RegisterNode(ctx, r.node)
 	if !ok {
 		return err
 	}
+	check := time.Now()
 	for i := 0; i < 3; {
 		select {
 		case <-ctx.Done():
 			return nil
-		case <-r.stopped:
+		case <-r.closed:
 			return nil
 		case <-ticker.C:
-			exist, err := dao.LeaseNode(ctx, r.node)
-			if err != nil {
-				i++
-			} else {
-				if exist {
-					i = 0
-				} else {
-					return nil
-				}
+			if time.Since(check) > time.Second*5 {
+				return nil
+			}
+			err := dao.LeaseNode(ctx, r.node)
+			if err == nil {
+				check = time.Now()
 			}
 		}
 	}
@@ -54,7 +53,7 @@ func (r *Register) Run(ctx context.Context) error {
 
 func (r *Register) close() error {
 	r.closeOnce.Do(func() {
-		close(r.stopped)
+		close(r.closed)
 	})
 	return nil
 }

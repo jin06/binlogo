@@ -32,6 +32,13 @@ type Config struct {
 }
 
 func (cfg *Config) GetNodeName() string {
+	if len(cfg.NodeName) == 0 {
+		host, err := os.Hostname()
+		if err != nil {
+			panic(err)
+		}
+		return host
+	}
 	return cfg.NodeName
 }
 

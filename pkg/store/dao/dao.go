@@ -22,6 +22,14 @@ type Dao interface {
 	GetInstance(ctx context.Context, pname string) (ins *pipeline.Instance, err error)
 	AllInstance(ctx context.Context) (all []*pipeline.Instance, err error)
 	AllInstanceMap(ctx context.Context) (maps map[string]*pipeline.Instance, err error)
+	// Compete to become the master node of the cluster.
+	AcquireMasterLock(ctx context.Context, node *node.Node) error
+	// Find out who the current master node is.
+	GetMasterLock(ctx context.Context) (string, error)
+	// Renew the lease of the master node.
+	LeaseMasterLock(ctx context.Context) error
+	RegisterNode(ctx context.Context, n *node.Node) (bool, error)
+	LeaseNode(ctx context.Context, n *node.Node) error
 	GetNode(ctx context.Context, name string) (*node.Node, error)
 	AllNodes(ctx context.Context) (list []*node.Node, err error)
 	UpdateNode(ctx context.Context, name string, opts ...node.NodeOption) (bool, error)

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 	"sync"
 	"time"
 
@@ -13,11 +14,10 @@ import (
 	"github.com/jin06/binlogo/v2/app/server/node/manager/manager_status"
 	"github.com/jin06/binlogo/v2/app/server/node/monitor"
 	"github.com/jin06/binlogo/v2/app/server/node/scheduler"
+	"github.com/jin06/binlogo/v2/configs"
 	"github.com/jin06/binlogo/v2/internal/constant"
 	"github.com/jin06/binlogo/v2/pkg/store/dao"
 	"github.com/jin06/binlogo/v2/pkg/store/model/node"
-	"github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
 )
 
 // Node represents a node instance
@@ -42,6 +42,7 @@ type Node struct {
 	// why? cos of all processes is essential, this simplified design is easy to impl, also well for debugging
 	stopping chan struct{}
 	stopOnce sync.Once
+	// main goroutine exited: all related goroutines exited
 }
 
 type NodeMode byte
@@ -65,11 +66,6 @@ func New(opts ...Option) (node *Node) {
 }
 
 func (n *Node) init() {
-	// n.Register = register.New(
-	// 	register.WithTTL(5),
-	// 	register.WithKey(dao.NodeRegisterPrefix()+"/"+n.Options.Node.Name),
-	// 	register.WithData(n.Options.Node),
-	// )
 	n.Register = NewRegister(n.Options.Node)
 	n.electionManager = election.NewManager(n.Options.Node)
 	n.pipeManager = manager_pipe.New(n.Options.Node)
@@ -110,7 +106,7 @@ func (n *Node) Run(ctx context.Context) (err error) {
 		n.pollMustRun(stx)
 	}()
 
-	if viper.GetBool("roles.master") {
+	if configs.Default.Roles.Master {
 		go func() {
 			n.pollLeaderRun(stx)
 		}()
@@ -138,7 +134,7 @@ func (n *Node) pollLeaderRun(ctx context.Context) {
 		select {
 		case <-ctx.Done():
 			return
-		case <-n.electionManager.Stopped():
+		case <-n.electionManager.Closed():
 			return
 		case r, ok := <-n.electionManager.RoleCh():
 			{
@@ -201,11 +197,11 @@ func (n *Node) pollMustRun(ctx context.Context) {
 	defer cancel()
 	go func() {
 		if err := n.Register.Run(stx); err != nil {
-			logrus.WithError(err).Errorln("node register exit")
+			slog.Error("node register exit: " + err.Error())
 		}
 		n.stop()
 	}()
-	if viper.GetBool("roles.master") {
+	if configs.Default.Roles.Master {
 		go func() {
 			n.electionManager.Run(stx)
 			n.stop()

@@ -18,7 +18,10 @@ import (
 // RunNode run node.
 func RunNode(c context.Context) (err error) {
 	logrus.Info("init node")
-	nip, _ := ip.LocalIp()
+	nip, err := ip.LocalIp()
+	if err != nil {
+		return err
+	}
 	nodeOpts := &node.Node{
 		Name:        configs.Default.NodeName,
 		Version:     configs.Version,
