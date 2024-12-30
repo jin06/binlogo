@@ -25,15 +25,15 @@ func (c *CapacityMap) Unmarshal(data []byte) error {
 
 // Capacity node capacity
 type Capacity struct {
-	NodeName    string       `json:"node_name" redis:"node_name"`
-	Cpu         float64      `json:"cpu" redis:"cpu"`
-	Disk        uint64       `json:"disk" redis:"disk"`
-	Memory      uint64       `json:"memory" redis:"memory"` //byte
-	CpuCors     int32        `json:"cpu_cores" redis:"cpu_cores"`
-	CpuUsage    uint8        `json:"cpu_usage" redis:"cpu_usage"`
-	MemoryUsage uint8        `json:"memory_usage" redis:"memory_usage"`
-	UpdateTime  time.Time    `json:"update_time" redis:"update_time"`
-	Allocatable *Allocatable `json:"allocatable" redis:"allocatable"`
+	NodeName    string      `json:"node_name" redis:"node_name"`
+	Cpu         float64     `json:"cpu" redis:"cpu"`
+	Disk        uint64      `json:"disk" redis:"disk"`
+	Memory      uint64      `json:"memory" redis:"memory"` //byte
+	CpuCors     int32       `json:"cpu_cores" redis:"cpu_cores"`
+	CpuUsage    uint8       `json:"cpu_usage" redis:"cpu_usage"`
+	MemoryUsage uint8       `json:"memory_usage" redis:"memory_usage"`
+	UpdateTime  time.Time   `json:"update_time" redis:"update_time"`
+	Allocatable Allocatable `json:"allocatable" redis:"allocatable"`
 }
 
 func (c *Capacity) Key() string {
@@ -51,17 +51,7 @@ func (c *Capacity) Unmarshal(data []byte) error {
 
 // New returns a new *Capacity
 func NewCapacity(nodeName string) *Capacity {
-	c := &Capacity{
-		NodeName:    nodeName,
-		Cpu:         0,
-		Disk:        0,
-		Memory:      0,
-		CpuCors:     0,
-		CpuUsage:    0,
-		MemoryUsage: 0,
-		UpdateTime:  time.Time{},
-		Allocatable: NewAllocatable(nodeName),
-	}
+	c := &Capacity{}
 	return c
 }
 

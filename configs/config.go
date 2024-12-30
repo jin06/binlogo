@@ -1,10 +1,10 @@
 package configs
 
 import (
-	"log/slog"
 	"net"
 	"os"
 
+	"github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"
 )
 
@@ -24,6 +24,7 @@ type Config struct {
 	Test        string  `yaml:"test"`
 	ClusterName string  `yaml:"cluster_name"`
 	NodeName    string  `yaml:"node_name"`
+	LogLevel    string  `yaml:"log_level"`
 	Console     Console `yaml:"console"`
 	Roles       Roles   `yaml:"roles"`
 	Monitor     Monitor `yaml:"monitor"`
@@ -93,7 +94,7 @@ func InitConfig(file string) (err error) {
 	if file == "" {
 		file = "./etc/binlogo.yaml"
 	}
-	slog.Info("config file path: %s", file)
+	logrus.Infof("config file path: %s", file)
 	data, err := os.ReadFile(file)
 	if err != nil {
 		return

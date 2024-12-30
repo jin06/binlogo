@@ -33,7 +33,7 @@ func Init(path string) error {
 	if err := configs.Init(path); err != nil {
 		return err
 	}
-	blog.Env(configs.ENV)
+	blog.SetLevel(configs.Default.LogLevel)
 	logrus.Infoln("init configs finish")
 	if configs.ENV == configs.ENV_DEV {
 		go func() {

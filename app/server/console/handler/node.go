@@ -9,7 +9,7 @@ import (
 	"github.com/jin06/binlogo/v2/app/server/console/module/node"
 	"github.com/jin06/binlogo/v2/internal/constant"
 	"github.com/jin06/binlogo/v2/pkg/store/dao"
-	node2 "github.com/jin06/binlogo/v2/pkg/store/model/node"
+	nodeModel "github.com/jin06/binlogo/v2/pkg/store/model/node"
 	"github.com/sirupsen/logrus"
 )
 
@@ -47,12 +47,12 @@ func NodeList(c *gin.Context) {
 		if _, ok := capacityMap[v.Name]; ok {
 			i.Capacity = capacityMap[v.Name]
 		} else {
-			i.Capacity = node2.NewCapacity(v.Name)
+			i.Capacity = nodeModel.NewCapacity(v.Name)
 		}
 		if _, ok := statusMap[v.Name]; ok {
 			i.Status = statusMap[v.Name]
 		} else {
-			i.Status = node2.New(v.Name)
+			i.Status = nodeModel.New(v.Name)
 		}
 		if i.Node.Name == leaderNode {
 			i.Info.Role = constant.LEADER

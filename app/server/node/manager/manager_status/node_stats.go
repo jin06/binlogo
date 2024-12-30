@@ -15,10 +15,10 @@ import (
 // NodeStatus reporting work
 type NodeStatus struct {
 	NodeName    string
-	Node        *node.Node        `json:"node" redis:"node"`
-	Cap         *node.Capacity    `json:"cap" redis:"cap"`
-	Allocatable *node.Allocatable `json:"allocatable" redis:"allocatable"`
-	Conditions  *node.Condition   `json:"conditions" redis:"conditions"`
+	Node        *node.Node       `json:"node" redis:"node"`
+	Cap         node.Capacity    `json:"cap" redis:"cap"`
+	Allocatable node.Allocatable `json:"allocatable" redis:"allocatable"`
+	Conditions  *node.Condition  `json:"conditions" redis:"conditions"`
 }
 
 // NewNodeStatus returns a new NodeStatus
@@ -63,7 +63,7 @@ func (ns *NodeStatus) setStatus() (err error) {
 
 	c := ts[0]
 
-	capacity := &node.Capacity{
+	capacity := node.Capacity{
 		NodeName:   ns.NodeName,
 		Memory:     v.Total,
 		Cpu:        c.User + c.System + c.Idle,
@@ -79,7 +79,7 @@ func (ns *NodeStatus) setStatus() (err error) {
 		logrus.Error(err1)
 	}
 
-	al := &node.Allocatable{
+	al := node.Allocatable{
 		NodeName:   ns.NodeName,
 		Memory:     v.Available,
 		Cpu:        c.Idle,
@@ -98,11 +98,11 @@ func (ns *NodeStatus) setStatus() (err error) {
 }
 
 func (ns *NodeStatus) syncCap() (err error) {
-	_, err = dao.UpdateCapacity(context.Background(), ns.Cap)
+	_, err = dao.UpdateCapacity(context.Background(), &ns.Cap)
 	return
 }
 
 func (ns *NodeStatus) syncAllocatable() (err error) {
-	_, err = dao.UpdateAllocatable(context.Background(), ns.Allocatable)
+	_, err = dao.UpdateAllocatable(context.Background(), &ns.Allocatable)
 	return
 }

@@ -13,18 +13,13 @@ import (
 
 // NewCommand return a new *cobra.Command for cli
 func NewCommand() (cmd *cobra.Command) {
-	cmd = &cobra.Command{Use: "binctl", Run: func(cmd *cobra.Command, args []string) {
-		//fmt.Println("Operate pipeline")
-		//fmt.Println("init binctl")
-	}}
+	cmd = &cobra.Command{Use: "binctl", Run: func(cmd *cobra.Command, args []string) {}}
 	cmd.AddCommand(cmdMemory())
 	cmd.AddCommand(cmdPipeline())
 	cmd.PersistentFlags().String("config", "./etc/binlogo.yaml", "config file default is ./etc/binlogo.yaml")
 	err := viper.BindPFlag("config", cmd.PersistentFlags().Lookup("config"))
-	// configs.InitViperFromFile(viper.GetString("config"))
 	configs.Init(viper.GetString("config"))
-	//etcd2.DefaultETCD()
-	blog.Env(configs.Env(viper.GetString("env")))
+	blog.SetLevel(configs.Default.LogLevel)
 	if err != nil {
 		fmt.Println(err)
 	}
