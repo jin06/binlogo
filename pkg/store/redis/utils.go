@@ -7,14 +7,15 @@ import (
 )
 
 const (
-	NodeKey        = "node"
-	CapacityKey    = "capacity"
-	StatusKey      = "status"
-	ClusterKey     = "cluster"
-	ElectionKey    = "election"
-	AllocatableKey = "allocatable"
-	RegisterKey    = "register"
-	MasterKey      = "master"
+	NodeKey         = "node"
+	CapacityKey     = "capacity"
+	StatusKey       = "status"
+	ClusterKey      = "cluster"
+	ElectionKey     = "election"
+	AllocatableKey  = "allocatable"
+	RegisterKey     = "register"
+	MasterKey       = "master"
+	PipelineBindKey = "pipeline_bind"
 )
 
 func Prefix() string {
@@ -55,5 +56,9 @@ func AllocatablePrefix() string {
 }
 
 func MasterPreifx() string {
-	return fmt.Sprintf("%s/%s", NodePrefix, MasterKey)
+	return fmt.Sprintf("%s/%s", NodePrefix(), MasterKey)
+}
+
+func PipelineBindPrefix() string {
+	return fmt.Sprintf("%s/%s", ClusterPrefix(), PipelineBindKey)
 }

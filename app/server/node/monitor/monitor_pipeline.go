@@ -29,7 +29,7 @@ func (m *Monitor) monitorPipe(ctx context.Context) (err error) {
 		return
 	}
 
-	m.checkAllPipelineBind()
+	m.checkAllPipelineBind(ctx)
 	m.checkAllPipelineDelete()
 	ticker := time.NewTicker(time.Second * 120)
 	defer ticker.Stop()
@@ -37,7 +37,7 @@ func (m *Monitor) monitorPipe(ctx context.Context) (err error) {
 		select {
 		case <-ticker.C:
 			{
-				m.checkAllPipelineBind()
+				m.checkAllPipelineBind(ctx)
 				m.checkAllPipelineDelete()
 			}
 		case <-ctx.Done():
@@ -49,7 +49,7 @@ func (m *Monitor) monitorPipe(ctx context.Context) (err error) {
 				}
 				if n.Event.Type == mvccpb.DELETE {
 					if val, ok := n.Data.(*pipeline.Pipeline); ok {
-						_, err1 := dao.DeletePipelineBind(val.Name)
+						_, err1 := dao.DeletePipelineBind(ctx, val.Name)
 						if err1 != nil {
 							logrus.Error("Delete pipeline bind failed: ", err1)
 						}
@@ -62,12 +62,12 @@ func (m *Monitor) monitorPipe(ctx context.Context) (err error) {
 							continue
 						}
 						if val.ExpectRun() {
-							err1 := dao.UpdatePipelineBindIfNotExist(val.Name, "")
+							err1 := dao.UpdatePipelineBindIfNotExist(ctx, val.Name, "")
 							if err1 != nil {
 								logrus.Error("Update pipeline bind failed ", err1)
 							}
 						} else {
-							if _, err1 := dao.DeletePipelineBind(val.Name); err1 != nil {
+							if _, err1 := dao.DeletePipelineBind(ctx, val.Name); err1 != nil {
 								logrus.Errorln(err1)
 							}
 						}
@@ -78,7 +78,7 @@ func (m *Monitor) monitorPipe(ctx context.Context) (err error) {
 	}
 }
 
-func (m *Monitor) checkAllPipelineBind() {
+func (m *Monitor) checkAllPipelineBind(ctx context.Context) {
 	var err error
 	defer func() {
 		if err != nil {
@@ -97,14 +97,14 @@ func (m *Monitor) checkAllPipelineBind() {
 	for _, v := range pipes {
 		if v.ExpectRun() {
 			if _, ok := pb.Bindings[v.Name]; !ok {
-				errUpdate := dao.UpdatePipelineBindIfNotExist(v.Name, "")
+				errUpdate := dao.UpdatePipelineBindIfNotExist(ctx, v.Name, "")
 				if errUpdate != nil {
 					logrus.Error(errUpdate)
 				}
 			}
 		} else {
 			if _, ok := pb.Bindings[v.Name]; ok {
-				_, errDel := dao.DeletePipelineBind(v.Name)
+				_, errDel := dao.DeletePipelineBind(ctx, v.Name)
 				if errDel != nil {
 					logrus.Errorln(errDel)
 				}
@@ -119,7 +119,7 @@ func (m *Monitor) checkAllPipelineBind() {
 
 	for k := range pb.Bindings {
 		if _, ok := pipes[k]; !ok {
-			_, errDel := dao.DeletePipelineBind(k)
+			_, errDel := dao.DeletePipelineBind(ctx, k)
 			if errDel != nil {
 				logrus.Errorln(errDel)
 			}

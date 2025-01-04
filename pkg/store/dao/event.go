@@ -27,7 +27,7 @@ func EventNodePrefix() string {
 	return EventPrefix() + "/node"
 }
 
-func _listEvent(key string, opts ...clientv3.OpOption) (list map[string]*model.Event, err error) {
+func listEvent(key string, opts ...clientv3.OpOption) (list map[string]*model.Event, err error) {
 	opts = append(opts, clientv3.WithPrefix())
 	resp, err := etcdclient.Default().Get(context.Background(), key, opts...)
 	if err != nil {
@@ -55,7 +55,7 @@ func ListEvent(resType string, resName string, limit int64, sortTarget clientv3.
 	} else {
 		key = EventPrefix() + "/" + resType + "/" + resName
 	}
-	return _listEvent(
+	return listEvent(
 		key,
 		clientv3.WithLimit(limit),
 		clientv3.WithSort(sortTarget, sortOrder),
@@ -70,7 +70,7 @@ func ScrollListEvent(key string, n int64, sortTarget clientv3.SortTarget, sortOr
 	if n <= 0 {
 		n = 20
 	}
-	return _listEvent(
+	return listEvent(
 		key,
 		clientv3.WithFromKey(),
 		clientv3.WithLimit(n),

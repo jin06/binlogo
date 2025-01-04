@@ -118,7 +118,7 @@ func (m *Monitor) checkAllNode() (err error) {
 	return
 }
 
-func (m *Monitor) checkAllNodeBind() (err error) {
+func (m *Monitor) checkAllNodeBind(ctx context.Context) (err error) {
 	nodes, err := dao.AllNodes(context.Background())
 	if err != nil {
 		return
@@ -133,7 +133,7 @@ func (m *Monitor) checkAllNodeBind() (err error) {
 	}
 	for k, v := range pb.Bindings {
 		if _, ok := mNodes[v]; !ok {
-			_, err = dao.UpdatePipelineBind(k, "")
+			_, err = dao.UpdatePipelineBind(ctx, k, "")
 			if err != nil {
 				return
 			}

@@ -51,8 +51,7 @@ func (m *Manager) Run(ctx context.Context) {
 						m.setRole(constant.FOLLOWER)
 					}
 				}
-			}
-			if m.role == constant.FOLLOWER {
+			} else {
 				err := dao.AcquireMasterLock(ctx, m.optNode)
 				if err == nil {
 					m.setRole(constant.LEADER)

@@ -12,25 +12,6 @@ import (
 	clientv3 "go.etcd.io/etcd/client/v3"
 )
 
-func WrapStrHandler() Handler {
-	return func(e *clientv3.Event) (ev *Event, err error) {
-		ev = &Event{}
-		var m string
-		ev.Event = e
-		ev.Data = m
-		if e.Type == mvccpb.DELETE {
-
-		} else {
-			err = json.Unmarshal(e.Kv.Value, &m)
-			if err != nil {
-				logrus.Error(err)
-				return
-			}
-		}
-		return
-	}
-}
-
 func WrapSchedulerBinding() Handler {
 	return func(e *clientv3.Event) (ev *Event, err error) {
 		ev = &Event{}
@@ -118,33 +99,6 @@ func WrapNode(prefix string, nodeName string) Handler {
 		} else {
 			err = m.Unmarshal(e.Kv.Value)
 			if err != nil {
-				return
-			}
-		}
-		return
-	}
-}
-
-func WrapInstance(prefix string, pipeName string) Handler {
-	return func(e *clientv3.Event) (ev *Event, err error) {
-		ev = &Event{}
-		m := &pipeline.Instance{}
-		ev.Event = e
-		ev.Data = m
-		if e.Type == mvccpb.DELETE {
-			if pipeName == "" {
-				_, err = fmt.Sscanf(string(e.Kv.Key), prefix+"/%s", &m.PipelineName)
-				if err != nil {
-					logrus.Error(err)
-					return
-				}
-			} else {
-				m.PipelineName = pipeName
-			}
-		} else {
-			err = json.Unmarshal(e.Kv.Value, &m)
-			if err != nil {
-				logrus.Error(err)
 				return
 			}
 		}

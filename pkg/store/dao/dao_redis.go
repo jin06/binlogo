@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/jin06/binlogo/v2/configs"
+	"github.com/jin06/binlogo/v2/pkg/store/model"
 	"github.com/jin06/binlogo/v2/pkg/store/model/node"
 	"github.com/jin06/binlogo/v2/pkg/store/model/pipeline"
 	storeredis "github.com/jin06/binlogo/v2/pkg/store/redis"
@@ -346,4 +347,28 @@ func (d *DaoRedis) AllElections() (res []map[string]any, err error) {
 func (d *DaoRedis) UpdateAllocatable(ctx context.Context, al *node.Allocatable) (ok bool, err error) {
 	i, err := d.client().HSet(ctx, storeredis.AllocatablePrefix(), al.NodeName, al.Val()).Result()
 	return (i > 0), err
+}
+
+func (d *DaoRedis) GetPipelineBind(ctx context.Context) (*model.PipelineBind, error) {
+	bindings, err := d.client().HGetAll(ctx, storeredis.PipelineBindPrefix()).Result()
+	if err != nil {
+		return nil, err
+	}
+	return &model.PipelineBind{
+		Bindings: bindings,
+	}, nil
+}
+
+func (d *DaoRedis) UpdatePipelineBindIfNotExist(ctx context.Context, pName string, nName string) error {
+	return d.client().HSetNX(ctx, storeredis.PipelineBindPrefix(), pName, nName).Err()
+}
+
+func (d *DaoRedis) UpdatePipelineBind(ctx context.Context, pName string, nName string) (bool, error) {
+	i, err := d.client().HSet(ctx, storeredis.PipelineBindPrefix(), pName, nName).Result()
+	return i > 0, err
+}
+
+func (d *DaoRedis) DeletePipelineBind(ctx context.Context, pName string) (bool, error) {
+	i, err := d.client().HDel(ctx, storeredis.PipelineBindPrefix(), pName).Result()
+	return i > 0, err
 }

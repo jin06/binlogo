@@ -44,6 +44,10 @@ type Dao interface {
 	LeaderNode(ctx context.Context) (node string, err error)
 	UpdateAllocatable(ctx context.Context, al *node.Allocatable) (ok bool, err error)
 	AllElections() (res []map[string]any, err error)
+	GetPipelineBind(ctx context.Context) (*model.PipelineBind, error)
+	UpdatePipelineBindIfNotExist(ctx context.Context, pName string, nName string) error
+	UpdatePipelineBind(ctx context.Context, pName string, nName string) (bool, error)
+	DeletePipelineBind(ctx context.Context, pName string) (ok bool, err error)
 }
 
 // ClearOrDeleteBind clear or delete pipeline bind

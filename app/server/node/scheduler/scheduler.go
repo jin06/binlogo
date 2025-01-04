@@ -36,11 +36,9 @@ func New() (s *Scheduler) {
 // Run start working
 func (s *Scheduler) Run(ctx context.Context) (err error) {
 	logrus.Info("scheduler run")
-	defer func() {
-		s.Exit = true
-		logrus.Info("scheduler stop")
-	}()
 	s.schedule(ctx)
+	s.Exit = true
+	logrus.Info("scheduler stop")
 	return
 }
 
@@ -49,15 +47,15 @@ func (s *Scheduler) schedule(ctx context.Context) {
 	defer cancel()
 	key := fmt.Sprintf("%s/%s", dao.SchedulerPrefix(), "pipeline_bind")
 	w, err := watcher.New(watcher.WithHandler(watcher.WrapSchedulerBinding()), watcher.WithKey(key))
-	defer w.Close()
 	if err != nil {
 		return
 	}
+	defer w.Close()
 	waCh, err := w.WatchEtcd(stx)
 	if err != nil {
 		return
 	}
-	schedulePipes(nil)
+	schedulePipes(ctx, nil)
 	ticker := time.NewTicker(time.Second * 60)
 	defer ticker.Stop()
 	for {
@@ -73,12 +71,12 @@ func (s *Scheduler) schedule(ctx context.Context) {
 			{
 				if ev.Event.Type == mvccpb.PUT {
 					if val, ok := ev.Data.(*model.PipelineBind); ok {
-						schedulePipes(val)
+						schedulePipes(ctx, val)
 					}
 				}
 			}
 		case <-ticker.C:
-			schedulePipes(nil)
+			schedulePipes(ctx, nil)
 		}
 	}
 }
@@ -95,13 +93,13 @@ func (s *Scheduler) stop() {
 	})
 }
 
-func scheduleOne(p *pipeline.Pipeline) (err error) {
+func scheduleOne(ctx context.Context, p *pipeline.Pipeline) (err error) {
 	a := newAlgorithm(withAlgPipe(p))
 	err = a.cal()
 	if err != nil {
 		return
 	}
-	_, err = dao.UpdatePipelineBind(p.Name, a.bestNode.Name)
+	_, err = dao.UpdatePipelineBind(ctx, p.Name, a.bestNode.Name)
 	if err != nil {
 		return
 	}
@@ -125,13 +123,13 @@ func noScheduledPipelines(pb *model.PipelineBind) (pipes []*pipeline.Pipeline, e
 	return
 }
 
-func schedulePipes(pb *model.PipelineBind) {
+func schedulePipes(ctx context.Context, pb *model.PipelineBind) {
 	pipes, err := noScheduledPipelines(pb)
 	if err != nil {
 		return
 	}
 	for _, v := range pipes {
-		er := scheduleOne(v)
+		er := scheduleOne(ctx, v)
 		if er != nil {
 			event.EventErrorPipeline(v.Name, "SCHEDULING: "+er.Error())
 		} else {

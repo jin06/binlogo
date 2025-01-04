@@ -6,8 +6,10 @@ import "encoding/json"
 // the node will watch pipeline bind, run pipeline instance if node get the bind,
 // stop instance if node lost bind
 type PipelineBind struct {
-	Bindings map[string]string `json:"bindings" redis:"bindings"`
+	Bindings Bindings `json:"bindings" redis:"bindings"`
 }
+
+type Bindings map[string]string
 
 // EmptyPipelineBind returns a empty pipeline bind
 func EmptyPipelineBind() *PipelineBind {
