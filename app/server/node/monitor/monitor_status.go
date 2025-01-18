@@ -9,7 +9,6 @@ import (
 	"github.com/jin06/binlogo/v2/pkg/store/dao"
 	"github.com/jin06/binlogo/v2/pkg/store/model/node"
 	"github.com/sirupsen/logrus"
-	"go.etcd.io/etcd/api/v3/mvccpb"
 )
 
 func (m *Monitor) monitorStatus(ctx context.Context) (err error) {
@@ -53,13 +52,13 @@ func (m *Monitor) monitorStatus(ctx context.Context) (err error) {
 					return
 				}
 				if val, ok := e.Data.(*node.Status); ok {
-					if e.Event.Type == mvccpb.DELETE {
+					if e.EventType == watcher.EventTypeDelete {
 						err1 := removePipelineBindIfBindNode(val.NodeName)
 						if err1 != nil {
 							logrus.Errorln(err1)
 						}
 					}
-					if e.Event.Type == mvccpb.PUT {
+					if e.EventType == watcher.EventTypeUpdate {
 						if val.Ready == false {
 							err1 := removePipelineBindIfBindNode(val.NodeName)
 							if err1 != nil {

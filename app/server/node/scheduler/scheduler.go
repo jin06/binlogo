@@ -2,18 +2,14 @@ package scheduler
 
 import (
 	"context"
-	"fmt"
 	"sync"
 	"time"
-
-	"github.com/jin06/binlogo/v2/pkg/watcher"
 
 	"github.com/jin06/binlogo/v2/pkg/event"
 	"github.com/jin06/binlogo/v2/pkg/store/dao"
 	"github.com/jin06/binlogo/v2/pkg/store/model"
 	"github.com/jin06/binlogo/v2/pkg/store/model/pipeline"
 	"github.com/sirupsen/logrus"
-	"go.etcd.io/etcd/api/v3/mvccpb"
 )
 
 // Scheduler schedule the pipeline.
@@ -43,20 +39,20 @@ func (s *Scheduler) Run(ctx context.Context) (err error) {
 }
 
 func (s *Scheduler) schedule(ctx context.Context) {
-	stx, cancel := context.WithCancel(ctx)
-	defer cancel()
-	key := fmt.Sprintf("%s/%s", dao.SchedulerPrefix(), "pipeline_bind")
-	w, err := watcher.New(watcher.WithHandler(watcher.WrapSchedulerBinding()), watcher.WithKey(key))
-	if err != nil {
-		return
-	}
-	defer w.Close()
-	waCh, err := w.WatchEtcd(stx)
-	if err != nil {
-		return
-	}
+	// stx, cancel := context.WithCancel(ctx)
+	// defer cancel()
+	// key := fmt.Sprintf("%s/%s", dao.SchedulerPrefix(), "pipeline_bind")
+	// w, err := watcher.New(watcher.WithHandler(watcher.WrapSchedulerBinding()), watcher.WithKey(key))
+	// if err != nil {
+	// 	return
+	// }
+	// defer w.Close()
+	// waCh, err := w.WatchEtcd(stx)
+	// if err != nil {
+	// return
+	// }
 	schedulePipes(ctx, nil)
-	ticker := time.NewTicker(time.Second * 60)
+	ticker := time.NewTicker(time.Second * 1)
 	defer ticker.Stop()
 	for {
 		select {
@@ -64,17 +60,17 @@ func (s *Scheduler) schedule(ctx context.Context) {
 			return
 		case <-ctx.Done():
 			return
-		case ev, whOK := <-waCh:
-			if !whOK {
-				return
-			}
-			{
-				if ev.Event.Type == mvccpb.PUT {
-					if val, ok := ev.Data.(*model.PipelineBind); ok {
-						schedulePipes(ctx, val)
-					}
-				}
-			}
+		// case ev, whOK := <-waCh:
+		// 	if !whOK {
+		// 		return
+		// 	}
+		// 	{
+		// 		if ev.Event.Type == mvccpb.PUT {
+		// 			if val, ok := ev.Data.(*model.PipelineBind); ok {
+		// 				schedulePipes(ctx, val)
+		// 			}
+		// 		}
+		// 	}
 		case <-ticker.C:
 			schedulePipes(ctx, nil)
 		}

@@ -50,6 +50,11 @@ func (d *DaoRedis) instanceKey(name string) string {
 	return fmt.Sprintf("%s/%s", d.instancePrefix(), name)
 }
 
+func (d *DaoRedis) publish(ctx context.Context, channel string, message any) error {
+	cmd := d.client().Publish(ctx, channel, message)
+	return cmd.Err()
+}
+
 func scanKeysWithPrefix(ctx context.Context, client *redis.Client, prefix string) ([]string, error) {
 	var cursor uint64 = 0
 	var keys []string
@@ -272,11 +277,44 @@ func (d *DaoRedis) CapacityMap(ctx context.Context) (mapping map[string]*node.Ca
 }
 
 func (d *DaoRedis) AllStatus(ctx context.Context) (list []*node.Status, err error) {
-	var result map[string]string
-	result, err = d.client().HGetAll(ctx, storeredis.StatusPrefix()).Result()
-	if err != nil {
-		return
+	var cursor uint64
+	for {
+		keys, nextCursor, err := d.client().Scan(ctx, cursor, storeredis.GetStatusKey("*"), 10).Result()
+		if err != nil {
+			return nil, err
+		}
+		for _, key := range keys {
+			keyType, err := d.client().Type(ctx, key).Result()
+			if err != nil {
+				logrus.Error(err)
+				continue
+			}
+			if keyType == "hash" {
+				cmd := d.client().HGetAll(ctx, key)
+				if cmd.Err() != nil {
+					return nil, cmd.Err()
+				}
+				item := &node.Status{}
+				err := cmd.Scan(item)
+				if err != nil {
+					logrus.Error(err)
+					continue
+				}
+				list = append(list, item)
+			}
+		}
+		if nextCursor == 0 {
+			break
+		}
+		cursor = nextCursor
+
 	}
+
+	var result map[string]string
+	// result, err = d.client().HGetAll(ctx, storeredis.StatusPrefix()).Result()
+	// if err != nil {
+	// return
+	// }
 	for _, v := range result {
 		item := &node.Status{}
 		if err := item.Unmarshal([]byte(v)); err != nil {
@@ -299,18 +337,15 @@ func (d *DaoRedis) StatusMap(ctx context.Context) (mapping map[string]*node.Stat
 	return
 }
 
-func (d *DaoRedis) CreateOrUpdateStatus(ctx context.Context, nodeName string, opts ...node.StatusOption) (ok bool, err error) {
-	status, err := d.GetStatus(ctx, nodeName)
-	if err != nil {
-		return false, err
+func (d *DaoRedis) CreateOrUpdateStatus(ctx context.Context, nodeName string, conditions node.StatusConditions) (ok bool, err error) {
+	values := []any{}
+	for name, val := range conditions {
+		values = append(values, name, val)
 	}
-	if status == nil {
-		status = &node.Status{}
+	if len(values) == 0 {
+		return false, nil
 	}
-	for _, v := range opts {
-		v(status)
-	}
-	i, err := d.client().HSet(ctx, storeredis.StatusPrefix(), nodeName, status.Val()).Result()
+	i, err := d.client().HSet(ctx, storeredis.GetStatusKey(nodeName), values...).Result()
 	if err != nil {
 		return false, err
 	}
@@ -318,17 +353,15 @@ func (d *DaoRedis) CreateOrUpdateStatus(ctx context.Context, nodeName string, op
 }
 
 func (d *DaoRedis) GetStatus(ctx context.Context, nodeName string) (s *node.Status, err error) {
-	var str string
-	if str, err = d.client().HGet(ctx, storeredis.StatusPrefix(), nodeName).Result(); err != nil {
-		if err == redis.Nil {
-			return nil, nil
+	cmd := d.client().HGetAll(ctx, storeredis.GetStatusKey(nodeName))
+	if err = cmd.Err(); err != nil {
+		if err != redis.Nil {
+			return nil, err
 		}
-		return
+		return nil, nil
 	}
 	s = &node.Status{}
-	if err = s.Unmarshal([]byte(str)); err != nil {
-		return
-	}
+	cmd.Scan(s)
 	return
 }
 
@@ -359,16 +392,45 @@ func (d *DaoRedis) GetPipelineBind(ctx context.Context) (*model.PipelineBind, er
 	}, nil
 }
 
+func (d *DaoRedis) publishPelineBindChange(ctx context.Context) error {
+	data, err := d.GetPipelineBind(ctx)
+	if err != nil {
+		return err
+	}
+	return d.client().Publish(ctx, storeredis.PipelineBindChan(), data).Err()
+}
+
 func (d *DaoRedis) UpdatePipelineBindIfNotExist(ctx context.Context, pName string, nName string) error {
-	return d.client().HSetNX(ctx, storeredis.PipelineBindPrefix(), pName, nName).Err()
+	if err := d.client().HSetNX(ctx, storeredis.PipelineBindPrefix(), pName, nName).Err(); err != nil {
+		return err
+	}
+	d.publishPelineBindChange(ctx)
+	return nil
 }
 
 func (d *DaoRedis) UpdatePipelineBind(ctx context.Context, pName string, nName string) (bool, error) {
 	i, err := d.client().HSet(ctx, storeredis.PipelineBindPrefix(), pName, nName).Result()
+	d.publishPelineBindChange(ctx)
 	return i > 0, err
 }
 
 func (d *DaoRedis) DeletePipelineBind(ctx context.Context, pName string) (bool, error) {
 	i, err := d.client().HDel(ctx, storeredis.PipelineBindPrefix(), pName).Result()
+	d.publishPelineBindChange(ctx)
 	return i > 0, err
+}
+
+func (d *DaoRedis) WatchPipelinBind(ctx context.Context) chan model.PipelineBind {
+	pubsub := d.client().Subscribe(ctx, storeredis.PipelineBindChan())
+	ch := make(chan model.PipelineBind)
+	go func() {
+		msgch := pubsub.Channel()
+		for {
+			select {
+			case msg := <-msgch:
+				fmt.Println(msg)
+			}
+		}
+	}()
+	return ch
 }

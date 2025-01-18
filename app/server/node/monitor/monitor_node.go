@@ -5,42 +5,26 @@ import (
 	"time"
 
 	"github.com/jin06/binlogo/v2/pkg/store/dao"
-	nodeModel "github.com/jin06/binlogo/v2/pkg/store/model/node"
+	nodeM "github.com/jin06/binlogo/v2/pkg/store/model/node"
 	"github.com/jin06/binlogo/v2/pkg/watcher"
 	"github.com/sirupsen/logrus"
-	"go.etcd.io/etcd/api/v3/mvccpb"
 )
 
 func (m *Monitor) monitorNode(ctx context.Context) (err error) {
 	logrus.Info("monitor node run ")
 	defer logrus.Info("monitor node stop")
-	stx, cancel := context.WithCancel(ctx)
-	defer cancel()
-	key := dao.NodePrefix()
 
-	nodeWatcher, err := watcher.New(watcher.WithKey(key), watcher.WithHandler(watcher.WrapNode(key, "")))
-	defer nodeWatcher.Close()
+	watcher, err := watcher.New()
 	if err != nil {
 		return
 	}
-	ch, err := nodeWatcher.WatchEtcdList(stx)
-	if err != nil {
-		return
-	}
-
-	regKey := dao.NodeRegisterPrefix()
-	regWatcher, err := watcher.New(watcher.WithKey(regKey), watcher.WithHandler(watcher.WrapNode(regKey, "")))
-	defer regWatcher.Close()
+	defer watcher.Close()
+	regCh, err := watcher.WatchNode(ctx)
 	if err != nil {
 		return
 	}
 
-	regCh, err := regWatcher.WatchEtcdList(ctx)
-	if err != nil {
-		return
-	}
-
-	if er := m.checkAllNode(); er != nil {
+	if er := m.checkAllNode(ctx); er != nil {
 		logrus.Error("Check all node bind error: ", er)
 	}
 
@@ -53,27 +37,19 @@ func (m *Monitor) monitorNode(ctx context.Context) (err error) {
 			{
 				return
 			}
-		case e, chOK := <-ch:
-			{
-				if !chOK {
-					return
-				}
-				if e.Event.Type == mvccpb.DELETE {
-				}
-			}
 		case e, ok := <-regCh:
 			{
 				if !ok {
 					return
 				}
-				er := handleEventRegNode(e)
+				er := handleEventRegNode(ctx, e)
 				if er != nil {
 					logrus.Errorln(er)
 				}
 			}
 		case <-ticker.C:
 			{
-				if er := m.checkAllNode(); er != nil {
+				if er := m.checkAllNode(ctx); er != nil {
 					logrus.Error("Check all node bind error: ", er)
 				}
 			}
@@ -81,7 +57,7 @@ func (m *Monitor) monitorNode(ctx context.Context) (err error) {
 	}
 }
 
-func (m *Monitor) checkAllNode() (err error) {
+func (m *Monitor) checkAllNode(ctx context.Context) (err error) {
 	regNodesMap, err := dao.AllRegisterNodesMap()
 	if err != nil {
 		return
@@ -98,12 +74,19 @@ func (m *Monitor) checkAllNode() (err error) {
 			readyStat = true
 			networkStat = false
 		}
-		_, err1 := dao.CreateOrUpdateStatus(k, nodeModel.WithReady(readyStat), nodeModel.WithNetworkUnavailable(networkStat))
+		_, err1 := dao.CreateOrUpdateStatus(
+			ctx,
+			k,
+			nodeM.StatusConditions{
+				nodeM.ConNetworkUnavailable: networkStat,
+				nodeM.ConReady:              readyStat,
+			},
+		)
 		if err1 != nil {
 			logrus.Error(err1)
 		}
 	}
-	statusMap, err := dao.StatusMap(context.Background())
+	statusMap, err := dao.StatusMap(ctx)
 	if err != nil {
 		return
 	}
@@ -142,14 +125,28 @@ func (m *Monitor) checkAllNodeBind(ctx context.Context) (err error) {
 	return
 }
 
-func handleEventRegNode(e *watcher.Event) (err error) {
-	if val, ok := e.Data.(*nodeModel.Node); ok {
-		if e.Event.Type == mvccpb.DELETE {
-			_, err = dao.CreateOrUpdateStatus(val.Name, nodeModel.WithReady(false), nodeModel.WithNetworkUnavailable(true))
+func handleEventRegNode(ctx context.Context, e *watcher.WatcherEvent) (err error) {
+	if val, ok := e.Data.(*nodeM.Node); ok {
+		if e.EventType.IsDelete() {
+			_, err = dao.CreateOrUpdateStatus(
+				ctx,
+				val.Name,
+				nodeM.StatusConditions{
+					nodeM.ConReady:              false,
+					nodeM.ConNetworkUnavailable: true,
+				},
+			)
 			return
 		}
-		if e.Event.Type == mvccpb.PUT {
-			_, err = dao.CreateOrUpdateStatus(val.Name, nodeModel.WithReady(true), nodeModel.WithNetworkUnavailable(false))
+		if e.EventType.IsUpdate() {
+			_, err = dao.CreateOrUpdateStatus(
+				ctx,
+				val.Name,
+				nodeM.StatusConditions{
+					nodeM.ConReady:              true,
+					nodeM.ConNetworkUnavailable: false,
+				},
+			)
 			return
 		}
 	}

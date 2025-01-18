@@ -33,7 +33,10 @@ func RunNode(c context.Context) (err error) {
 	if _, err = dao.RefreshNode(c, nodeOpts); err != nil {
 		return
 	}
-	if _, err = dao.CreateStatusIfNotExist(c, nodeOpts.Name, node.WithReady(true)); err != nil {
+	dao.CreateStatusIfNotExist(c, nodeOpts.Name, node.StatusConditions{
+		node.ConReady: true,
+	})
+	if err != nil {
 		logrus.Error(err)
 		return
 	}

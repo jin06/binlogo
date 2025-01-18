@@ -16,6 +16,7 @@ const (
 	RegisterKey     = "register"
 	MasterKey       = "master"
 	PipelineBindKey = "pipeline_bind"
+	ChannelKey      = "channel"
 )
 
 func Prefix() string {
@@ -24,6 +25,10 @@ func Prefix() string {
 
 func GetRegisterKey(s string) string {
 	return fmt.Sprintf("%s/%s", RegisterPrefix(), s)
+}
+
+func GetStatusKey(s string) string {
+	return fmt.Sprintf("%s/%s", StatusPrefix(), s)
 }
 
 func RegisterPrefix() string {
@@ -61,4 +66,12 @@ func MasterPreifx() string {
 
 func PipelineBindPrefix() string {
 	return fmt.Sprintf("%s/%s", ClusterPrefix(), PipelineBindKey)
+}
+
+func PipelineBindChan() string {
+	return fmt.Sprintf("%s/%s", PipelineBindPrefix(), ChannelKey)
+}
+
+func NodeChan() string {
+	return fmt.Sprintf("%s/%s", NodePrefix(), ChannelKey)
 }

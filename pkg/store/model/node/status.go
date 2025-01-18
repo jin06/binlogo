@@ -2,6 +2,20 @@ package node
 
 import "encoding/json"
 
+// StatusCondition Status field name
+type StatusCondition = string
+
+// StatusConditions Status conditions
+type StatusConditions = map[StatusCondition]bool
+
+const (
+	ConReady              StatusCondition = "ready"
+	ConNetworkUnavailable StatusCondition = "network_unavailable"
+	ConMemoryPressure     StatusCondition = "memory_pressure"
+	ConDiskPressure       StatusCondition = "disk_pressure"
+	ConCPUPressure        StatusCondition = "cpu_pressure"
+)
+
 // Status node status
 type Status struct {
 	NodeName           string `json:"node_name" redis:"node_name"`
