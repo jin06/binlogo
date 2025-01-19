@@ -17,6 +17,7 @@ const (
 	MasterKey       = "master"
 	PipelineBindKey = "pipeline_bind"
 	ChannelKey      = "channel"
+	PipelinesKey    = "pipelines"
 )
 
 func Prefix() string {
@@ -65,13 +66,17 @@ func MasterPreifx() string {
 }
 
 func PipelineBindPrefix() string {
-	return fmt.Sprintf("%s/%s", ClusterPrefix(), PipelineBindKey)
+	return fmt.Sprintf("%s/%s", Prefix(), PipelineBindKey)
 }
 
 func PipelineBindChan() string {
-	return fmt.Sprintf("%s/%s", PipelineBindPrefix(), ChannelKey)
+	return fmt.Sprintf("%s/%s", Prefix(), ChannelKey)
 }
 
 func NodeChan() string {
 	return fmt.Sprintf("%s/%s", NodePrefix(), ChannelKey)
+}
+
+func PipelinesPrefix() string {
+	return fmt.Sprintf("%s/%s", Prefix(), PipelinesKey)
 }

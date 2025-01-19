@@ -361,7 +361,7 @@ func (d *DaoRedis) GetStatus(ctx context.Context, nodeName string) (s *node.Stat
 		return nil, nil
 	}
 	s = &node.Status{}
-	cmd.Scan(s)
+	err = cmd.Scan(s)
 	return
 }
 
@@ -390,6 +390,18 @@ func (d *DaoRedis) GetPipelineBind(ctx context.Context) (*model.PipelineBind, er
 	return &model.PipelineBind{
 		Bindings: bindings,
 	}, nil
+}
+
+func (d *DaoRedis) getPipelineBindNode(ctx context.Context, name string) (nodeName string, err error) {
+	return d.client().HGet(ctx, storeredis.PipelineBindPrefix(), name).Result()
+}
+
+func (d *DaoRedis) setPipeLineBindNode(ctx context.Context, pName string, nodeName string) error {
+	return d.client().HSet(ctx, storeredis.PipelineBindPrefix(), pName, nodeName).Err()
+}
+
+func (d *DaoRedis) delPipelineBindNode(ctx context.Context, pName string) error {
+	return d.client().HDel(ctx, storeredis.PipelineBindPrefix(), pName).Err()
 }
 
 func (d *DaoRedis) publishPelineBindChange(ctx context.Context) error {
@@ -433,4 +445,74 @@ func (d *DaoRedis) WatchPipelinBind(ctx context.Context) chan model.PipelineBind
 		}
 	}()
 	return ch
+}
+
+func (d *DaoRedis) GetPipeline(ctx context.Context, name string) (p *pipeline.Pipeline, err error) {
+	raw, err := d.client().HGet(ctx, storeredis.PipelinesPrefix(), name).Bytes()
+	fmt.Println(storeredis.PipelinesPrefix())
+	if err != nil {
+		return nil, err
+	}
+
+	p = &pipeline.Pipeline{}
+	err = p.Unmarshal(raw)
+	return
+}
+
+func (d *DaoRedis) UpdatePipeline(ctx context.Context, name string, opts ...pipeline.OptionPipeline) (ok bool, err error) {
+	p, err := d.GetPipeline(ctx, name)
+	if err != nil {
+		return false, err
+	}
+	for _, v := range opts {
+		v(p)
+	}
+	cmd := d.client().HSet(ctx, PipelinesKey(), name, p.Val())
+	if err = cmd.Err(); err != nil {
+		if err == redis.Nil {
+			return false, nil
+		}
+		return
+	}
+	return
+}
+
+func (d *DaoRedis) AllPipelines(ctx context.Context) (list []*pipeline.Pipeline, err error) {
+	result, err := storeredis.GetClient().HGetAll(ctx, storeredis.PipelinesPrefix()).Result()
+	if err != nil {
+		return nil, err
+	}
+	for _, v := range result {
+		pipe := &pipeline.Pipeline{}
+		if err := pipe.Unmarshal([]byte(v)); err != nil {
+			continue
+		}
+		list = append(list, pipe)
+	}
+	return
+}
+
+func (d *DaoRedis) AllPipelinesMap(ctx context.Context) (mapping map[string]*pipeline.Pipeline, err error) {
+	list, err := AllPipelines(ctx)
+	if err != nil {
+		return
+	}
+	mapping = map[string]*pipeline.Pipeline{}
+	for i := 0; i < len(list); i++ {
+		mapping[list[i].Name] = list[i]
+	}
+	return
+}
+
+func (d *DaoRedis) ClearOrDeleteBind(ctx context.Context, name string) (err error) {
+	pipe, err := d.GetPipeline(ctx, name)
+	if err != nil {
+		return err
+	}
+	if pipe.ExpectRun() {
+		err = d.setPipeLineBindNode(ctx, name, "")
+	} else {
+		err = d.delPipelineBindNode(ctx, name)
+	}
+	return
 }

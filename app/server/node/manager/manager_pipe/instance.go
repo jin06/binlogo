@@ -46,13 +46,12 @@ func newInstance(pipeName string, nodeName string) *instance {
 }
 
 func (i *instance) init() (err error) {
-	pipeInfo, err := dao.GetPipeline(i.pipeName)
+	pipeInfo, err := dao.GetPipeline(context.TODO(), i.pipeName)
 	if err != nil {
 		return
 	}
 	if pipeInfo == nil {
-		err = errors.New("no pipeline: " + i.pipeName)
-		return
+		return errors.New("no pipeline: " + i.pipeName)
 	}
 	posPos, err := dao.GetPosition(i.pipeName)
 	if err != nil {

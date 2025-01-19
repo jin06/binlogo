@@ -95,8 +95,7 @@ func scheduleOne(ctx context.Context, p *pipeline.Pipeline) (err error) {
 	if err != nil {
 		return
 	}
-	_, err = dao.UpdatePipelineBind(ctx, p.Name, a.bestNode.Name)
-	if err != nil {
+	if _, err = dao.UpdatePipelineBind(ctx, p.Name, a.bestNode.Name); err != nil {
 		return
 	}
 	return

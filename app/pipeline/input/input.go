@@ -57,7 +57,7 @@ func (r *Input) Run(ctx context.Context) (err error) {
 		r.close()
 	}()
 	if r.canal == nil {
-		if err = r.prepareCanal(); err != nil {
+		if err = r.prepareCanal(ctx); err != nil {
 			r.log.WithError(err).Error("prepare canal")
 			return
 		}
@@ -100,8 +100,8 @@ func (r *Input) close() {
 	})
 }
 
-func (r *Input) prepareCanal() (err error) {
-	pipe, err := dao.GetPipeline(r.Options.PipeName)
+func (r *Input) prepareCanal(ctx context.Context) (err error) {
+	pipe, err := dao.GetPipeline(ctx, r.Options.PipeName)
 	if err != nil {
 		return
 	}

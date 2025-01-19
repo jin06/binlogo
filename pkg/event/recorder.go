@@ -6,10 +6,10 @@ import (
 	"time"
 
 	"github.com/golang/groupcache/lru"
+	"github.com/jin06/binlogo/v2/configs"
 	"github.com/jin06/binlogo/v2/pkg/store/dao"
 	"github.com/jin06/binlogo/v2/pkg/store/model"
 	"github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
 )
 
 // Recorder record event.
@@ -28,7 +28,8 @@ func New() (*Recorder, error) {
 	r.incomeChan = make(chan *model.Event, 16384)
 	r.flushChan = make(chan *model.Event, 4096)
 	r.cache = lru.New(4096)
-	r.nodeName = viper.GetString("node.name")
+	// r.nodeName = viper.GetString("node.name")
+	r.nodeName = configs.Default.NodeName
 	r.flushMap = map[string]*model.Event{}
 	return r, nil
 }
@@ -79,9 +80,9 @@ func (r Recorder) _send(ctx context.Context) {
 func (r Recorder) flush(force bool) {
 	if force || len(r.flushMap) >= 100 {
 		for _, v := range r.flushMap {
-			_, er := dao.UpdateEvent(context.Background(), v)
-			if er != nil {
-				logrus.Errorln("Write event to etcd failed: ", er)
+			_, err := dao.UpdateEvent(context.Background(), v)
+			if err != nil {
+				logrus.Errorln("Write event to etcd failed: ", err)
 			}
 		}
 		r.flushMap = map[string]*model.Event{}
@@ -91,7 +92,6 @@ func (r Recorder) flush(force bool) {
 // Event pass event to income chan
 func (r Recorder) Event(e *model.Event) {
 	r.incomeChan <- e
-	return
 }
 
 func (r Recorder) dispatch(new *model.Event) {

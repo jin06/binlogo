@@ -79,7 +79,7 @@ func PipeGet(c *gin.Context) {
 		return
 	}
 
-	item, err := pipeModule.GetItemByName(name)
+	item, err := pipeModule.GetItemByName(c, name)
 	if err != nil {
 		c.JSON(200, basic.Fail(err))
 		return
@@ -147,7 +147,7 @@ func PipeDelete(c *gin.Context) {
 		c.JSON(200, basic.Fail(err.Error()))
 		return
 	}
-	pipe, err := dao.GetPipeline(q.Name)
+	pipe, err := dao.GetPipeline(c, q.Name)
 	if err != nil {
 		c.JSON(200, basic.Fail(err.Error()))
 		return
@@ -156,7 +156,7 @@ func PipeDelete(c *gin.Context) {
 		c.JSON(200, basic.Fail("Only stopped pipeline can be deleted"))
 		return
 	}
-	ok, err := dao.UpdatePipeline(q.Name, pipeline.WithPipeDelete(true))
+	ok, err := dao.UpdatePipeline(c, q.Name, pipeline.WithPipeDelete(true))
 	if err != nil || !ok {
 		c.JSON(200, basic.Fail("Delete pipeline failed"))
 		return
@@ -176,7 +176,7 @@ func PipeIsFilter(c *gin.Context) {
 		c.JSON(200, basic.Fail("fatal error, refresh page and try again"))
 		return
 	}
-	pipe, err := dao.GetPipeline(name)
+	pipe, err := dao.GetPipeline(c, name)
 	if err != nil {
 		c.JSON(200, basic.Fail(err))
 		return
@@ -200,7 +200,7 @@ func PipeAddFilter(c *gin.Context) {
 		c.JSON(200, basic.Fail(err))
 		return
 	}
-	ok, err := dao.UpdatePipeline(q.PipeName, pipeline.WithAddFilter(q.Filter))
+	ok, err := dao.UpdatePipeline(c, q.PipeName, pipeline.WithAddFilter(q.Filter))
 	if err != nil || !ok {
 		c.JSON(200, basic.Fail("Add filter failed."))
 		return
@@ -218,7 +218,7 @@ func PipeUpdateFilter(c *gin.Context) {
 		c.JSON(200, basic.Fail(err))
 		return
 	}
-	ok, err := dao.UpdatePipeline(q.PipeName, pipeline.WithUpdateFilter(q.Index, q.Filter))
+	ok, err := dao.UpdatePipeline(c, q.PipeName, pipeline.WithUpdateFilter(q.Index, q.Filter))
 	if err != nil || !ok {
 		c.JSON(200, basic.Fail("Update filter failed."))
 		return
@@ -240,7 +240,7 @@ func PipeUpdate(c *gin.Context) {
 		}
 	}
 
-	pipe, err := dao.GetPipeline(q.Name)
+	pipe, err := dao.GetPipeline(c, q.Name)
 	if err != nil {
 		c.JSON(200, basic.Fail(err.Error()))
 		return
@@ -250,21 +250,22 @@ func PipeUpdate(c *gin.Context) {
 		return
 	}
 	pipelineDefault(q)
-	ok, err := dao.UpdatePipeline(q.Name, pipeline.WithPipeSafe(q))
-	if err != nil || !ok {
+	if _, err = dao.UpdatePipeline(c, q.Name, pipeline.WithPipeSafe(q)); err != nil {
 		c.JSON(200, "update failed")
 		return
 	}
-	item, _ := pipeModule.GetItemByName(q.Name)
+	item, _ := pipeModule.GetItemByName(c, q.Name)
 
 	c.JSON(200, basic.Success(item))
 }
 
+type updateStatusReq struct {
+	PipeName string          `json:"name"`
+	Status   pipeline.Status `json:"status"`
+}
+
 func UpdateStatus(c *gin.Context) {
-	q := struct {
-		PipeName string          `json:"name"`
-		Status   pipeline.Status `json:"status"`
-	}{}
+	q := updateStatusReq{}
 	if err := c.BindJSON(&q); err != nil {
 		c.JSON(200, basic.Fail(err.Error()))
 		return
@@ -275,7 +276,7 @@ func UpdateStatus(c *gin.Context) {
 		return
 	}
 
-	ok, err := dao.UpdatePipeline(q.PipeName, pipeline.WithPipeStatus(q.Status))
+	ok, err := dao.UpdatePipeline(c, q.PipeName, pipeline.WithPipeStatus(q.Status))
 	if err != nil || !ok {
 		c.JSON(200, basic.Fail("Update status failed "))
 		return
@@ -296,7 +297,7 @@ func UpdateMode(c *gin.Context) {
 		c.JSON(200, basic.Fail("Wrong param mode: "+q.Mode))
 		return
 	}
-	pipe, err := dao.GetPipeline(q.PipeName)
+	pipe, err := dao.GetPipeline(c, q.PipeName)
 	if err != nil {
 		c.JSON(200, basic.Fail(err.Error()))
 		return
@@ -305,7 +306,7 @@ func UpdateMode(c *gin.Context) {
 		c.JSON(200, basic.Fail("Only stopped pipeline can be updated"))
 		return
 	}
-	ok, err := dao.UpdatePipeline(q.PipeName, pipeline.WithPipeMode(q.Mode))
+	ok, err := dao.UpdatePipeline(c, q.PipeName, pipeline.WithPipeMode(q.Mode))
 	if err != nil || !ok {
 		c.JSON(200, basic.Fail("Update mode failed"))
 		return

@@ -43,7 +43,7 @@ func PositionUpdate(c *gin.Context) {
 		c.JSON(200, basic.Fail("mode error: "+q.Mode))
 		return
 	}
-	pipeStatus, err := pipeModule.PipeStatus(q.Position.PipelineName)
+	pipeStatus, err := pipeModule.PipeStatus(c, q.Position.PipelineName)
 	if err != nil {
 		c.JSON(200, basic.Fail(err))
 		return

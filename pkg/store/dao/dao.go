@@ -49,12 +49,16 @@ type Dao interface {
 	UpdatePipelineBindIfNotExist(ctx context.Context, pName string, nName string) error
 	UpdatePipelineBind(ctx context.Context, pName string, nName string) (bool, error)
 	DeletePipelineBind(ctx context.Context, pName string) (ok bool, err error)
+	GetPipeline(ctx context.Context, name string) (p *pipeline.Pipeline, err error)
+	UpdatePipeline(ctx context.Context, name string, opts ...pipeline.OptionPipeline) (ok bool, err error)
+	AllPipelines(ctx context.Context) (list []*pipeline.Pipeline, err error)
+	AllPipelinesMap(ctx context.Context) (mapping map[string]*pipeline.Pipeline, err error)
 }
 
 // ClearOrDeleteBind clear or delete pipeline bind
 // sets pipeline bind to blank if pipeline is expected to run, so pipeline will be scheduled to a node later
 // delete pipeline bind if pipeline is expected to stop, pipeline will not be scheduled a node.
-func ClearOrDeleteBind(name string) (err error) {
+func ClearOrDeleteBind(ctx context.Context, name string) (err error) {
 	if name == "" {
 		err = errors.New("empty name")
 		return
@@ -67,9 +71,11 @@ func ClearOrDeleteBind(name string) (err error) {
 	var revision int64
 	if len(res.Kvs) > 0 {
 		revision = res.Kvs[0].CreateRevision
-		err = pb.Unmarshal(res.Kvs[0].Value)
+		if err = pb.Unmarshal(res.Kvs[0].Value); err != nil {
+			return
+		}
 	}
-	pipe, err := GetPipeline(name)
+	pipe, err := GetPipeline(ctx, name)
 	if err != nil {
 		return
 	}

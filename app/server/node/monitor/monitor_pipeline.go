@@ -15,23 +15,10 @@ import (
 func (m *Monitor) monitorPipe(ctx context.Context) (err error) {
 	logrus.Info("monitor pipeline run ")
 	defer logrus.Info("monitor pipeline stop")
-	// stx, cancel := context.WithCancel(ctx)
-	// defer cancel()
-	// key := dao.PipelinePrefix()
-	// w, err := watcher.New(watcher.WithKey(key), watcher.WithHandler(watcher.WrapPipeline(key, "")))
-	// defer w.Close()
-	// if err != nil {
-	// 	return
-	// }
-	//ch, err := m.newPipeWatcherCh(ctx)
-	// ch, err := w.WatchEtcdList(stx)
-	// if err != nil {
-	// 	return
-	// }
 	ch := watcher.Default().WatchPipelinBind(ctx)
 
 	m.checkAllPipelineBind(ctx)
-	m.checkAllPipelineDelete()
+	m.checkAllPipelineDelete(ctx)
 	ticker := time.NewTicker(time.Second * 120)
 	defer ticker.Stop()
 	for {
@@ -39,7 +26,7 @@ func (m *Monitor) monitorPipe(ctx context.Context) (err error) {
 		case <-ticker.C:
 			{
 				m.checkAllPipelineBind(ctx)
-				m.checkAllPipelineDelete()
+				m.checkAllPipelineDelete(ctx)
 			}
 		case <-ctx.Done():
 			return
@@ -127,10 +114,9 @@ func (m *Monitor) checkAllPipelineBind(ctx context.Context) {
 			}
 		}
 	}
-	return
 }
 
-func (m *Monitor) checkAllPipelineDelete() {
+func (m *Monitor) checkAllPipelineDelete(ctx context.Context) {
 	var err error
 	defer func() {
 		if err != nil {
@@ -145,39 +131,27 @@ func (m *Monitor) checkAllPipelineDelete() {
 		if !v.IsDelete {
 			continue
 		}
-		errDelete := m.deletePipeline(v)
+		errDelete := m.deletePipeline(ctx, v)
 		if errDelete != nil {
 			logrus.Errorln("Delete pipeline error, ", errDelete)
 		}
 	}
-	return
 }
 
-func (m *Monitor) deletePipeline(p *pipeline.Pipeline) (err error) {
+func (m *Monitor) deletePipeline(ctx context.Context, p *pipeline.Pipeline) (err error) {
 	if p.Status != pipeline.STATUS_STOP {
-		var ok bool
-		ok, err = dao.UpdatePipeline(p.Name, pipeline.WithPipeStatus(pipeline.STATUS_STOP))
-		if err != nil || !ok {
-			return
+		if ok, err := dao.UpdatePipeline(ctx, p.Name, pipeline.WithPipeStatus(pipeline.STATUS_STOP)); err != nil || !ok {
+			return err
 		}
 	}
 	ins, err := dao.GetInstance(context.Background(), p.Name)
-	if err != nil {
+	if err != nil || ins != nil {
 		return
 	}
-	//if nodeName != "" {
-	//	return
-	//}
-	if ins != nil {
-		return
-	}
-	_, err = dao.DeletePosition(p.Name)
-	if err != nil {
+
+	if _, err = dao.DeletePosition(p.Name); err != nil {
 		return
 	}
 	_, err = dao.DeleteCompletePipeline(context.Background(), p.Name)
-	if err != nil {
-		return
-	}
 	return
 }
