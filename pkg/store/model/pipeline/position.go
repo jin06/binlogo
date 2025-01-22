@@ -6,12 +6,12 @@ import (
 
 // Position mysql replication position
 type Position struct {
-	BinlogFile     string `json:"binlog_file" redis:"binlog_file"`
-	BinlogPosition uint32 `json:"binlog_position" redis:"binlog_position"`
-	GTIDSet        string `json:"gtid_set" redis:"gtid_set"`
-	PipelineName   string `json:"pipeline_name" redis:"pipeline_name"`
-	TotalRows      int    `json:"total_rows" redis:"total_rows"`
-	ConsumeRows    int    `json:"consume_rows" redis:"consume_rows"`
+	BinlogFile     string `json:"binlog_file"`
+	BinlogPosition uint32 `json:"binlog_position"`
+	GTIDSet        string `json:"gtid_set"`
+	PipelineName   string `json:"pipeline_name"`
+	TotalRows      int    `json:"total_rows"`
+	ConsumeRows    int    `json:"consume_rows"`
 }
 
 // Key get etcd key prefix
@@ -20,16 +20,30 @@ func (s *Position) Key() (key string) {
 }
 
 // Val get position json data
-func (s *Position) Val() (val string) {
-	b, _ := json.Marshal(s)
-	val = string(b)
-	return
-}
+// func (s *Position) Val() (val string) {
+// 	b, _ := json.Marshal(s)
+// 	val = string(b)
+// 	return
+// }
 
 // Unmarshal unmarshal json data to object
-func (s *Position) Unmarshal(val []byte) (err error) {
-	err = json.Unmarshal(val, s)
-	return
+// func (s *Position) Unmarshal(val []byte) (err error) {
+// 	err = json.Unmarshal(val, s)
+// 	return
+// }
+
+func (s *Position) MarshalBinary() (data []byte, err error) {
+	return json.Marshal(s)
+}
+
+func (s *Position) ScanRedis(data string) error {
+	if data == "null" {
+		return nil
+	}
+	if err := json.Unmarshal([]byte(data), s); err != nil {
+		return err
+	}
+	return nil
 }
 
 // OptionPosition Position options

@@ -609,7 +609,7 @@ func (d *DaoRedis) GetRecord(ctx context.Context, pipe string) (r *pipeline.Reco
 		}
 		return nil, nil
 	}
-	r = &pipeline.RecordPosition{}
+	r = pipeline.NewRecordPosition()
 	err = cmd.Scan(r)
 	return
 }
