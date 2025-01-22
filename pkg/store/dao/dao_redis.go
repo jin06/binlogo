@@ -95,9 +95,46 @@ func getAllHashDatas[T any](ctx context.Context, client *redis.Client, prefix st
 	return
 }
 
-func (d *DaoRedis) GetInstance(ctx context.Context, pname string) (ins *pipeline.Instance, err error) {
+func (d *DaoRedis) RegisterInstance(ctx context.Context, ins *pipeline.Instance, exp time.Duration) error {
+	key := storeredis.GetPipeInstanceKey(ins.PipelineName)
+	err := d.client().Watch(ctx, func(tx *redis.Tx) error {
+		i, err := tx.Exists(ctx, key).Result()
+		if err != nil {
+			return err
+		}
+		if i > 0 {
+			return fmt.Errorf("pipeline exist: %s", key)
+		}
+		_, err = tx.Pipelined(ctx, func(p redis.Pipeliner) error {
+			p.HMSet(ctx, key, ins.Val(), exp)
+			p.Expire(ctx, key, exp)
+			_, err := p.Exec(ctx)
+			return err
+		})
+		return err
+	}, key)
+	return err
+}
+
+func (d *DaoRedis) UnRegisterInstance(ctx context.Context, pipe string, n string) error {
+	key := storeredis.GetPipeInstanceKey(pipe)
+	err := d.client().Watch(ctx, func(tx *redis.Tx) error {
+		ins := &pipeline.Instance{}
+		if err := tx.HGetAll(ctx, key).Scan(ins); err != nil {
+			return err
+		}
+		return tx.Del(ctx, key).Err()
+	}, key)
+	return err
+}
+
+func (d *DaoRedis) LeaseInstance(ctx context.Context, pipe string, exp time.Duration) (bool, error) {
+	return d.client().Expire(ctx, pipe, exp).Result()
+}
+
+func (d *DaoRedis) GetInstance(ctx context.Context, pipe string) (ins *pipeline.Instance, err error) {
 	ins = &pipeline.Instance{}
-	cmd := d.client().Get(ctx, d.instanceKey(pname))
+	cmd := d.client().HGetAll(ctx, storeredis.GetPipeInstanceKey(pipe))
 	if err = cmd.Err(); err != nil {
 		return
 	}
@@ -514,5 +551,65 @@ func (d *DaoRedis) ClearOrDeleteBind(ctx context.Context, name string) (err erro
 	} else {
 		err = d.delPipelineBindNode(ctx, name)
 	}
+	return
+}
+
+func (d *DaoRedis) UpdateEvent(ctx context.Context, e *model.Event) error {
+	key := e.Key()
+	expire := time.Duration(configs.Default.EventExpire) * time.Second
+	if expire <= 0 {
+		expire = time.Second * 86400
+	}
+	pipe := d.client().Pipeline()
+	pipe.HSet(ctx, key, e)
+	pipe.Expire(ctx, key, expire)
+	_, err := pipe.Exec(ctx)
+	return err
+}
+
+func (d *DaoRedis) GetPosition(ctx context.Context, pipe string) (p *pipeline.Position, err error) {
+	cmd := d.client().HGetAll(ctx, storeredis.GetPositionKey(pipe))
+	if err = cmd.Err(); err != nil {
+		return
+	}
+	p = &pipeline.Position{}
+	err = cmd.Scan(p)
+	return
+}
+
+func (d *DaoRedis) UpdatePosition(ctx context.Context, p *pipeline.Position) error {
+	return d.client().HMSet(ctx, storeredis.GetPositionKey(p.PipelineName), p).Err()
+}
+
+func (d *DaoRedis) DeletePosition(ctx context.Context, name string) (err error) {
+	return d.client().Del(ctx, storeredis.GetPositionKey(name)).Err()
+}
+
+func (d *DaoRedis) UpdateRecord(ctx context.Context, p *pipeline.RecordPosition) (err error) {
+	return d.client().HMSet(ctx, storeredis.GetRecordPositionKey(p.PipelineName), p).Err()
+}
+
+func (d *DaoRedis) UpdateRecordSafe(ctx context.Context, pipe string, opts ...pipeline.OptionRecord) (err error) {
+	r, err := d.GetRecord(ctx, pipe)
+	if err != nil {
+		return err
+	}
+	r.PipelineName = pipe
+	for _, v := range opts {
+		v(r)
+	}
+	return d.UpdateRecord(ctx, r)
+}
+
+func (d *DaoRedis) GetRecord(ctx context.Context, pipe string) (r *pipeline.RecordPosition, err error) {
+	cmd := d.client().HGetAll(ctx, storeredis.GetRecordPositionKey(pipe))
+	if err = cmd.Err(); err != nil {
+		if err != redis.Nil {
+			return
+		}
+		return nil, nil
+	}
+	r = &pipeline.RecordPosition{}
+	err = cmd.Scan(r)
 	return
 }

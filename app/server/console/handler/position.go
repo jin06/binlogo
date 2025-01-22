@@ -16,7 +16,7 @@ func PositionGet(c *gin.Context) {
 		return
 	}
 	//pos, err := dao.GetPosition(name)
-	record, err := dao.GetRecord(name)
+	record, err := dao.GetRecord(c, name)
 	if err != nil {
 		c.JSON(200, basic.Fail(err))
 		return
@@ -55,8 +55,8 @@ func PositionUpdate(c *gin.Context) {
 	switch q.Mode {
 	case pipeline.MODE_GTID:
 		{
-			var ok bool
-			ok, err = dao.UpdateRecordSafe(
+			err = dao.UpdateRecordSafe(
+				c,
 				q.Position.PipelineName,
 				pipeline.WithPre(&pipeline.Position{
 					PipelineName: q.Position.PipelineName,
@@ -64,15 +64,15 @@ func PositionUpdate(c *gin.Context) {
 				}),
 				pipeline.WithNow(nil),
 			)
-			if err != nil || !ok {
+			if err != nil {
 				c.JSON(200, basic.Fail("update failed "+err.Error()))
 				return
 			}
 		}
 	case pipeline.MODE_POSITION:
 		{
-			var ok bool
-			ok, err = dao.UpdateRecordSafe(
+			err = dao.UpdateRecordSafe(
+				c,
 				q.Position.PipelineName,
 				pipeline.WithPre(&pipeline.Position{
 					BinlogFile:     q.Position.BinlogFile,
@@ -81,7 +81,7 @@ func PositionUpdate(c *gin.Context) {
 				}),
 				pipeline.WithNow(nil),
 			)
-			if err != nil || !ok {
+			if err != nil {
 				c.JSON(200, basic.Fail("update failed "+err.Error()))
 				return
 			}

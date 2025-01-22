@@ -61,7 +61,7 @@ func (r *Input) Run(ctx context.Context) (err error) {
 			r.log.WithError(err).Error("prepare canal")
 			return
 		}
-		if err = r.runCanal(); err != nil {
+		if err = r.runCanal(ctx); err != nil {
 			r.log.WithError(err).Error("run canal")
 			return
 		}
@@ -124,14 +124,14 @@ func (r *Input) prepareCanal(ctx context.Context) (err error) {
 	return
 }
 
-func (r *Input) runCanal() (err error) {
+func (r *Input) runCanal(ctx context.Context) (err error) {
 	defer r.stop()
 	defer func() {
 		if err != nil {
 			logrus.Errorln("canal run failed with error, ", err.Error())
 		}
 	}()
-	record, err := dao.GetRecord(r.Options.PipeName)
+	record, err := dao.GetRecord(ctx, r.Options.PipeName)
 	if err != nil {
 		return
 	}
@@ -142,7 +142,7 @@ func (r *Input) runCanal() (err error) {
 				return
 			}
 		} else {
-			if canGTID, err = r.storeNewestGTID(); err != nil {
+			if canGTID, err = r.storeNewestGTID(ctx); err != nil {
 				return
 			}
 		}
@@ -162,7 +162,7 @@ func (r *Input) runCanal() (err error) {
 				logrus.WithField("mode", "GTID").Errorln(startErr.Error())
 				errCode := mysql.ErrorCode(startErr.Error())
 				if errCode == 1236 && r.pipe.FixPosNewest {
-					if canGTID, startErr = r.storeNewestGTID(); startErr != nil {
+					if canGTID, startErr = r.storeNewestGTID(ctx); startErr != nil {
 						return
 					} else {
 						event.Event(event_store.NewErrorPipeline(r.Options.PipeName, "Start mysql replication could not find first log file name in binary log index file, set current pipeline binlog postion to newest"))
@@ -185,7 +185,7 @@ func (r *Input) runCanal() (err error) {
 				Pos:  record.Pre.BinlogPosition,
 			}
 		} else {
-			if canPos, err = r.storeNewestPosition(); err != nil {
+			if canPos, err = r.storeNewestPosition(ctx); err != nil {
 				return
 			}
 		}
@@ -206,7 +206,7 @@ func (r *Input) runCanal() (err error) {
 				logrus.WithField("mode", "file index").Errorln(startErr.Error())
 				errCode := mysql.ErrorCode(startErr.Error())
 				if errCode == 1236 && r.pipe.FixPosNewest {
-					if canPos, startErr = r.storeNewestPosition(); startErr != nil {
+					if canPos, startErr = r.storeNewestPosition(ctx); startErr != nil {
 						return
 					} else {
 						event.Event(event_store.NewErrorPipeline(r.Options.PipeName, "Start mysql replication could not find first log file name in binary log index file, set current pipeline binlog postion to newest"))
@@ -227,11 +227,11 @@ func (r *Input) runCanal() (err error) {
 	return
 }
 
-func (r *Input) storeNewestGTID() (gtidSet mysql.GTIDSet, err error) {
+func (r *Input) storeNewestGTID(ctx context.Context) (gtidSet mysql.GTIDSet, err error) {
 	if gtidSet, err = r.canal.GetMasterGTIDSet(); err != nil {
 		return
 	}
-	err = dao.UpdateRecord(&pipeline.RecordPosition{
+	err = dao.UpdateRecord(ctx, &pipeline.RecordPosition{
 		PipelineName: r.Options.PipeName,
 		Pre: &pipeline.Position{
 			GTIDSet:      gtidSet.String(),
@@ -241,13 +241,13 @@ func (r *Input) storeNewestGTID() (gtidSet mysql.GTIDSet, err error) {
 	return
 }
 
-func (r *Input) storeNewestPosition() (pos mysql.Position, err error) {
+func (r *Input) storeNewestPosition(ctx context.Context) (pos mysql.Position, err error) {
 	pos, err = r.canal.GetMasterPos()
 	if err != nil {
 		logrus.Errorln(err)
 		return
 	}
-	err = dao.UpdateRecord(&pipeline.RecordPosition{
+	err = dao.UpdateRecord(ctx, &pipeline.RecordPosition{
 		PipelineName: r.Options.PipeName,
 		Pre: &pipeline.Position{
 			BinlogFile:     pos.Name,

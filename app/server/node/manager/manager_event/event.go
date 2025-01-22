@@ -72,15 +72,12 @@ func (m *Manager) cleanHistoryEvent() (err error) {
 			from := n.Name + ".0"
 			end := n.Name + "." + strconv.FormatInt(deleteTime, 10)
 			prefix := dao.EventPipelinePrefix() + "/" + pipe.Name + "/"
-
-			_, err1 := dao.DeleteRangeEvent(context.Background(), prefix+from, prefix+end)
-			if err1 != nil {
-				logrus.Errorln("Clean history events error: ", err1)
+			if _, err := dao.DeleteRangeEvent(context.Background(), prefix+from, prefix+end); err != nil {
+				logrus.Errorf("Clean history events error: %v", err)
 			}
 			prefix = dao.EventNodePrefix() + "/" + n.Name + "/"
-			_, err2 := dao.DeleteRangeEvent(context.Background(), prefix+from, prefix+end)
-			if err2 != nil {
-				logrus.Errorln("Clean history events error: ", err2)
+			if _, err := dao.DeleteRangeEvent(context.Background(), prefix+from, prefix+end); err != nil {
+				logrus.Errorf("Clean history events error: %v", err)
 			}
 		}
 	}

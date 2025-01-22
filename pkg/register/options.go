@@ -1,10 +1,16 @@
 package register
 
+import (
+	"time"
+
+	"github.com/jin06/binlogo/v2/pkg/store/model/pipeline"
+)
+
 // Option function to configure *Register
 type Option func(r *Register)
 
 // WithTTL sets ttl
-func WithTTL(ttl int64) Option {
+func WithTTL(ttl time.Duration) Option {
 	return func(r *Register) {
 		r.ttl = ttl
 	}
@@ -18,7 +24,7 @@ func WithKey(key string) Option {
 }
 
 // WithData sets registerData
-func WithData(data interface{}) Option {
+func WithData(data *pipeline.Instance) Option {
 	return func(r *Register) {
 		r.registerData = data
 	}

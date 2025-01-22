@@ -48,23 +48,20 @@ func AllPipelinesMap(ctx context.Context) (mapping map[string]*pipeline.Pipeline
 }
 
 // DeletePipeline delete pipeline info by name
-func DeletePipeline(ctx context.Context, name string) (ok bool, err error) {
+func DeletePipeline(ctx context.Context, name string) (err error) {
 	return storeredis.Default.Delete(ctx, &pipeline.Pipeline{Name: name})
 }
 
 // DeleteCompletePipeline delete pipeline, contains pipeline info, pipeline position
-func DeleteCompletePipeline(ctx context.Context, name string) (ok bool, err error) {
+func DeleteCompletePipeline(ctx context.Context, name string) (err error) {
 	if name == "" {
 		err = errors.New("empty name")
 		return
 	}
-	ok, err = DeletePipeline(ctx, name)
+	err = DeletePipeline(ctx, name)
 	if err != nil {
 		return
 	}
-	_, err = DeletePosition(name)
-	if err != nil {
-		return
-	}
+	err = DeletePosition(ctx, name)
 	return
 }

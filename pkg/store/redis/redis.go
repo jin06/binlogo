@@ -68,11 +68,8 @@ func (r *Redis) Update(ctx context.Context, m model.Model) (bool, error) {
 	return ok, err
 }
 
-func (r *Redis) Delete(ctx context.Context, m model.Model) (ok bool, err error) {
-	var i int64
-	i, err = r.client.Del(ctx, r.getPrefix(m)).Result()
-	ok = (i > 0)
-	return
+func (r *Redis) Delete(ctx context.Context, m model.Model) (err error) {
+	return r.client.Del(ctx, r.getPrefix(m)).Err()
 }
 
 func (r *Redis) Get(ctx context.Context, m model.Model) (ok bool, err error) {

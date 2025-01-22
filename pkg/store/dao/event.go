@@ -7,7 +7,6 @@ import (
 
 	"github.com/jin06/binlogo/v2/pkg/etcdclient"
 	"github.com/jin06/binlogo/v2/pkg/store/model"
-	storeredis "github.com/jin06/binlogo/v2/pkg/store/redis"
 	"github.com/sirupsen/logrus"
 	clientv3 "go.etcd.io/etcd/client/v3"
 )
@@ -79,13 +78,15 @@ func ScrollListEvent(key string, n int64, sortTarget clientv3.SortTarget, sortOr
 }
 
 // Update create or update event
-func UpdateEvent(ctx context.Context, e *model.Event) (bool, error) {
-	return storeredis.Default.Update(ctx, e)
+func UpdateEvent(ctx context.Context, e *model.Event) error {
+	return myDao.UpdateEvent(ctx, e)
 }
 
 // DeleteRange deletes events
 func DeleteRangeEvent(ctx context.Context, fromKey string, endKey string) (deleted int64, err error) {
-	res, err := etcdclient.Default().Delete(context.Background(), fromKey, clientv3.WithRange(endKey))
+	res, err := etcdclient.
+		Default().
+		Delete(context.Background(), fromKey, clientv3.WithRange(endKey))
 	if err != nil {
 		return
 	}

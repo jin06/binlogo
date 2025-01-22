@@ -16,9 +16,7 @@ var NodeName string
 // NodeIP current node's ip
 var NodeIP net.IP
 
-var Default Config = Config{
-	Test: "1111",
-}
+var Default Config = Config{}
 
 type Config struct {
 	Test        string  `yaml:"test"`
@@ -30,6 +28,9 @@ type Config struct {
 	Monitor     Monitor `yaml:"monitor"`
 	Store       Store   `yaml:"store"`
 	Auth        Auth    `yaml:"auth"`
+	Profile     bool    `yaml:"profile"`
+	ProfilePort uint    `yaml:"profile_port"`
+	EventExpire int     `yaml:"event_expire"`
 }
 
 func (cfg *Config) GetNodeName() string {

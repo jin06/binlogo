@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/jin06/binlogo/v2/configs"
@@ -37,7 +38,7 @@ func NewCommand() (cmd *cobra.Command) {
 				return err
 			}
 			if err := storeredis.Init(ctx, configs.Default.Store.Redis); err != nil {
-				return err
+				return errors.Join(errors.New("init redis error"), err)
 			}
 			dao.Init()
 			promeths.Init()

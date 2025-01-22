@@ -28,7 +28,6 @@ func New() (*Recorder, error) {
 	r.incomeChan = make(chan *model.Event, 16384)
 	r.flushChan = make(chan *model.Event, 4096)
 	r.cache = lru.New(4096)
-	// r.nodeName = viper.GetString("node.name")
 	r.nodeName = configs.Default.NodeName
 	r.flushMap = map[string]*model.Event{}
 	return r, nil
@@ -80,7 +79,7 @@ func (r Recorder) _send(ctx context.Context) {
 func (r Recorder) flush(force bool) {
 	if force || len(r.flushMap) >= 100 {
 		for _, v := range r.flushMap {
-			_, err := dao.UpdateEvent(context.Background(), v)
+			err := dao.UpdateEvent(context.Background(), v)
 			if err != nil {
 				logrus.Errorln("Write event to etcd failed: ", err)
 			}

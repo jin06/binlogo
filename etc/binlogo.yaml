@@ -1,6 +1,9 @@
 cluster_name: myCluster
 node_name: myNode
 log_level: debug # info,debug,warn,error,fatal
+profile: true
+profile_port: 6060
+event_expire: 60 # second, default 86400
 console:
   port: 8081
   listen: 

@@ -2,6 +2,7 @@ package dao
 
 import (
 	"context"
+	"time"
 
 	"github.com/jin06/binlogo/v2/pkg/store/model/pipeline"
 )
@@ -12,6 +13,14 @@ func GetInstance(ctx context.Context, pname string) (ins *pipeline.Instance, err
 	return myDao.GetInstance(ctx, pname)
 }
 
+func RegisterInstance(ctx context.Context, ins *pipeline.Instance, exp time.Duration) error {
+	return myDao.RegisterInstance(ctx, ins, exp)
+}
+
+func LeaseInstance(ctx context.Context, pipe string, exp time.Duration) (bool, error) {
+	return myDao.LeaseInstance(ctx, pipe, exp)
+}
+
 // AllInstance returns all pipeline instances in array form
 func AllInstance(ctx context.Context) (all []*pipeline.Instance, err error) {
 	return myDao.AllInstance(ctx)
@@ -20,4 +29,8 @@ func AllInstance(ctx context.Context) (all []*pipeline.Instance, err error) {
 // AllInstanceMap returns all pipeline instances in map form
 func AllInstanceMap(ctx context.Context) (all map[string]*pipeline.Instance, err error) {
 	return myDao.AllInstanceMap(ctx)
+}
+
+func UnRegisterInstance(ctx context.Context, pipe string, n string) error {
+	return myDao.UnRegisterInstance(ctx, pipe, n)
 }

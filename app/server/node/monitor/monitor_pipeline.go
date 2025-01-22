@@ -149,9 +149,9 @@ func (m *Monitor) deletePipeline(ctx context.Context, p *pipeline.Pipeline) (err
 		return
 	}
 
-	if _, err = dao.DeletePosition(p.Name); err != nil {
+	if err = dao.DeletePosition(ctx, p.Name); err != nil {
 		return
 	}
-	_, err = dao.DeleteCompletePipeline(context.Background(), p.Name)
+	err = dao.DeleteCompletePipeline(ctx, p.Name)
 	return
 }

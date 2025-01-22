@@ -7,17 +7,21 @@ import (
 )
 
 const (
-	NodeKey         = "node"
-	CapacityKey     = "capacity"
-	StatusKey       = "status"
-	ClusterKey      = "cluster"
-	ElectionKey     = "election"
-	AllocatableKey  = "allocatable"
-	RegisterKey     = "register"
-	MasterKey       = "master"
-	PipelineBindKey = "pipeline_bind"
-	ChannelKey      = "channel"
-	PipelinesKey    = "pipelines"
+	NodeKey             = "node"
+	CapacityKey         = "capacity"
+	StatusKey           = "status"
+	ClusterKey          = "cluster"
+	ElectionKey         = "election"
+	AllocatableKey      = "allocatable"
+	RegisterKey         = "register"
+	MasterKey           = "master"
+	PipelineBindKey     = "pipeline_bind"
+	ChannelKey          = "channel"
+	PipelinesKey        = "pipelines"
+	PipelineInstanceKey = "pipeline_instance"
+	EventKey            = "event"
+	PositionKey         = "position"
+	RecordPostion       = "record_position"
 )
 
 func Prefix() string {
@@ -79,4 +83,36 @@ func NodeChan() string {
 
 func PipelinesPrefix() string {
 	return fmt.Sprintf("%s/%s", Prefix(), PipelinesKey)
+}
+
+func PipelineInstancePrefix() string {
+	return fmt.Sprintf("%s/%s", Prefix(), PipelineInstanceKey)
+}
+
+func GetPipeInstanceKey(s string) string {
+	return fmt.Sprintf("%s/%s", PipelineInstancePrefix(), s)
+}
+
+func EventPrefix() string {
+	return fmt.Sprintf("%s/%s", Prefix(), EventKey)
+}
+
+func GetEventKey(s string) string {
+	return fmt.Sprintf("%s/%s", EventPrefix(), s)
+}
+
+func PositionPrefix() string {
+	return fmt.Sprintf("%s/%s", Prefix(), PositionKey)
+}
+
+func GetPositionKey(s string) string {
+	return fmt.Sprintf("%s/%s", PositionPrefix(), s)
+}
+
+func RecordPositionPrefix() string {
+	return fmt.Sprintf("%s/%s", Prefix(), RecordPostion)
+}
+
+func GetRecordPositionKey(s string) string {
+	return fmt.Sprintf("%s/%s", RecordPositionPrefix(), s)
 }

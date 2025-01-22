@@ -11,7 +11,7 @@ import (
 	"github.com/jin06/binlogo/v2/pkg/register"
 	"github.com/jin06/binlogo/v2/pkg/store/dao"
 	"github.com/jin06/binlogo/v2/pkg/store/model"
-	model_pipeline "github.com/jin06/binlogo/v2/pkg/store/model/pipeline"
+	mPipe "github.com/jin06/binlogo/v2/pkg/store/model/pipeline"
 	"github.com/sirupsen/logrus"
 )
 
@@ -19,7 +19,7 @@ type instance struct {
 	pipeName  string
 	nodeName  string
 	pipeIns   *pipeline.Pipeline
-	pipeInfo  *model_pipeline.Pipeline
+	pipeInfo  *mPipe.Pipeline
 	pipeReg   *register.Register
 	cancel    context.CancelFunc
 	mutex     sync.Mutex
@@ -45,7 +45,7 @@ func newInstance(pipeName string, nodeName string) *instance {
 	return ins
 }
 
-func (i *instance) init() (err error) {
+func (i *instance) init(ctx context.Context) (err error) {
 	pipeInfo, err := dao.GetPipeline(context.TODO(), i.pipeName)
 	if err != nil {
 		return
@@ -53,12 +53,12 @@ func (i *instance) init() (err error) {
 	if pipeInfo == nil {
 		return errors.New("no pipeline: " + i.pipeName)
 	}
-	posPos, err := dao.GetPosition(i.pipeName)
+	posPos, err := dao.GetPosition(ctx, i.pipeName)
 	if err != nil {
 		return
 	}
 	if posPos == nil {
-		posPos = &model_pipeline.Position{}
+		posPos = &mPipe.Position{}
 	}
 	pipe, err := pipeline.New(
 		pipeline.OptionPipeline(pipeInfo),
@@ -67,7 +67,7 @@ func (i *instance) init() (err error) {
 	if err != nil {
 		return
 	}
-	insModel := &model_pipeline.Instance{
+	insModel := &mPipe.Instance{
 		PipelineName: i.pipeName,
 		NodeName:     i.nodeName,
 		CreateTime:   time.Now(),
@@ -84,12 +84,12 @@ func (i *instance) init() (err error) {
 
 func (i *instance) start(ctx context.Context) (err error) {
 	i.startTime = time.Now()
-	logrus.Info("pipeline instance start: ", i.pipeName)
+	logrus.Infof("Pipeline instance start: %s", i.pipeName)
 	defer func() {
 		if r := recover(); r != nil {
-			logrus.Errorln("instance run panic, ", r)
+			logrus.Errorf("instance run panic: %v", r)
 		}
-		logrus.Info("pipeline instance stopped: ", i.pipeName)
+		logrus.Infof("pipeline instance stopped: %s", i.pipeName)
 		if err != nil {
 			event.Event(model.NewErrorPipeline(i.pipeName, "Pipeline instance stopped error: "+err.Error()))
 		}
@@ -97,7 +97,7 @@ func (i *instance) start(ctx context.Context) (err error) {
 		close(i.stopped)
 		i.exit = true
 	}()
-	if err = i.init(); err != nil {
+	if err = i.init(ctx); err != nil {
 		return
 	}
 	stx, cancel := context.WithCancel(ctx)

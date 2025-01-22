@@ -133,8 +133,8 @@ func (p *Pipeline) initOutput() (err error) {
 // Run pipeline start working
 func (p *Pipeline) Run(ctx context.Context) {
 	defer p.close()
-	defer logrus.Info("pipeline stream stopped: ", p.Options.Pipeline.Name)
-	logrus.Info("pipeline stream run: ", p.Options.Pipeline.Name)
+	defer logrus.Infof("Pipeline stream stopped: %s", p.Options.Pipeline.Name)
+	logrus.Infof("Pipeline stream run: %s", p.Options.Pipeline.Name)
 
 	//logrus.Debug("mysql position", p.Input.Options.Position)
 	stx, cancel := context.WithCancel(ctx)

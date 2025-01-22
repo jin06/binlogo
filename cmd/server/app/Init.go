@@ -2,6 +2,7 @@ package app
 
 import (
 	"bytes"
+	"fmt"
 	"net/http"
 	"os"
 
@@ -35,28 +36,22 @@ func Init(path string) error {
 	}
 	blog.SetLevel(configs.Default.LogLevel)
 	logrus.Infoln("init configs finish")
-	if configs.ENV == configs.ENV_DEV {
+	if configs.Default.Profile {
 		go func() {
-			logrus.Println(http.ListenAndServe("localhost:6060", nil))
+			logrus.Println(http.ListenAndServe(fmt.Sprintf(":%d", configs.Default.ProfilePort), nil))
 		}()
 	}
-	err := parseFileToConfig(path)
-	return err
+	return parseFileToConfig(path)
 }
 
 func parseFileToConfig(path string) error {
 	var buffer bytes.Buffer
-	var err error
-	var content []byte
-	buffer.WriteString(path)
-	fp := buffer.String()
-	if content, err = os.ReadFile(fp); err != nil {
+	if _, err := buffer.WriteString(path); err != nil {
 		return err
 	}
-	conf := configs.Config{}
-	if err = yaml.Unmarshal(content, &conf); err != nil {
+	content, err := os.ReadFile(buffer.String())
+	if err != nil {
 		return err
 	}
-	configs.Default = conf
-	return nil
+	return yaml.Unmarshal(content, &configs.Default)
 }

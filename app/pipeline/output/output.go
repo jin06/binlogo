@@ -169,7 +169,7 @@ func (o *Output) Run(ctx context.Context) (err error) {
 			}
 		case msg := <-o.InChan:
 			{
-				check, errPrepare := o.prepareRecord(msg)
+				check, errPrepare := o.prepareRecord(ctx, msg)
 				if errPrepare != nil {
 					message.Put(msg)
 					return
@@ -191,12 +191,12 @@ func (o *Output) Run(ctx context.Context) (err error) {
 	}
 }
 
-func (o *Output) prepareRecord(msg *message.Message) (pass bool, err error) {
+func (o *Output) prepareRecord(ctx context.Context, msg *message.Message) (pass bool, err error) {
 	o.recordMutex.Lock()
 	defer o.recordMutex.Unlock()
 	pass = true
 	if o.record == nil {
-		o.record, err = dao.GetRecord(o.Options.PipelineName)
+		o.record, err = dao.GetRecord(ctx, o.Options.PipelineName)
 		if err != nil {
 			return
 		}
@@ -273,7 +273,7 @@ func (o *Output) loopSync(c context.Context) {
 			}
 		case <-ticker.C:
 			{
-				o.syncRecord()
+				o.syncRecord(c)
 			}
 		}
 	}
@@ -285,11 +285,11 @@ func (o *Output) updateRecord() {
 	o.recordSynced = true
 }
 
-func (o *Output) syncRecord() (err error) {
+func (o *Output) syncRecord(ctx context.Context) (err error) {
 	o.recordMutex.Lock()
 	defer o.recordMutex.Unlock()
 	if o.recordSynced {
-		err = dao.UpdateRecord(o.record)
+		err = dao.UpdateRecord(ctx, o.record)
 	}
 	return
 }

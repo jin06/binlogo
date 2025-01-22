@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/jin06/binlogo/v2/app/server/node/election"
-	"github.com/jin06/binlogo/v2/app/server/node/manager/manager_event"
 	"github.com/jin06/binlogo/v2/app/server/node/manager/manager_pipe"
 	"github.com/jin06/binlogo/v2/app/server/node/manager/manager_status"
 	"github.com/jin06/binlogo/v2/app/server/node/monitor"
@@ -36,7 +35,7 @@ type Node struct {
 	monitor         *monitor.Monitor
 	leaderRunMutex  sync.Mutex
 	pipeManager     *manager_pipe.Manager
-	eventManager    *manager_event.Manager
+	// eventManager    *manager_event.Manager
 	// this channel watch all child process.
 	// NOTED THIS: any process exist will call close(done) means 'one quit, all quit'
 	// why? cos of all processes is essential, this simplified design is easy to impl, also well for debugging
@@ -169,10 +168,10 @@ func (n *Node) leaderRun(ctx context.Context, r constant.Role) {
 			n.monitor.Stop()
 			n.monitor = nil
 		}
-		if n.eventManager != nil {
-			n.eventManager.Stop()
-			n.eventManager = nil
-		}
+		// if n.eventManager != nil {
+		// 	n.eventManager.Stop()
+		// 	n.eventManager = nil
+		// }
 	}
 	if r == constant.LEADER {
 		if n.Scheduler == nil || n.Scheduler.Exit {
@@ -183,10 +182,10 @@ func (n *Node) leaderRun(ctx context.Context, r constant.Role) {
 			n.monitor = monitor.NewMonitor()
 			go n.monitor.Run(ctx)
 		}
-		if n.eventManager == nil || n.eventManager.Exit {
-			n.eventManager = manager_event.New()
-			go n.eventManager.Run(ctx)
-		}
+		// if n.eventManager == nil || n.eventManager.Exit {
+		// n.eventManager = manager_event.New()
+		// go n.eventManager.Run(ctx)
+		// }
 	}
 }
 

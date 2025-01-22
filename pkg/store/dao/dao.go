@@ -2,14 +2,12 @@ package dao
 
 import (
 	"context"
-	"errors"
+	"time"
 
-	"github.com/jin06/binlogo/v2/pkg/etcdclient"
 	"github.com/jin06/binlogo/v2/pkg/store/model"
 	"github.com/jin06/binlogo/v2/pkg/store/model/node"
 	"github.com/jin06/binlogo/v2/pkg/store/model/pipeline"
 	"github.com/sirupsen/logrus"
-	clientv3 "go.etcd.io/etcd/client/v3"
 )
 
 var myDao Dao
@@ -53,44 +51,24 @@ type Dao interface {
 	UpdatePipeline(ctx context.Context, name string, opts ...pipeline.OptionPipeline) (ok bool, err error)
 	AllPipelines(ctx context.Context) (list []*pipeline.Pipeline, err error)
 	AllPipelinesMap(ctx context.Context) (mapping map[string]*pipeline.Pipeline, err error)
+	ClearOrDeleteBind(ctx context.Context, name string) (err error)
+	UpdateEvent(ctx context.Context, e *model.Event) error
+	GetPosition(ctx context.Context, pipe string) (p *pipeline.Position, err error)
+	UpdatePosition(ctx context.Context, p *pipeline.Position) error
+	DeletePosition(ctx context.Context, name string) (err error)
+	UpdateRecord(ctx context.Context, p *pipeline.RecordPosition) (err error)
+	UpdateRecordSafe(ctx context.Context, pipe string, opts ...pipeline.OptionRecord) (err error)
+	GetRecord(ctx context.Context, pipe string) (r *pipeline.RecordPosition, err error)
+	RegisterInstance(ctx context.Context, ins *pipeline.Instance, exp time.Duration) error
+	UnRegisterInstance(ctx context.Context, pipe string, n string) error
+	LeaseInstance(ctx context.Context, pipe string, exp time.Duration) (bool, error)
 }
 
 // ClearOrDeleteBind clear or delete pipeline bind
 // sets pipeline bind to blank if pipeline is expected to run, so pipeline will be scheduled to a node later
 // delete pipeline bind if pipeline is expected to stop, pipeline will not be scheduled a node.
 func ClearOrDeleteBind(ctx context.Context, name string) (err error) {
-	if name == "" {
-		err = errors.New("empty name")
-		return
-	}
-	res, err := etcdclient.Default().Get(context.TODO(), PipeBindPrefix())
-	if err != nil {
-		return
-	}
-	pb := model.EmptyPipelineBind()
-	var revision int64
-	if len(res.Kvs) > 0 {
-		revision = res.Kvs[0].CreateRevision
-		if err = pb.Unmarshal(res.Kvs[0].Value); err != nil {
-			return
-		}
-	}
-	pipe, err := GetPipeline(ctx, name)
-	if err != nil {
-		return
-	}
-	if pipe.ExpectRun() {
-		pb.Bindings[name] = ""
-	} else {
-		delete(pb.Bindings, name)
-	}
-	txn := etcdclient.Default().Txn(context.TODO()).If(clientv3.Compare(clientv3.CreateRevision(PipeBindPrefix()), "=", revision))
-	txn = txn.Then(clientv3.OpPut(PipeBindPrefix(), pb.Val()))
-	_, err = txn.Commit()
-	if err != nil {
-		return
-	}
-	return
+	return myDao.ClearOrDeleteBind(ctx, name)
 }
 
 // DeleteCluster delete whole cluster
