@@ -90,7 +90,7 @@ func (n *Node) Run(ctx context.Context) (err error) {
 	stx, cancel := context.WithCancel(ctx)
 	defer func() {
 		if re := recover(); re != nil {
-			err = fmt.Errorf("panic %v", re)
+			err = fmt.Errorf("Node run panic %v", re)
 		}
 		cancel()
 		n.stop()

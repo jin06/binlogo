@@ -31,10 +31,10 @@ func New() (s *Scheduler) {
 
 // Run start working
 func (s *Scheduler) Run(ctx context.Context) (err error) {
-	logrus.Info("scheduler run")
+	logrus.Info("Pipeline Scheduler run")
 	s.schedule(ctx)
 	s.Exit = true
-	logrus.Info("scheduler stop")
+	logrus.Info("Pipeline Scheduler stop")
 	return
 }
 
@@ -80,7 +80,6 @@ func (s *Scheduler) schedule(ctx context.Context) {
 // Stop stop working
 func (s *Scheduler) Stop() {
 	s.stop()
-	return
 }
 
 func (s *Scheduler) stop() {

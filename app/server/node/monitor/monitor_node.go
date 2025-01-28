@@ -24,8 +24,8 @@ func (m *Monitor) monitorNode(ctx context.Context) (err error) {
 		return
 	}
 
-	if er := m.checkAllNode(ctx); er != nil {
-		logrus.Error("Check all node bind error: ", er)
+	if err := m.checkAllNode(ctx); err != nil {
+		logrus.Error("Check all node bind error: ", err)
 	}
 
 	ticker := time.NewTicker(time.Second * 120)
@@ -42,15 +42,14 @@ func (m *Monitor) monitorNode(ctx context.Context) (err error) {
 				if !ok {
 					return
 				}
-				er := handleEventRegNode(ctx, e)
-				if er != nil {
-					logrus.Errorln(er)
+				if err := handleEventRegNode(ctx, e); err != nil {
+					logrus.Errorln(err)
 				}
 			}
 		case <-ticker.C:
 			{
-				if er := m.checkAllNode(ctx); er != nil {
-					logrus.Error("Check all node bind error: ", er)
+				if err := m.checkAllNode(ctx); err != nil {
+					logrus.Error("Check all node bind error: ", err)
 				}
 			}
 		}
@@ -74,7 +73,7 @@ func (m *Monitor) checkAllNode(ctx context.Context) (err error) {
 			readyStat = true
 			networkStat = false
 		}
-		_, err1 := dao.CreateOrUpdateStatus(
+		_, err := dao.CreateOrUpdateStatus(
 			ctx,
 			k,
 			nodeM.StatusConditions{
@@ -82,8 +81,8 @@ func (m *Monitor) checkAllNode(ctx context.Context) (err error) {
 				nodeM.ConReady:              readyStat,
 			},
 		)
-		if err1 != nil {
-			logrus.Error(err1)
+		if err != nil {
+			logrus.Error(err)
 		}
 	}
 	statusMap, err := dao.StatusMap(ctx)
@@ -92,9 +91,8 @@ func (m *Monitor) checkAllNode(ctx context.Context) (err error) {
 	}
 	for k := range statusMap {
 		if _, ok := nodesMap[k]; !ok {
-			_, err1 := dao.DeleteStatus(k)
-			if err1 != nil {
-				logrus.Errorln(err1)
+			if _, err := dao.DeleteStatus(k); err != nil {
+				logrus.Errorln(err)
 			}
 		}
 	}

@@ -156,8 +156,8 @@ func PipeDelete(c *gin.Context) {
 		c.JSON(200, basic.Fail("Only stopped pipeline can be deleted"))
 		return
 	}
-	ok, err := dao.UpdatePipeline(c, q.Name, pipeline.WithPipeDelete(true))
-	if err != nil || !ok {
+	err = dao.UpdatePipeline(c, q.Name, pipeline.WithPipeDelete(true))
+	if err != nil {
 		c.JSON(200, basic.Fail("Delete pipeline failed"))
 		return
 	}
@@ -200,8 +200,8 @@ func PipeAddFilter(c *gin.Context) {
 		c.JSON(200, basic.Fail(err))
 		return
 	}
-	ok, err := dao.UpdatePipeline(c, q.PipeName, pipeline.WithAddFilter(q.Filter))
-	if err != nil || !ok {
+	err := dao.UpdatePipeline(c, q.PipeName, pipeline.WithAddFilter(q.Filter))
+	if err != nil {
 		c.JSON(200, basic.Fail("Add filter failed."))
 		return
 	}
@@ -218,8 +218,8 @@ func PipeUpdateFilter(c *gin.Context) {
 		c.JSON(200, basic.Fail(err))
 		return
 	}
-	ok, err := dao.UpdatePipeline(c, q.PipeName, pipeline.WithUpdateFilter(q.Index, q.Filter))
-	if err != nil || !ok {
+	err := dao.UpdatePipeline(c, q.PipeName, pipeline.WithUpdateFilter(q.Index, q.Filter))
+	if err != nil {
 		c.JSON(200, basic.Fail("Update filter failed."))
 		return
 	}
@@ -250,7 +250,7 @@ func PipeUpdate(c *gin.Context) {
 		return
 	}
 	pipelineDefault(q)
-	if _, err = dao.UpdatePipeline(c, q.Name, pipeline.WithPipeSafe(q)); err != nil {
+	if err = dao.UpdatePipeline(c, q.Name, pipeline.WithPipeSafe(q)); err != nil {
 		c.JSON(200, "update failed")
 		return
 	}
@@ -276,8 +276,8 @@ func UpdateStatus(c *gin.Context) {
 		return
 	}
 
-	ok, err := dao.UpdatePipeline(c, q.PipeName, pipeline.WithPipeStatus(q.Status))
-	if err != nil || !ok {
+	err := dao.UpdatePipeline(c, q.PipeName, pipeline.WithPipeStatus(q.Status))
+	if err != nil {
 		c.JSON(200, basic.Fail("Update status failed "))
 		return
 	}
@@ -306,8 +306,8 @@ func UpdateMode(c *gin.Context) {
 		c.JSON(200, basic.Fail("Only stopped pipeline can be updated"))
 		return
 	}
-	ok, err := dao.UpdatePipeline(c, q.PipeName, pipeline.WithPipeMode(q.Mode))
-	if err != nil || !ok {
+	err = dao.UpdatePipeline(c, q.PipeName, pipeline.WithPipeMode(q.Mode))
+	if err != nil {
 		c.JSON(200, basic.Fail("Update mode failed"))
 		return
 	}

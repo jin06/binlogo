@@ -33,7 +33,7 @@ func CreatePipeline(ctx context.Context, d *pipeline.Pipeline) (ok bool, err err
 }
 
 // UpdatePipeline update pipeline info in etcd
-func UpdatePipeline(ctx context.Context, name string, opts ...pipeline.OptionPipeline) (ok bool, err error) {
+func UpdatePipeline(ctx context.Context, name string, opts ...pipeline.OptionPipeline) error {
 	return myDao.UpdatePipeline(ctx, name, opts...)
 }
 

@@ -496,22 +496,21 @@ func (d *DaoRedis) GetPipeline(ctx context.Context, name string) (p *pipeline.Pi
 	return
 }
 
-func (d *DaoRedis) UpdatePipeline(ctx context.Context, name string, opts ...pipeline.OptionPipeline) (ok bool, err error) {
+func (d *DaoRedis) UpdatePipeline(ctx context.Context, name string, opts ...pipeline.OptionPipeline) (err error) {
+	defer func() {
+		if err == redis.Nil {
+			err = nil
+		}
+	}()
 	p, err := d.GetPipeline(ctx, name)
 	if err != nil {
-		return false, err
+		return err
 	}
 	for _, v := range opts {
 		v(p)
 	}
 	cmd := d.client().HSet(ctx, PipelinesKey(), name, p.Val())
-	if err = cmd.Err(); err != nil {
-		if err == redis.Nil {
-			return false, nil
-		}
-		return
-	}
-	return
+	return cmd.Err()
 }
 
 func (d *DaoRedis) AllPipelines(ctx context.Context) (list []*pipeline.Pipeline, err error) {
@@ -555,7 +554,7 @@ func (d *DaoRedis) ClearOrDeleteBind(ctx context.Context, name string) (err erro
 }
 
 func (d *DaoRedis) UpdateEvent(ctx context.Context, e *model.Event) error {
-	key := e.Key()
+	key := storeredis.GetEventKey(e.K)
 	expire := time.Duration(configs.Default.EventExpire) * time.Second
 	if expire <= 0 {
 		expire = time.Second * 86400

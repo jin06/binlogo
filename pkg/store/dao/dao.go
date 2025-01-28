@@ -48,7 +48,7 @@ type Dao interface {
 	UpdatePipelineBind(ctx context.Context, pName string, nName string) (bool, error)
 	DeletePipelineBind(ctx context.Context, pName string) (ok bool, err error)
 	GetPipeline(ctx context.Context, name string) (p *pipeline.Pipeline, err error)
-	UpdatePipeline(ctx context.Context, name string, opts ...pipeline.OptionPipeline) (ok bool, err error)
+	UpdatePipeline(ctx context.Context, name string, opts ...pipeline.OptionPipeline) (err error)
 	AllPipelines(ctx context.Context) (list []*pipeline.Pipeline, err error)
 	AllPipelinesMap(ctx context.Context) (mapping map[string]*pipeline.Pipeline, err error)
 	ClearOrDeleteBind(ctx context.Context, name string) (err error)

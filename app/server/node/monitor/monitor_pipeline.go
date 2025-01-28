@@ -140,7 +140,7 @@ func (m *Monitor) checkAllPipelineDelete(ctx context.Context) {
 
 func (m *Monitor) deletePipeline(ctx context.Context, p *pipeline.Pipeline) (err error) {
 	if p.Status != pipeline.STATUS_STOP {
-		if ok, err := dao.UpdatePipeline(ctx, p.Name, pipeline.WithPipeStatus(pipeline.STATUS_STOP)); err != nil || !ok {
+		if err := dao.UpdatePipeline(ctx, p.Name, pipeline.WithPipeStatus(pipeline.STATUS_STOP)); err != nil {
 			return err
 		}
 	}
