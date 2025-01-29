@@ -10,9 +10,12 @@ import (
 )
 
 type Register struct {
-	node      *node.Node
-	closed    chan struct{}
-	closeOnce sync.Once
+	node         *node.Node
+	closed       chan struct{}
+	completeOnce sync.Once
+	closing      chan struct{}
+	closeOnce    sync.Once
+	isClosed     bool
 }
 
 func NewRegister(n *node.Node) *Register {
@@ -24,7 +27,8 @@ func NewRegister(n *node.Node) *Register {
 }
 
 func (r *Register) Run(ctx context.Context) error {
-	defer r.close()
+	defer r.CompleteClose()
+	defer r.Close()
 	ticker := time.NewTicker(time.Second * 1)
 	defer ticker.Stop()
 	ok, err := dao.RegisterNode(ctx, r.node)
@@ -32,18 +36,19 @@ func (r *Register) Run(ctx context.Context) error {
 		return err
 	}
 	check := time.Now()
-	for i := 0; i < 3; {
+	for {
 		select {
 		case <-ctx.Done():
 			return nil
-		case <-r.closed:
+		case <-r.closing:
 			return nil
 		case <-ticker.C:
 			if time.Since(check) > time.Second*5 {
 				return nil
 			}
-			err := dao.LeaseNode(ctx, r.node)
-			if err == nil {
+			if err := dao.LeaseNode(ctx, r.node); err != nil {
+				panic(err)
+			} else {
 				check = time.Now()
 			}
 		}
@@ -51,9 +56,23 @@ func (r *Register) Run(ctx context.Context) error {
 	return nil
 }
 
-func (r *Register) close() error {
+func (r *Register) Close() {
 	r.closeOnce.Do(func() {
+		close(r.closing)
+	})
+}
+
+func (r *Register) Closed() chan struct{} {
+	return r.closed
+}
+
+func (r *Register) CompleteClose() {
+	r.completeOnce.Do(func() {
+		r.isClosed = true
 		close(r.closed)
 	})
-	return nil
+}
+
+func (r *Register) IsClosed() bool {
+	return r.isClosed
 }

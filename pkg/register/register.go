@@ -13,7 +13,7 @@ import (
 // New returns a new *Register
 func New(opts ...Option) (r *Register) {
 	r = &Register{
-		ttl:     time.Second * 5,
+		ttl:     time.Second * 500,
 		stopped: make(chan struct{}),
 	}
 	//r.client = etcdclient.Default()
@@ -88,6 +88,7 @@ func (r *Register) Run(ctx context.Context) (err error) {
 				if err != nil {
 					watchErrCount++
 					if watchErrCount >= 3 {
+						logrus.Errorln("Pipeline instance watch failed")
 						return err
 					}
 				}
@@ -102,6 +103,7 @@ func (r *Register) Run(ctx context.Context) (err error) {
 				if err != nil {
 					keepErrCount++
 					if keepErrCount >= 3 {
+						logrus.Errorln("Pipeline instance lease failed")
 						return err
 					}
 				}

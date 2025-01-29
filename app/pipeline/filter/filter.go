@@ -17,8 +17,11 @@ type Filter struct {
 	OutChan   chan *message.Message
 	Options   *Options
 	rulesTree tree
-	closed    chan struct{}
-	closeOnce sync.Once
+
+	closing      chan struct{}
+	closeOnce    sync.Once
+	closed       chan struct{}
+	completeOnce sync.Once
 }
 
 // New returns a new Filter
@@ -30,6 +33,7 @@ func New(opts ...Option) (filter *Filter, err error) {
 	filter = &Filter{
 		Options: options,
 		closed:  make(chan struct{}),
+		closing: make(chan struct{}),
 	}
 	return
 }
@@ -60,12 +64,15 @@ func (f *Filter) handle(msg *message.Message) {
 
 // Run Filter start working
 func (f *Filter) Run(ctx context.Context) (err error) {
-	defer f.close()
+	defer f.ComplateClose()
+	defer f.Close()
 	if err = f.init(); err != nil {
 		return
 	}
 	for {
 		select {
+		case <-f.closing:
+			return
 		case <-ctx.Done():
 			return
 		case msg := <-f.InChan:
@@ -81,8 +88,14 @@ func (f *Filter) Closed() chan struct{} {
 	return f.closed
 }
 
-func (f *Filter) close() {
+func (f *Filter) Close() {
 	f.closeOnce.Do(func() {
+		close(f.closing)
+	})
+}
+
+func (f *Filter) ComplateClose() {
+	f.completeOnce.Do(func() {
 		close(f.closed)
 	})
 }

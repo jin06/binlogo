@@ -33,6 +33,8 @@ type Output struct {
 	Options      *Options
 	record       *pipeline.RecordPosition
 	closed       chan struct{}
+	completeOnce sync.Once
+	closing      chan struct{}
 	closeOnce    sync.Once
 	recordMutex  sync.Mutex
 	recordSynced bool
@@ -47,6 +49,7 @@ func New(opts ...Option) (out *Output, err error) {
 	out = &Output{
 		Options:      options,
 		closed:       make(chan struct{}),
+		closing:      make(chan struct{}),
 		recordSynced: false,
 	}
 	return
@@ -156,13 +159,16 @@ func (o *Output) handle(msg *message.Message) (err error) {
 
 // Run start Output to send message
 func (o *Output) Run(ctx context.Context) (err error) {
+	defer o.CompleteClose()
+	defer o.Close()
 	if err = o.init(); err != nil {
 		return
 	}
-	defer o.close()
 	go o.loopSync(ctx)
 	for {
 		select {
+		case <-o.closing:
+			return
 		case <-ctx.Done():
 			{
 				return
@@ -263,10 +269,13 @@ func (o *Output) prepareRecord(ctx context.Context, msg *message.Message) (pass 
 }
 
 func (o *Output) loopSync(c context.Context) {
+	defer o.Close()
 	ticker := time.NewTicker(time.Second)
 	defer ticker.Stop()
 	for {
 		select {
+		case <-o.closing:
+			return
 		case <-c.Done():
 			{
 				return
@@ -298,11 +307,17 @@ func (o *Output) Closed() chan struct{} {
 	return o.closed
 }
 
-func (o *Output) close() {
+func (o *Output) Close() {
 	o.closeOnce.Do(func() {
 		if o.Sender != nil {
 			o.Sender.Close()
 		}
+		close(o.closing)
+	})
+}
+
+func (o *Output) CompleteClose() {
+	o.completeOnce.Do(func() {
 		close(o.closed)
 	})
 }

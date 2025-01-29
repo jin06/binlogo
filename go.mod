@@ -14,7 +14,6 @@ require (
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da
 	github.com/google/uuid v1.4.0
 	github.com/hashicorp/consul/api v1.11.0
-	github.com/jin06/binlogo v1.1.24
 	github.com/prometheus/client_golang v1.11.0
 	github.com/redis/go-redis/v9 v9.3.0
 	github.com/shirou/gopsutil/v3 v3.21.10

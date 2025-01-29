@@ -4,11 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"time"
-
-	"github.com/jin06/binlogo/pkg/store/model/node"
 )
 
-type CapacityMap map[string]*node.Capacity
+type CapacityMap map[string]*Capacity
 
 func (c *CapacityMap) Key() string {
 	return "/capacity_map"

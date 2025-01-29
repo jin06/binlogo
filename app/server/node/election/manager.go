@@ -68,6 +68,10 @@ func (m *Manager) RoleCh() chan constant.Role {
 	return m.roleCh
 }
 
+func (m *Manager) GetRole() constant.Role {
+	return m.role
+}
+
 func (m *Manager) setRole(r constant.Role) {
 	m.mu.Lock()
 	defer m.mu.Unlock()

@@ -16,31 +16,33 @@ import (
 )
 
 type instance struct {
-	pipeName  string
-	nodeName  string
-	pipeIns   *pipeline.Pipeline
-	pipeInfo  *mPipe.Pipeline
-	pipeReg   *register.Register
-	cancel    context.CancelFunc
-	mutex     sync.Mutex
-	startTime time.Time
-	stopping  chan struct{}
-	stopOnce  sync.Once
-	started   chan struct{}
-	stopped   chan struct{}
-	exit      bool
+	pipeName     string
+	nodeName     string
+	pipeIns      *pipeline.Pipeline
+	pipeInfo     *mPipe.Pipeline
+	pipeReg      *register.Register
+	mutex        sync.Mutex
+	startTime    time.Time
+	manager      *Manager
+	started      chan struct{}
+	closing      chan struct{}
+	closed       chan struct{}
+	closeOnce    sync.Once
+	completeOnce sync.Once
+
 	//stopped   chan struct{}
 }
 
-func newInstance(pipeName string, nodeName string) *instance {
+func newInstance(pipeName string, nodeName string, manager *Manager) *instance {
 	ins := &instance{
 		pipeName:  pipeName,
 		nodeName:  nodeName,
 		mutex:     sync.Mutex{},
 		startTime: time.Time{},
-		stopping:  make(chan struct{}),
+		closing:   make(chan struct{}),
 		started:   make(chan struct{}),
-		stopped:   make(chan struct{}),
+		closed:    make(chan struct{}),
+		manager:   manager,
 	}
 	return ins
 }
@@ -83,6 +85,8 @@ func (i *instance) init(ctx context.Context) (err error) {
 }
 
 func (i *instance) start(ctx context.Context) (err error) {
+	defer i.CompleteClose()
+	defer i.Close()
 	i.startTime = time.Now()
 	logrus.Infof("Pipeline instance start: %s", i.pipeName)
 	defer func() {
@@ -94,22 +98,17 @@ func (i *instance) start(ctx context.Context) (err error) {
 			event.Event(model.NewErrorPipeline(i.pipeName, "Pipeline instance stopped error: "+err.Error()))
 		}
 		event.Event(model.NewInfoPipeline(i.pipeName, "Pipeline instance stopped"))
-		close(i.stopped)
-		i.exit = true
 	}()
 	if err = i.init(ctx); err != nil {
 		return
 	}
-	stx, cancel := context.WithCancel(ctx)
-	defer cancel()
-
 	go func() {
-		i.pipeReg.Run(stx)
-		i.stop()
+		i.pipeReg.Run(ctx)
+		i.Close()
 	}()
 	go func() {
-		i.pipeIns.Run(stx)
-		i.stop()
+		i.pipeIns.Run(ctx)
+		i.Close()
 	}()
 	event.Event(model.NewInfoPipeline(i.pipeName, "Pipeline instance start success"))
 	close(i.started)
@@ -117,19 +116,29 @@ func (i *instance) start(ctx context.Context) (err error) {
 	select {
 	case <-ctx.Done():
 		return
-	case <-i.stopping:
+	case <-i.closing:
 		return
 	}
 }
 
-func (i *instance) stop() {
-	i.stopOnce.Do(func() {
-		i.startTime = time.Time{}
-		close(i.stopping)
+func (i *instance) CompleteClose() {
+	i.completeOnce.Do(func() {
+		i.manager.Remove(i.pipeName)
+		close(i.closed)
+	})
+}
+
+func (i *instance) Close() {
+	i.closeOnce.Do(func() {
+		close(i.closing)
 	})
 }
 
 // StartTime returns instance start time
 func (i *instance) StartTime() time.Time {
 	return i.startTime
+}
+
+func (i *instance) Closed() chan struct{} {
+	return i.closed
 }

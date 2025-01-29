@@ -18,10 +18,10 @@ func (m *Monitor) monitorStatus(ctx context.Context) (err error) {
 	defer cancel()
 	key := dao.StatusPrefix()
 	w, err := watcher.New(watcher.WithKey(key), watcher.WithHandler(watcher.WrapNodeStatus(key, "")))
-	defer w.Close()
 	if err != nil {
 		return
 	}
+	defer w.Close()
 	ch, err := w.WatchEtcdList(stx)
 	if err != nil {
 		return
@@ -35,6 +35,8 @@ func (m *Monitor) monitorStatus(ctx context.Context) (err error) {
 
 	for {
 		select {
+		case <-m.closing:
+			return
 		case <-ctx.Done():
 			{
 				return

@@ -33,6 +33,8 @@ func (m *Monitor) monitorNode(ctx context.Context) (err error) {
 
 	for {
 		select {
+		case <-m.closing:
+			return
 		case <-ctx.Done():
 			{
 				return
@@ -57,11 +59,11 @@ func (m *Monitor) monitorNode(ctx context.Context) (err error) {
 }
 
 func (m *Monitor) checkAllNode(ctx context.Context) (err error) {
-	regNodesMap, err := dao.AllRegisterNodesMap()
+	regNodesMap, err := dao.AllRegisterNodesMap(ctx)
 	if err != nil {
 		return
 	}
-	nodesMap, err := dao.AllNodesMap()
+	nodesMap, err := dao.AllNodesMap(ctx)
 	if err != nil {
 		return
 	}
@@ -91,7 +93,7 @@ func (m *Monitor) checkAllNode(ctx context.Context) (err error) {
 	}
 	for k := range statusMap {
 		if _, ok := nodesMap[k]; !ok {
-			if _, err := dao.DeleteStatus(k); err != nil {
+			if err := dao.DeleteStatus(ctx, k); err != nil {
 				logrus.Errorln(err)
 			}
 		}

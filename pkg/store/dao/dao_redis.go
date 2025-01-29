@@ -105,11 +105,10 @@ func (d *DaoRedis) RegisterInstance(ctx context.Context, ins *pipeline.Instance,
 		if i > 0 {
 			return fmt.Errorf("pipeline exist: %s", key)
 		}
-		_, err = tx.Pipelined(ctx, func(p redis.Pipeliner) error {
-			p.HMSet(ctx, key, ins.Val(), exp)
+		_, err = tx.TxPipelined(ctx, func(p redis.Pipeliner) error {
+			p.HMSet(ctx, key, ins)
 			p.Expire(ctx, key, exp)
-			_, err := p.Exec(ctx)
-			return err
+			return nil
 		})
 		return err
 	}, key)
@@ -360,6 +359,11 @@ func (d *DaoRedis) AllStatus(ctx context.Context) (list []*node.Status, err erro
 		list = append(list, item)
 	}
 	return
+}
+
+func (d *DaoRedis) DeleteStatus(ctx context.Context, name string) error {
+	key := storeredis.GetStatusKey(name)
+	return d.client().Del(ctx, key).Err()
 }
 
 func (d *DaoRedis) StatusMap(ctx context.Context) (mapping map[string]*node.Status, err error) {

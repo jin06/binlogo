@@ -2,7 +2,6 @@ package dao
 
 import (
 	"context"
-	"errors"
 
 	"github.com/jin06/binlogo/v2/pkg/etcdclient"
 	"github.com/jin06/binlogo/v2/pkg/store/model/node"
@@ -35,18 +34,6 @@ func StatusMap(ctx context.Context) (mapping map[string]*node.Status, err error)
 }
 
 // DeleteStatus delete node status in etcd
-func DeleteStatus(name string) (ok bool, err error) {
-	if name == "" {
-		err = errors.New("empty name")
-		return
-	}
-	key := StatusPrefix() + "/" + name
-	res, err := etcdclient.Default().Delete(context.Background(), key)
-	if err != nil {
-		return
-	}
-	if res.Deleted > 0 {
-		ok = true
-	}
-	return
+func DeleteStatus(ctx context.Context, name string) error {
+	return myDao.DeleteStatus(ctx, name)
 }

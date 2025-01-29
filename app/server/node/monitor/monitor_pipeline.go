@@ -23,6 +23,8 @@ func (m *Monitor) monitorPipe(ctx context.Context) (err error) {
 	defer ticker.Stop()
 	for {
 		select {
+		case <-m.closing:
+			return
 		case <-ticker.C:
 			{
 				m.checkAllPipelineBind(ctx)

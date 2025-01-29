@@ -45,8 +45,8 @@ func AllNodes(ctx context.Context) (list []*node.Node, err error) {
 }
 
 // AllNodesMap  returns all register nodes in map form
-func AllNodesMap() (mapping map[string]*node.Node, err error) {
-	list, err := AllNodes(context.Background())
+func AllNodesMap(ctx context.Context) (mapping map[string]*node.Node, err error) {
+	list, err := AllNodes(ctx)
 	if err != nil {
 		return
 	}
@@ -58,8 +58,8 @@ func AllNodesMap() (mapping map[string]*node.Node, err error) {
 }
 
 // AllRegisterNodesMap returns all register nodes from etcd in map form
-func AllRegisterNodesMap() (mapping map[string]*node.Node, err error) {
-	list, err := AllNodes(context.Background())
+func AllRegisterNodesMap(ctx context.Context) (mapping map[string]*node.Node, err error) {
+	list, err := AllNodes(ctx)
 	if err != nil {
 		return
 	}
@@ -72,11 +72,11 @@ func AllRegisterNodesMap() (mapping map[string]*node.Node, err error) {
 
 // AllWorkNodesMap returns all register nodes from etcd in map form
 func AllWorkNodesMap() (res map[string]*node.Node, err error) {
-	res, err = AllNodesMap()
+	res, err = AllNodesMap(context.Background())
 	if err != nil {
 		return
 	}
-	regMap, err := AllRegisterNodesMap()
+	regMap, err := AllRegisterNodesMap(context.Background())
 	if err != nil {
 		return
 	}

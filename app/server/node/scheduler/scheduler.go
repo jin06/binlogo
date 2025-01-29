@@ -15,25 +15,28 @@ import (
 // Scheduler schedule the pipeline.
 // allocate the pipeline to the appropriate node for operation
 type Scheduler struct {
-	lock     sync.Mutex
-	stopOnce sync.Once
-	stopping chan struct{}
-	Exit     bool
+	closing      chan struct{}
+	closeOnce    sync.Once
+	closed       chan struct{}
+	completeOnce sync.Once
+	isClosed     bool
 }
 
 // New returns a new Scheduler
 func New() (s *Scheduler) {
 	s = &Scheduler{
-		stopping: make(chan struct{}),
+		closing: make(chan struct{}),
+		closed:  make(chan struct{}),
 	}
 	return
 }
 
 // Run start working
 func (s *Scheduler) Run(ctx context.Context) (err error) {
+	defer s.CompleteClose()
+	defer s.Close()
 	logrus.Info("Pipeline Scheduler run")
 	s.schedule(ctx)
-	s.Exit = true
 	logrus.Info("Pipeline Scheduler stop")
 	return
 }
@@ -56,7 +59,7 @@ func (s *Scheduler) schedule(ctx context.Context) {
 	defer ticker.Stop()
 	for {
 		select {
-		case <-s.stopping:
+		case <-s.closing:
 			return
 		case <-ctx.Done():
 			return
@@ -78,13 +81,24 @@ func (s *Scheduler) schedule(ctx context.Context) {
 }
 
 // Stop stop working
-func (s *Scheduler) Stop() {
-	s.stop()
+func (s *Scheduler) Close() {
+	s.closeOnce.Do(func() {
+		close(s.closing)
+	})
 }
 
-func (s *Scheduler) stop() {
-	s.stopOnce.Do(func() {
-		close(s.stopping)
+func (s *Scheduler) Closed() chan struct{} {
+	return s.closed
+}
+
+func (s *Scheduler) IsClosed() bool {
+	return s.isClosed
+}
+
+func (s *Scheduler) CompleteClose() {
+	s.completeOnce.Do(func() {
+		s.isClosed = true
+		close(s.closed)
 	})
 }
 

@@ -24,9 +24,9 @@ func New(opts ...Option) (input *Input, err error) {
 		v(options)
 	}
 	input = &Input{
-		Options:  options,
-		closed:   make(chan struct{}),
-		stopping: make(chan struct{}),
+		Options: options,
+		closed:  make(chan struct{}),
+		closing: make(chan struct{}),
 	}
 	input.log = logrus.WithField("mod", "input").
 		WithField("pipe name", options.PipeName)
@@ -41,11 +41,11 @@ type Input struct {
 	// eventHandler *canalHandler
 	pipe *pipeline.Pipeline
 	// node         *node.Node
-	closed    chan struct{}
-	closeOnce sync.Once
-	stopping  chan struct{}
-	stopOnce  sync.Once
-	log       *logrus.Entry
+	closed       chan struct{}
+	closing      chan struct{}
+	closeOnce    sync.Once
+	completeOnce sync.Once
+	log          *logrus.Entry
 }
 
 // Run Input start working
@@ -54,7 +54,8 @@ func (r *Input) Run(ctx context.Context) (err error) {
 		if err != nil {
 			event.Event(event_store.NewErrorPipeline(r.Options.PipeName, err.Error()))
 		}
-		r.close()
+		r.Close()
+		r.CompleteClose()
 	}()
 	if r.canal == nil {
 		if err = r.prepareCanal(ctx); err != nil {
@@ -75,28 +76,31 @@ func (r *Input) Run(ctx context.Context) (err error) {
 			r.log.Info("canal done")
 			return
 		}
-	case <-r.stopping:
+	case <-r.closing:
 		r.log.Info("stopping")
 		return
+	case <-r.closed:
+		return
 	}
-}
-
-func (r *Input) stop() {
-	r.stopOnce.Do(func() {
-		close(r.stopping)
-	})
 }
 
 func (r *Input) Closed() chan struct{} {
 	return r.closed
 }
 
-func (r *Input) close() {
+func (r *Input) CompleteClose() {
+	r.completeOnce.Do(func() {
+		r.Close()
+		close(r.closed)
+	})
+}
+
+func (r *Input) Close() {
 	r.closeOnce.Do(func() {
 		if r.canal != nil {
 			r.canal.Close()
 		}
-		close(r.closed)
+		close(r.closing)
 	})
 }
 
@@ -125,7 +129,7 @@ func (r *Input) prepareCanal(ctx context.Context) (err error) {
 }
 
 func (r *Input) runCanal(ctx context.Context) (err error) {
-	defer r.stop()
+	defer r.Close()
 	defer func() {
 		if err != nil {
 			logrus.Errorln("canal run failed with error, ", err.Error())
