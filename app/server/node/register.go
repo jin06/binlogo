@@ -35,7 +35,6 @@ func (r *Register) Run(ctx context.Context) error {
 	if !ok {
 		return err
 	}
-	check := time.Now()
 	for {
 		select {
 		case <-ctx.Done():
@@ -43,13 +42,11 @@ func (r *Register) Run(ctx context.Context) error {
 		case <-r.closing:
 			return nil
 		case <-ticker.C:
-			if time.Since(check) > time.Second*5 {
-				return nil
-			}
 			if err := dao.LeaseNode(ctx, r.node); err != nil {
 				panic(err)
+				return err
 			} else {
-				check = time.Now()
+
 			}
 		}
 	}

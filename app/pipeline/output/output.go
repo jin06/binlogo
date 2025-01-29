@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/jin06/binlogo/v2/app/pipeline/output/sender/elastic"
+	"github.com/sirupsen/logrus"
 
 	"github.com/jin06/binlogo/v2/app/pipeline/message"
 	"github.com/jin06/binlogo/v2/app/pipeline/output/sender"
@@ -28,14 +29,16 @@ import (
 // Output handle message output
 // depends pipeline config, send message to stdout、kafka, etc.
 type Output struct {
-	InChan       chan *message.Message
-	Sender       sender.Sender
-	Options      *Options
-	record       *pipeline.RecordPosition
+	InChan  chan *message.Message
+	Sender  sender.Sender
+	Options *Options
+	record  *pipeline.RecordPosition
+
 	closed       chan struct{}
 	completeOnce sync.Once
 	closing      chan struct{}
 	closeOnce    sync.Once
+
 	recordMutex  sync.Mutex
 	recordSynced bool
 }
@@ -318,6 +321,7 @@ func (o *Output) Close() {
 
 func (o *Output) CompleteClose() {
 	o.completeOnce.Do(func() {
+		logrus.WithField("Pipeline Name", o.Options.PipelineName).Debug("Output closed")
 		close(o.closed)
 	})
 }

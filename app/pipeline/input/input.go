@@ -50,12 +50,15 @@ type Input struct {
 
 // Run Input start working
 func (r *Input) Run(ctx context.Context) (err error) {
+	defer r.CompleteClose()
+	defer r.Close()
+
 	defer func() {
 		if err != nil {
 			event.Event(event_store.NewErrorPipeline(r.Options.PipeName, err.Error()))
 		}
-		r.Close()
-		r.CompleteClose()
+		// r.Close()
+		// r.CompleteClose()
 	}()
 	if r.canal == nil {
 		if err = r.prepareCanal(ctx); err != nil {
@@ -90,7 +93,7 @@ func (r *Input) Closed() chan struct{} {
 
 func (r *Input) CompleteClose() {
 	r.completeOnce.Do(func() {
-		r.Close()
+		logrus.WithField("Pipeline Name", r.Options.PipeName).Debug("Input closed")
 		close(r.closed)
 	})
 }
@@ -129,14 +132,9 @@ func (r *Input) prepareCanal(ctx context.Context) (err error) {
 }
 
 func (r *Input) runCanal(ctx context.Context) (err error) {
-	defer r.Close()
-	defer func() {
-		if err != nil {
-			logrus.Errorln("canal run failed with error, ", err.Error())
-		}
-	}()
 	record, err := dao.GetRecord(ctx, r.Options.PipeName)
 	if err != nil {
+		logrus.WithError(err).Errorln("Run canal error, get record")
 		return
 	}
 	if r.pipe.Mysql.Mode == pipeline.MODE_GTID {

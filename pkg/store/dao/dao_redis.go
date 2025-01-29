@@ -127,8 +127,8 @@ func (d *DaoRedis) UnRegisterInstance(ctx context.Context, pipe string, n string
 	return err
 }
 
-func (d *DaoRedis) LeaseInstance(ctx context.Context, pipe string, exp time.Duration) (bool, error) {
-	return d.client().Expire(ctx, pipe, exp).Result()
+func (d *DaoRedis) LeaseInstance(ctx context.Context, pipe string, exp time.Duration) error {
+	return d.client().Expire(ctx, pipe, exp).Err()
 }
 
 func (d *DaoRedis) GetInstance(ctx context.Context, pipe string) (ins *pipeline.Instance, err error) {

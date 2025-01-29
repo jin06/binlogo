@@ -118,11 +118,17 @@ func (i *instance) start(ctx context.Context) (err error) {
 		return
 	case <-i.closing:
 		return
+	case <-i.pipeReg.Closed():
+		return
+	case <-i.pipeIns.Closed():
+		return
 	}
 }
 
 func (i *instance) CompleteClose() {
 	i.completeOnce.Do(func() {
+		<-i.pipeReg.Closed()
+		<-i.pipeIns.Closed()
 		i.manager.Remove(i.pipeName)
 		close(i.closed)
 	})
@@ -130,6 +136,8 @@ func (i *instance) CompleteClose() {
 
 func (i *instance) Close() {
 	i.closeOnce.Do(func() {
+		i.pipeReg.Close()
+		i.pipeIns.Close()
 		close(i.closing)
 	})
 }

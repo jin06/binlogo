@@ -74,6 +74,8 @@ type Pipeline struct {
 	closeOnce    sync.Once
 	closing      chan struct{}
 	completeOnce sync.Once
+
+	isClosed bool
 }
 
 func (p *Pipeline) init() (err error) {
@@ -201,6 +203,15 @@ func (p *Pipeline) CompleteClose() {
 		<-p.Input.Closed()
 		<-p.Filter.Closed()
 		<-p.Output.Closed()
+		p.isClosed = true
 		close(p.closed)
 	})
+}
+
+func (p *Pipeline) IsClosed() bool {
+	return p.isClosed
+}
+
+func (p *Pipeline) Closed() chan struct{} {
+	return p.closed
 }

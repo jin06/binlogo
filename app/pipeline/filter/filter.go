@@ -96,6 +96,7 @@ func (f *Filter) Close() {
 
 func (f *Filter) ComplateClose() {
 	f.completeOnce.Do(func() {
+		logrus.WithField("Pipeline Name", f.Options.Pipe.Name).Debug("Filter closed")
 		close(f.closed)
 	})
 }

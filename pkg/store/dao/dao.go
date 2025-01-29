@@ -62,7 +62,7 @@ type Dao interface {
 	GetRecord(ctx context.Context, pipe string) (r *pipeline.RecordPosition, err error)
 	RegisterInstance(ctx context.Context, ins *pipeline.Instance, exp time.Duration) error
 	UnRegisterInstance(ctx context.Context, pipe string, n string) error
-	LeaseInstance(ctx context.Context, pipe string, exp time.Duration) (bool, error)
+	LeaseInstance(ctx context.Context, pipe string, exp time.Duration) error
 }
 
 // ClearOrDeleteBind clear or delete pipeline bind

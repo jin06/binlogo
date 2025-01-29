@@ -17,7 +17,7 @@ func RegisterInstance(ctx context.Context, ins *pipeline.Instance, exp time.Dura
 	return myDao.RegisterInstance(ctx, ins, exp)
 }
 
-func LeaseInstance(ctx context.Context, pipe string, exp time.Duration) (bool, error) {
+func LeaseInstance(ctx context.Context, pipe string, exp time.Duration) error {
 	return myDao.LeaseInstance(ctx, pipe, exp)
 }
 
