@@ -7,6 +7,7 @@ import (
 
 	"github.com/jin06/binlogo/v2/pkg/store/dao"
 	"github.com/jin06/binlogo/v2/pkg/store/model/node"
+	"github.com/sirupsen/logrus"
 )
 
 type Register struct {
@@ -16,13 +17,16 @@ type Register struct {
 	closing      chan struct{}
 	closeOnce    sync.Once
 	isClosed     bool
+	log          *logrus.Entry
 }
 
-func NewRegister(n *node.Node) *Register {
+func NewRegister(log *logrus.Entry, n *node.Node) *Register {
 	r := &Register{
 		node:   n,
 		closed: make(chan struct{}),
 	}
+	r.log = log
+	// r.log = log.WithField("NodeRegSeq", )
 	return r
 }
 
@@ -44,13 +48,10 @@ func (r *Register) Run(ctx context.Context) error {
 		case <-ticker.C:
 			if err := dao.LeaseNode(ctx, r.node); err != nil {
 				panic(err)
-				return err
-			} else {
-
+				// return err
 			}
 		}
 	}
-	return nil
 }
 
 func (r *Register) Close() {

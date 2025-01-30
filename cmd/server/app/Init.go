@@ -34,7 +34,7 @@ func Init(path string) error {
 	if err := configs.Init(path); err != nil {
 		return err
 	}
-	blog.SetLevel(configs.Default.LogLevel)
+	blog.SetLevel(logrus.StandardLogger(), configs.Default.LogLevel)
 	logrus.Infoln("init configs finish")
 	if configs.Default.Profile {
 		go func() {

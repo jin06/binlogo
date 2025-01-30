@@ -5,8 +5,6 @@ import (
 	"errors"
 	"sync"
 
-	"github.com/sirupsen/logrus"
-
 	"github.com/jin06/binlogo/v2/app/pipeline/filter"
 	"github.com/jin06/binlogo/v2/app/pipeline/input"
 	"github.com/jin06/binlogo/v2/app/pipeline/message"
@@ -53,7 +51,7 @@ func New(opt ...Option) (p *Pipeline, err error) {
 		closed:   make(chan struct{}),
 		closing:  make(chan struct{}),
 	}
-	p.log = logrus.WithField("mod", "pipeline").WithField("name", options.Pipeline.Name)
+	// p.log = logrus.WithField("mod", "pipeline").WithField("name", options.Pipeline.Name)
 	err = p.init()
 	return
 }
@@ -68,7 +66,7 @@ type Pipeline struct {
 	Options  Options
 	outChan  *outChan
 	runMutex sync.Mutex
-	log      *logrus.Entry
+	// log      *logrus.Entry
 
 	closed       chan struct{}
 	closeOnce    sync.Once
@@ -139,8 +137,8 @@ func (p *Pipeline) initOutput() (err error) {
 func (p *Pipeline) Run(ctx context.Context) {
 	defer p.CompleteClose()
 	defer p.Close()
-	defer logrus.Infof("Pipeline stream stopped: %s", p.Options.Pipeline.Name)
-	logrus.Infof("Pipeline stream run: %s", p.Options.Pipeline.Name)
+	defer p.Options.Log.Infof("Pipeline stream stopped: %s", p.Options.Pipeline.Name)
+	p.Options.Log.Infof("Pipeline stream run: %s", p.Options.Pipeline.Name)
 
 	//logrus.Debug("mysql position", p.Input.Options.Position)
 	go func() {
@@ -171,13 +169,13 @@ func (p *Pipeline) Run(ctx context.Context) {
 		case <-ctx.Done():
 			return
 		case <-p.Input.Closed():
-			logrus.Info("input closed")
+			p.Options.Log.Info("input closed")
 			return
 		case <-p.Filter.Closed():
-			logrus.Info("filter closed")
+			p.Options.Log.Info("filter closed")
 			return
 		case <-p.Output.Closed():
-			logrus.Info("output closed")
+			p.Options.Log.Info("output closed")
 			return
 		case <-p.closing:
 			return

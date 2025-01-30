@@ -2,6 +2,7 @@ package register
 
 import (
 	"context"
+	"errors"
 	"sync"
 	"time"
 
@@ -13,7 +14,7 @@ import (
 // New returns a new *Register
 func New(opts ...Option) (r *Register) {
 	r = &Register{
-		ttl:     time.Second * 500,
+		ttl:     time.Second * 5,
 		closing: make(chan struct{}),
 		closed:  make(chan struct{}),
 	}
@@ -21,6 +22,8 @@ func New(opts ...Option) (r *Register) {
 	for _, v := range opts {
 		v(r)
 	}
+	r.log = logrus.WithField("RegisterKey", r.registerKey)
+
 	return
 }
 
@@ -34,6 +37,7 @@ type Register struct {
 	closed       chan struct{}
 	closeOnce    sync.Once
 	completeOnce sync.Once
+	log          *logrus.Entry
 }
 
 // func (r *Register) init() (err error) {
@@ -48,7 +52,8 @@ type Register struct {
 func (r *Register) Run(ctx context.Context) (err error) {
 	defer r.CompleteClose()
 	defer r.Close()
-	logrus.WithField("key", r.registerKey).Info("register run")
+	// logrus.WithField("key", r.registerKey).Info("Register run")
+	r.log.Info("Register run")
 	defer func() {
 		if re := recover(); re != nil {
 			logrus.Errorln("register panic, ", re)
@@ -56,28 +61,18 @@ func (r *Register) Run(ctx context.Context) (err error) {
 		if err != nil {
 			logrus.WithField("err", err.Error()).Infoln("register process quit unexpectedly")
 		}
-		logrus.WithField("key", r.registerKey).Info("register stopped")
+		// logrus.WithField("key", r.registerKey).Info("register stopped")
+		r.log.Info("Register end")
 	}()
-	// if err = r.init(); err != nil {
-	// 	return
-	// }
+
 	if err = r.reg(ctx); err != nil {
-		logrus.Errorln(err)
+		r.log.Errorln(err)
 		return
 	}
-	// defer func() {
-	// 	errR := r.revoke(stx)
-	// 	if errR != nil {
-	// 		logrus.Errorln(errR)
-	// 	}
-	// 	logrus.Errorln("Register end: ", r.registerKey)
-	// }()
 
 	keepTicker := time.NewTicker(time.Second)
-	keepErrCount := 0
 	defer keepTicker.Stop()
 	watchTicker := time.NewTicker(time.Second)
-	watchErrCount := 0
 	defer watchTicker.Stop()
 	for {
 		select {
@@ -87,28 +82,17 @@ func (r *Register) Run(ctx context.Context) (err error) {
 			}
 		case <-watchTicker.C:
 			{
-				ok, err := r.watch(ctx)
+				err := r.watch(ctx)
 				if err != nil {
-					watchErrCount++
-					if watchErrCount >= 3 {
-						logrus.Errorln("Pipeline instance watch failed")
-						return err
-					}
-				}
-				watchErrCount = 0
-				if !ok {
-					logrus.WithField("Register Key", r.registerKey).Debug("Register exit, watch none")
+					r.log.WithError(err).Errorln("Register watch error")
 					return err
 				}
 			}
 		case <-keepTicker.C:
 			{
 				if err := r.keepOnce(ctx); err != nil {
-					keepErrCount++
-					if keepErrCount >= 3 {
-						logrus.Errorln("Pipeline instance lease failed")
-						return err
-					}
+					r.log.WithError(err).Errorln("Pipeline instance lease failed")
+					return err
 				}
 			}
 		}
@@ -124,25 +108,24 @@ func (r *Register) keepOnce(ctx context.Context) error {
 }
 
 func (r *Register) revoke(ctx context.Context) (err error) {
+	r.log.Debug("Register revoke")
 	return dao.UnRegisterInstance(ctx, r.registerData.PipelineName, r.registerData.NodeName)
 }
 
-func (r *Register) watch(ctx context.Context) (ok bool, err error) {
+func (r *Register) watch(ctx context.Context) error {
 	ins, err := dao.GetInstance(ctx, r.registerData.PipelineName)
 	if err != nil {
-		return false, err
+		return err
 	}
-	if ins.NodeName == r.registerData.NodeName {
-		ok = true
-	} else {
-		ok = false
+	if ins.NodeName != r.registerData.NodeName {
+		return errors.New("register node is not expected")
 	}
-
-	return
+	return nil
 }
 
 func (r *Register) Close() error {
 	r.closeOnce.Do(func() {
+		logrus.Debug("Register exit")
 		r.revoke(context.Background())
 		close(r.closing)
 	})

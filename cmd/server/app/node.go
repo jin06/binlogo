@@ -7,6 +7,7 @@ import (
 
 	server_node "github.com/jin06/binlogo/v2/app/server/node"
 	"github.com/jin06/binlogo/v2/configs"
+	"github.com/jin06/binlogo/v2/pkg/blog"
 	"github.com/jin06/binlogo/v2/pkg/event"
 	"github.com/jin06/binlogo/v2/pkg/store/dao"
 	model_event "github.com/jin06/binlogo/v2/pkg/store/model"
@@ -36,15 +37,11 @@ func RunNode(c context.Context) (err error) {
 	dao.CreateStatusIfNotExist(c, nodeOpts.Name, node.StatusConditions{
 		node.ConReady: true,
 	})
-	if err != nil {
-		logrus.Error(err)
-		return
-	}
+
 	logrus.Info("run node")
 	event.Event(model_event.NewInfoNode("Run node success"))
-	for {
-		server := server_node.New(server_node.OptionNode(nodeOpts))
-		func() {
+	for i := 1; ; i++ {
+		func(i int) {
 			var err error
 			ctx, cancel := context.WithCancel(c)
 			defer func() {
@@ -56,9 +53,13 @@ func RunNode(c context.Context) (err error) {
 				}
 				cancel()
 			}()
-			logrus.WithField("node name", configs.GetNodeName()).Info("Running node")
+			// log := logrus.WithField("NodeSeq", i)
+			log := blog.NewLog().WithField("NodeSeq", i)
+			server := server_node.New(&server_node.Options{Node: nodeOpts, Log: log})
+			log.Info("Running node!")
+			// logrus.WithField("name", configs.GetNodeName()).Info("Running node")
 			err = server.Run(ctx)
-		}()
+		}(i)
 		time.Sleep(time.Second * 5)
 	}
 }

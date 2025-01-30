@@ -29,12 +29,13 @@ type instance struct {
 	closed       chan struct{}
 	closeOnce    sync.Once
 	completeOnce sync.Once
+	log          *logrus.Entry
 
 	//stopped   chan struct{}
 }
 
-func newInstance(pipeName string, nodeName string, manager *Manager) *instance {
-	ins := &instance{
+func NewInstance(pipeName string, nodeName string, manager *Manager, log *logrus.Entry) *instance {
+	instance := &instance{
 		pipeName:  pipeName,
 		nodeName:  nodeName,
 		mutex:     sync.Mutex{},
@@ -43,8 +44,9 @@ func newInstance(pipeName string, nodeName string, manager *Manager) *instance {
 		started:   make(chan struct{}),
 		closed:    make(chan struct{}),
 		manager:   manager,
+		log:       log,
 	}
-	return ins
+	return instance
 }
 
 func (i *instance) init(ctx context.Context) (err error) {
@@ -65,6 +67,7 @@ func (i *instance) init(ctx context.Context) (err error) {
 	pipe, err := pipeline.New(
 		pipeline.OptionPipeline(pipeInfo),
 		pipeline.OptionPosition(posPos),
+		pipeline.OptionLog(i.log),
 	)
 	if err != nil {
 		return
@@ -77,6 +80,7 @@ func (i *instance) init(ctx context.Context) (err error) {
 	reg := register.New(
 		register.WithKey(dao.PipeInstancePrefix()+"/"+i.pipeName),
 		register.WithData(insModel),
+		register.WithLog(i.log),
 	)
 	i.pipeInfo = pipeInfo
 	i.pipeIns = pipe
@@ -88,12 +92,12 @@ func (i *instance) start(ctx context.Context) (err error) {
 	defer i.CompleteClose()
 	defer i.Close()
 	i.startTime = time.Now()
-	logrus.Infof("Pipeline instance start: %s", i.pipeName)
+	i.log.Infof("Pipeline instance start: %s", i.pipeName)
 	defer func() {
-		if r := recover(); r != nil {
-			logrus.Errorf("instance run panic: %v", r)
-		}
-		logrus.Infof("pipeline instance stopped: %s", i.pipeName)
+		// if r := recover(); r != nil {
+		// i.log.Errorf("instance run panic: %v", r)
+		// }
+		i.log.Infof("pipeline instance stopped: %s", i.pipeName)
 		if err != nil {
 			event.Event(model.NewErrorPipeline(i.pipeName, "Pipeline instance stopped error: "+err.Error()))
 		}

@@ -23,10 +23,11 @@ type Manager struct {
 	closeOnce    sync.Once
 	closed       chan struct{}
 	completeOnce sync.Once
+	log          *logrus.Entry
 }
 
 // New returns a new Manager
-func New(n *node.Node) (m *Manager) {
+func New(log *logrus.Entry, n *node.Node) (m *Manager) {
 	m = &Manager{
 		mapping:    map[string]bool{},
 		mappingIns: map[string]*instance{},
@@ -35,8 +36,8 @@ func New(n *node.Node) (m *Manager) {
 		closing: make(chan struct{}),
 	}
 	m.node = n
-	logrus.Debug("New pipeline manager ")
-	logrus.Debug("NodeName:", n.Name)
+	m.log = log
+	m.log.Debug("New Pipeline Manger")
 	return
 }
 
@@ -46,12 +47,12 @@ func (m *Manager) Run(ctx context.Context) {
 	defer m.Close()
 	defer func() {
 		if r := recover(); r != nil {
-			logrus.Errorln("pipeline manager panic, ", r)
+			m.log.Errorln("pipeline manager panic, ", r)
 			panic(r)
 		}
 	}()
-	if err := m.scanPipelines(nil); err != nil {
-		logrus.Error(err)
+	if err := m.scanPipelines(ctx, nil); err != nil {
+		m.log.WithError(err).Errorln("Scan pipelines error")
 	}
 	ticker := time.NewTicker(time.Second * 5)
 	defer ticker.Stop()
@@ -65,8 +66,8 @@ func (m *Manager) Run(ctx context.Context) {
 			}
 		case <-ticker.C:
 			{
-				if serr := m.scanPipelines(nil); serr != nil {
-					logrus.Error(serr)
+				if err := m.scanPipelines(ctx, nil); err != nil {
+					m.log.WithError(err).Errorln("Scan pipelines error")
 				}
 				m.dispatch(ctx)
 			}
@@ -75,11 +76,11 @@ func (m *Manager) Run(ctx context.Context) {
 }
 
 // scanPipelines scan pipeline bind, find pipelines that should run in this node
-func (m *Manager) scanPipelines(pb *model.PipelineBind) (err error) {
+func (m *Manager) scanPipelines(ctx context.Context, pb *model.PipelineBind) (err error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 	if pb == nil {
-		pb, err = dao.GetPipelineBind(context.Background())
+		pb, err = dao.GetPipelineBind(ctx)
 		if err != nil {
 			return
 		}
@@ -151,7 +152,7 @@ func (m *Manager) Get(pipeName string) *instance {
 func (m *Manager) Add(ctx context.Context, pipeName string) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
-	ins := newInstance(pipeName, m.node.Name, m)
+	ins := NewInstance(pipeName, m.node.Name, m, m.log)
 
 	m.mappingIns[pipeName] = ins
 }

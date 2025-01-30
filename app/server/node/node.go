@@ -3,7 +3,6 @@ package node
 import (
 	"context"
 	"errors"
-	"fmt"
 	"log/slog"
 	"sync"
 	"time"
@@ -53,23 +52,20 @@ const (
 )
 
 // New return a new node
-func New(opts ...Option) (node *Node) {
-	options := &Options{}
+func New(options *Options) (node *Node) {
 	node = &Node{
 		Options: options,
 		closing: make(chan struct{}),
 		closed:  make(chan struct{}),
-	}
-	for _, v := range opts {
-		v(options)
+		// log: log,
 	}
 	return
 }
 
-func (n *Node) init() {
-	n.Register = NewRegister(n.Options.Node)
-	n.electionManager = election.NewManager(n.Options.Node)
-	n.pipeManager = manager_pipe.New(n.Options.Node)
+func (n *Node) init(ctx context.Context) {
+	n.Register = NewRegister(n.Options.Log, n.Options.Node)
+	n.electionManager = election.NewManager(ctx, n.Options.Node)
+	n.pipeManager = manager_pipe.New(n.Options.Log, n.Options.Node)
 	n.StatusManager = manager_status.NewManager(n.Options.Node)
 }
 
@@ -89,16 +85,12 @@ func (n *Node) refreshNode(ctx context.Context) error {
 func (n *Node) Run(ctx context.Context) (err error) {
 	defer n.CompleteClose()
 	defer n.Close()
-	defer func() {
-		if re := recover(); re != nil {
-			err = fmt.Errorf("Node run panic %v", re)
-		}
-	}()
+
 	if err = n.refreshNode(ctx); err != nil {
 		return
 	}
 
-	n.init()
+	n.init(ctx)
 
 	go func() {
 		n.pollMustRun(ctx)

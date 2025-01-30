@@ -22,19 +22,19 @@ func (f formatter) Format(e *logrus.Entry) (res []byte, err error) {
 	}
 	caller := ""
 	if e.HasCaller() {
-		fileVal := fmt.Sprintf("%s:%d", e.Caller.File, e.Caller.Line)
-		caller = " " + fileVal
+		caller = fmt.Sprintf(" %s:%d | ", e.Caller.File, e.Caller.Line)
 	}
 
-	fmt.Fprintf(b, "[binlogo-%.5s] [%s]%s %-44s", e.Level, e.Time.Format(defaultFormat), caller, e.Message)
+	fmt.Fprintf(b, "[binlogo-%.5s] [%s]%s%-44s", e.Level, e.Time.Format(defaultFormat), caller, e.Message)
 	for k, v := range e.Data {
 		b.WriteByte(' ')
 		b.WriteString(k)
 		b.WriteByte('=')
-		stringVal, ok := v.(string)
-		if !ok {
-			stringVal = fmt.Sprint()
-		}
+		// stringVal, ok := v.(string)
+		// if !ok {
+		// stringVal = fmt.Sprint()
+		// }
+		stringVal := fmt.Sprintf("%v", v)
 		b.WriteString(fmt.Sprintf("%q", stringVal))
 	}
 	b.WriteByte('\n')

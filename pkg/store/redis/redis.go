@@ -7,6 +7,7 @@ import (
 	"github.com/jin06/binlogo/v2/configs"
 	"github.com/jin06/binlogo/v2/pkg/store/model"
 	"github.com/redis/go-redis/v9"
+	"github.com/sirupsen/logrus"
 )
 
 var Default *Redis
@@ -141,4 +142,41 @@ func (r *Redis) GetField(ctx context.Context, key string, field string) (string,
 		return "", err
 	}
 	return str, nil
+}
+
+func AllDatas[T model.Model](ctx context.Context, key string, client redis.Client) (list []T, err error) {
+	var cursor uint64
+	for {
+		keys, nextCursor, err := client.Scan(ctx, cursor, key, 10).Result()
+		if err != nil {
+			return nil, err
+		}
+		for _, key := range keys {
+			keyType, err := client.Type(ctx, key).Result()
+			if err != nil {
+				logrus.Error(err)
+				continue
+			}
+			if keyType == "hash" {
+				cmd := client.HGetAll(ctx, key)
+				if cmd.Err() != nil {
+					return nil, cmd.Err()
+				}
+				var item T
+				err := cmd.Scan(item)
+				if err != nil {
+					logrus.Error(err)
+					continue
+				}
+				list = append(list, item)
+			}
+		}
+		if nextCursor == 0 {
+			break
+		}
+		cursor = nextCursor
+
+	}
+
+	return
 }

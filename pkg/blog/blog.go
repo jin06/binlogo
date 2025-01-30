@@ -1,6 +1,7 @@
 package blog
 
 import (
+	"github.com/jin06/binlogo/v2/configs"
 	"github.com/sirupsen/logrus"
 )
 
@@ -19,23 +20,31 @@ const (
 	TRACE = "trace"
 )
 
-func SetLevel(level string) {
+func SetLevel(log *logrus.Logger, level string) {
 	switch level {
 	case DEBUG:
-		logrus.SetLevel(logrus.DebugLevel)
+		log.SetLevel(logrus.DebugLevel)
+		log.SetReportCaller(true)
 	case INFO:
-		logrus.SetLevel(logrus.InfoLevel)
+		log.SetLevel(logrus.InfoLevel)
 	case WARN:
-		logrus.SetLevel(logrus.WarnLevel)
+		log.SetLevel(logrus.WarnLevel)
 	case ERROR:
-		logrus.SetLevel(logrus.ErrorLevel)
+		log.SetLevel(logrus.ErrorLevel)
 	case FATAL:
-		logrus.SetLevel(logrus.FatalLevel)
+		log.SetLevel(logrus.FatalLevel)
 	case PANIC:
-		logrus.SetLevel(logrus.PanicLevel)
+		log.SetLevel(logrus.PanicLevel)
 	case TRACE:
-		logrus.SetLevel(logrus.TraceLevel)
+		log.SetLevel(logrus.TraceLevel)
 	default:
-		logrus.SetLevel(logrus.InfoLevel)
+		log.SetLevel(logrus.InfoLevel)
 	}
+}
+
+func NewLog() *logrus.Logger {
+	log := logrus.New()
+	log.SetFormatter(&formatter{})
+	SetLevel(log, configs.Default.LogLevel)
+	return log
 }

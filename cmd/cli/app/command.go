@@ -7,6 +7,7 @@ import (
 	"github.com/jin06/binlogo/v2/pkg/blog"
 	store2 "github.com/jin06/binlogo/v2/pkg/store"
 	"github.com/jin06/binlogo/v2/pkg/store/model/pipeline"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -19,7 +20,7 @@ func NewCommand() (cmd *cobra.Command) {
 	cmd.PersistentFlags().String("config", "./etc/binlogo.yaml", "config file default is ./etc/binlogo.yaml")
 	err := viper.BindPFlag("config", cmd.PersistentFlags().Lookup("config"))
 	configs.Init(viper.GetString("config"))
-	blog.SetLevel(configs.Default.LogLevel)
+	blog.SetLevel(logrus.StandardLogger(), configs.Default.LogLevel)
 	if err != nil {
 		fmt.Println(err)
 	}

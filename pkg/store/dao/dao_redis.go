@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/jin06/binlogo/v2/configs"
+	"github.com/jin06/binlogo/v2/internal/constant"
 	"github.com/jin06/binlogo/v2/pkg/store/model"
 	"github.com/jin06/binlogo/v2/pkg/store/model/node"
 	"github.com/jin06/binlogo/v2/pkg/store/model/pipeline"
@@ -103,7 +104,7 @@ func (d *DaoRedis) RegisterInstance(ctx context.Context, ins *pipeline.Instance,
 			return err
 		}
 		if i > 0 {
-			return fmt.Errorf("pipeline exist: %s", key)
+			return constant.ErrPipelineInstanceExists
 		}
 		_, err = tx.TxPipelined(ctx, func(p redis.Pipeliner) error {
 			p.HMSet(ctx, key, ins)
@@ -128,7 +129,7 @@ func (d *DaoRedis) UnRegisterInstance(ctx context.Context, pipe string, n string
 }
 
 func (d *DaoRedis) LeaseInstance(ctx context.Context, pipe string, exp time.Duration) error {
-	return d.client().Expire(ctx, pipe, exp).Err()
+	return d.client().Expire(ctx, storeredis.GetPipeInstanceKey(pipe), exp).Err()
 }
 
 func (d *DaoRedis) GetInstance(ctx context.Context, pipe string) (ins *pipeline.Instance, err error) {
