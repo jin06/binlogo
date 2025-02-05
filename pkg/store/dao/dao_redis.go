@@ -408,7 +408,7 @@ func (d *DaoRedis) GetStatus(ctx context.Context, nodeName string) (s *node.Stat
 }
 
 func (d *DaoRedis) LeaderNode(ctx context.Context) (node string, err error) {
-	str, err := d.client().Get(ctx, storeredis.ElectionPrefix()).Result()
+	str, err := d.client().Get(ctx, storeredis.MasterPreifx()).Result()
 	if err == redis.Nil {
 		err = nil
 	}
