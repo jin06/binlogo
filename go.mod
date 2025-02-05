@@ -15,7 +15,7 @@ require (
 	github.com/google/uuid v1.4.0
 	github.com/hashicorp/consul/api v1.11.0
 	github.com/prometheus/client_golang v1.11.0
-	github.com/redis/go-redis/v9 v9.3.0
+	github.com/redis/go-redis/v9 v9.7.0
 	github.com/shirou/gopsutil/v3 v3.21.10
 	github.com/sirupsen/logrus v1.8.1
 	github.com/spf13/cobra v1.2.1

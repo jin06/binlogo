@@ -92,7 +92,7 @@ func CompleteInfoList(ctx context.Context, list []*Item) (err error) {
 	if len(list) == 0 {
 		return nil
 	}
-	pb, err := dao.GetPipelineBind(context.Background())
+	pb, err := dao.GetPipelineBind(ctx)
 	if err != nil {
 		return
 	}
@@ -101,12 +101,12 @@ func CompleteInfoList(ctx context.Context, list []*Item) (err error) {
 		return
 	}
 	for _, v := range list {
-		if err1 := CompletePipelineBind(v, pb); err1 != nil {
+		if err := CompletePipelineBind(v, pb); err != nil {
 			continue
 		}
-		if err2 := completePipelineRun(v, allInstance); err2 != nil {
-			return
+		if err := completePipelineRun(v, allInstance); err != nil {
+			return err
 		}
 	}
-	return
+	return nil
 }

@@ -74,9 +74,8 @@ func scanKeysWithPrefix(ctx context.Context, client *redis.Client, prefix string
 	return keys, nil
 }
 
-func getAllHashDatas[T any](ctx context.Context, client *redis.Client, prefix string) (list []T, err error) {
+func getAllHashDatas[T any](ctx context.Context, client *redis.Client, prefix string) (list []*T, err error) {
 	var keys []string
-	list = []T{}
 	if keys, err = scanKeysWithPrefix(ctx, client, prefix); err != nil {
 		return
 	}
@@ -86,7 +85,8 @@ func getAllHashDatas[T any](ctx context.Context, client *redis.Client, prefix st
 			logrus.Error("get hashdata error ", cmd.Err())
 			continue
 		}
-		var item T
+		// var item T
+		item := new(T)
 		if err := cmd.Scan(item); err != nil {
 			logrus.Error("scan hashdata error ", err)
 			continue
@@ -143,7 +143,7 @@ func (d *DaoRedis) GetInstance(ctx context.Context, pipe string) (ins *pipeline.
 }
 
 func (d *DaoRedis) AllInstance(ctx context.Context) (list []*pipeline.Instance, err error) {
-	return getAllHashDatas[*pipeline.Instance](ctx, d.client(), d.instancePrefix())
+	return getAllHashDatas[pipeline.Instance](ctx, d.client(), storeredis.PipelineInstancePrefix())
 }
 
 func (d *DaoRedis) AllInstanceMap(ctx context.Context) (maps map[string]*pipeline.Instance, err error) {

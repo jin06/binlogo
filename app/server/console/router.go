@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/jin06/binlogo/v2/app/server/console/handler"
 	mid "github.com/jin06/binlogo/v2/app/server/console/middleware"
-	"github.com/jin06/binlogo/v2/static"
+	"github.com/jin06/binlogo/v2/static/dist"
 )
 
 func router(g *gin.Engine) {
@@ -14,7 +14,7 @@ func router(g *gin.Engine) {
 	// g.GET("/metrics", gin.WrapH(promhttp.Handler()))
 	g.Use(mid.Cors)
 
-	staticServer := http.FS(static.Content)
+	staticServer := http.FS(dist.Content)
 	g.StaticFS("/console", staticServer)
 	// g.StaticFS("/assets")
 	// g.Static("/assets", "./assets/dist/assets")

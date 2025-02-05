@@ -98,6 +98,7 @@
 import { fetchList } from '@/api/node'
 import waves from '@/directive/waves' // waves directive
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
+import { notify, errorNotify } from '@/utils/notify'
 
 export default {
   name: 'ComplexTable',
@@ -138,13 +139,14 @@ export default {
     getList() {
       this.listLoading = true
       fetchList(this.listQuery).then(response => {
-        this.list = response.data.items
-        this.total = response.data.total
-
-        // Just to simulate the time of the request
-        setTimeout(() => {
-          this.listLoading = false
-        }, 1.5 * 1000)
+        if (response.code == 20000) {
+          this.list = response.data.items
+          this.total = response.data.total
+        } else {
+          errorNotify(this, response.msg)
+        }
+      }).finally(() => {
+        this.listLoading = false
       })
     },
     handleFilter() {

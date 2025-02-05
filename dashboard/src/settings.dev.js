@@ -40,6 +40,6 @@ module.exports = {
    */
   errorLog: 'production',
   host: {
-    api: 'http://localhost:9999'
+    api: 'http://localhost:8081'
   }
 }

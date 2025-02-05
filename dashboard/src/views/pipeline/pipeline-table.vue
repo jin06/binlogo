@@ -291,6 +291,7 @@
 import { fetchList, fetchUpdateStatus, fetchCreate, fetchUpdate, fetchDelete } from '@/api/pipeline'
 import waves from '@/directive/waves' // waves directive
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
+import { errorNotify, notify } from '@/utils/notify'
 
 export default {
   components: { Pagination },
@@ -387,11 +388,14 @@ export default {
       fetchList(this.listQuery).then(response => {
         this.list = response.data.items
         this.total = response.data.total
-
-        // Just to simulate the time of the request
-        setTimeout(() => {
-          this.listLoading = false
-        }, 1.5 * 1000)
+        if (response.code != 20000) {
+          errorNotify(this, response.msg)
+        } else {
+          this.list = response.data.items
+          this.total = response.data.total
+        }
+      }).finally(() => {
+        this.listLoading = false
       })
     },
     handleFilter() {
@@ -404,18 +408,12 @@ export default {
         status: status
       }
       fetchUpdateStatus(req).then(response =>{
-        setTimeout(() => {
-          this.listLoading = false
-        }, 1.5 * 1000)
-        // const index = this.list.findIndex(v => v.pipeline.name === req.name)
-        // this.list.splice(index,1, response.data)
-        row.pipeline.status = status
-        this.$notify({
-          title: 'success',
-          message: 'Update success',
-          type: 'danger',
-          duration: 2000
-        })
+        if (response.code === 20000 ) {
+          row.pipeline.status = status
+        }
+        notify(this, response)
+      }).finally(() => {
+        this.listLoading = false
       })
     },
     sortChange(data) {
@@ -509,23 +507,14 @@ export default {
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
           fetchCreate(this.temp.pipeline).then(response => {
-            setTimeout(() => {
-              this.listLoading = false
-            }, 1.5 * 1000)
-            })
+          }).finally(() => {
+            notify(this, response)
             this.dialogFormVisible = false
-            this.$notify({
-              title: '成功',
-              message: '创建成功',
-              type: 'success',
-              duration: 2000
           })
         }
       })
     },
     handleUpdate(row) {
-      //this.temp.pipeline =  Object.assign({}, row.pipeline) // copy obj
-      //this.temp = {}
       this.temp.pipeline = Object.assign({}, row.pipeline)
       this.temp.info = Object.assign({},row.info)
       this.dialogStatus = 'update'
@@ -539,18 +528,13 @@ export default {
         if (valid) {
           const tempData = Object.assign({},this.temp.pipeline)
           fetchUpdate(tempData).then(response => {
-            setTimeout(() => {
-              this.listLoading = false
-            }, 3 * 1000)
-            const index = this.list.findIndex(v => v.pipeline.name === this.temp.pipeline.name)
-            this.list.splice(index,1, response.data)
+            if (response.code === 20000) {
+              const index = this.list.findIndex(v => v.pipeline.name === this.temp.pipeline.name)
+              this.list.splice(index,1, response.data)
+            }
+            notify(this, response)
+          }).finally(() => {
             this.dialogFormVisible = false
-            this.$notify({
-              title: 'success',
-              message: 'Update Success!',
-              type: 'success',
-              duration: 2000
-            })
           })
         }
       })
@@ -565,18 +549,18 @@ export default {
           name: row.pipeline.name
         }
         fetchDelete(req).then(response => {
-          this.$message({
-            type: 'success',
-            message: 'Delete success!'
-          });
-          this.list.splice(index, 1)
+          if (response.code === 20000) {
+            this.list.splice(index, 1)
+          }
         })
       }).catch(() => {
         this.$message({
           type: 'info',
           message: 'Delete cancel!'
         });
-      });
+      }).finally(() => {
+        notify(this, response)
+      })
     },
     addFilter() {
       this.temp.pipeline.filters.push({
