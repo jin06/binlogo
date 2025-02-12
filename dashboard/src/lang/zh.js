@@ -314,9 +314,13 @@ export default {
     ip: '节点当前IP',
     status: '节点状态',
     version: '节点版本',
+    roles: '角色',
     roleMap: {
       leader: '主节点',
-      follower: '从节点'
+      follower: '从节点',
+      master: '候选人',
+      admin: '管理后台',
+      worker: '工作节点'
     }
   },
   capacity: {

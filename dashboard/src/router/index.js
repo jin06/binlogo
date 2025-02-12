@@ -73,7 +73,7 @@ export const constantRoutes = [
         path: 'dashboard',
         component: () => import('@/views/cluster/index'),
         name: 'Dashboard',
-        meta: { title: 'dashboard', icon: 'dashboard', affix: true }
+        meta: { title: 'dashboard', icon: 'el-icon-s-home', affix: true } // 使用 el-icon-s-home 图标
       }
     ]
   },
@@ -84,14 +84,14 @@ export const constantRoutes = [
     name: 'pipeline',
     meta: {
       title: 'pipeline',
-      icon: 'table'
+      icon: 'el-icon-s-operation' // 使用 el-icon-s-operation 图标
     },
     children: [
       {
         path: 'pipeline-table',
         component: () => import('@/views/pipeline/pipeline-table'),
         name: 'pipelineTable',
-        meta: { title: 'pipelineTable' }
+        meta: { title: 'pipelineTable', icon: 'el-icon-s-marketing' } // 使用 el-icon-s-marketing 图标
       },
       {
         path: 'pipeline-detail/:name',
@@ -109,14 +109,14 @@ export const constantRoutes = [
     name: 'node',
     meta: {
       title: 'node',
-      icon: 'table'
+      icon: 'el-icon-s-platform' // 使用 el-icon-s-platform 图标
     },
     children: [
       {
         path: 'node-table',
         component: () => import('@/views/node/node-table'),
         name: 'nodeTable',
-        meta: { title: 'nodeTable' }
+        meta: { title: 'nodeTable', icon: 'el-icon-s-data' } // 使用 el-icon-s-data 图标
       }
     ]
   },
@@ -127,14 +127,14 @@ export const constantRoutes = [
     name: 'cluster',
     meta: {
       title: 'cluster',
-      icon: 'table'
+      icon: 'el-icon-s-tools' // 使用 el-icon-s-tools 图标
     },
     children: [
       {
         path: 'cluster',
         component: () => import('@/views/cluster/index'),
         name: 'cluster',
-        meta: { title: 'cluster' }
+        meta: { title: 'cluster', icon: 'el-icon-s-management' } // 使用 el-icon-s-management 图标
       }
     ]
   }

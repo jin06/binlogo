@@ -65,7 +65,10 @@ export default {
     externalLink: 'External Link',
     profile: 'Profile',
     pipelineTable: 'Pipeline Table',
-    pipelineMonitor: 'Pipeline Monitor'
+    pipelineMonitor: 'Pipeline Monitor',
+    pipelineDetail: 'Pipeline Detail',
+    nodeTable: 'Node Table',
+    cluster: 'Cluster'
   },
   navbar: {
     dashboard: 'Dashboard',
@@ -310,10 +313,15 @@ export default {
     ip: 'Current IP',
     status: 'Node Status',
     version: 'Node Version',
+    roles: 'Roles',
     roleMap: {
       leader: 'Leader',
-      follower: 'Follower'
-    }
+      follower: 'Follower',
+      master: 'Candidate',
+      admin: 'Admin Backend',
+      worker: 'Worker Node'
+    },
+    lastRunTime: 'Last Run Time'
   },
   capacity: {
     cpuCores: 'CPU Cores',
