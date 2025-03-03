@@ -114,7 +114,6 @@ func (n *Node) Run(ctx context.Context) (err error) {
 
 // pollLeaderRun run when node is leader
 func (n *Node) pollLeaderRun(ctx context.Context) {
-	curRole := constant.FOLLOWER
 	ticker := time.NewTicker(time.Second * 5)
 	defer ticker.Stop()
 	for {
@@ -123,13 +122,6 @@ func (n *Node) pollLeaderRun(ctx context.Context) {
 			return
 		case <-n.electionManager.Closed():
 			return
-		case r, ok := <-n.electionManager.RoleCh():
-			{
-				if !ok {
-					return
-				}
-				curRole = r
-			}
 		case <-ticker.C:
 			{
 				// curRole = n.electionManager.GetRole()
@@ -139,14 +131,15 @@ func (n *Node) pollLeaderRun(ctx context.Context) {
 				return
 			}
 		}
-		n.leaderRun(ctx, curRole)
+		n.leaderRun(ctx)
 	}
 }
 
-func (n *Node) leaderRun(ctx context.Context, r constant.Role) {
+func (n *Node) leaderRun(ctx context.Context) {
 	n.leaderRunMutex.Lock()
 	defer n.leaderRunMutex.Unlock()
 	//logrus.Debug("node run leader ", r)
+	r := n.electionManager.GetRole()
 	if r == constant.FOLLOWER {
 		if n.Scheduler != nil {
 			n.Scheduler.Close()
