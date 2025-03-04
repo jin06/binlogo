@@ -52,7 +52,7 @@
       </el-table-column>
       <el-table-column :label="$t('node.status')" width="auto">
         <template slot-scope="{row}" align="middle">
-          <el-tag v-if="row.status.ready === true" type="primary" effect="dark">{{ $t('node_table.statusMap.ready.yes') }}</el-tag>
+          <el-tag v-if="row.status.ready === true" type="success" effect="dark">{{ $t('node_table.statusMap.ready.yes') }}</el-tag>
           <el-popover v-if="row.status.ready === false" trigger="hover" placement="top">
             <p v-if="row.status.network_unavailable === true">{{ $t('node_table.statusMap.network_unavailable.yes') }}</p>
             <div slot="reference" class="name-wrapper">
@@ -68,24 +68,28 @@
           <span>{{ row.node.version }}</span>
         </template>
       </el-table-column>
-      <el-table-column :label="$t('capacity.cpuCores')" width="auto">
+      <el-table-column :label="$t('node.roles')" width="auto">
         <template slot-scope="{row}">
-          <span>{{ row.capacity.cpu_cores }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column :label="$t('capacity.memory')" width="auto">
-        <template slot-scope="{row}">
-          <span>{{ (row.capacity.memory/(1024*1024*1024)).toFixed(2) }}Gi</span>
+          <el-tag v-if="row.node.role.master === true" type="primary" class="role-tag">{{ $t('node.roleMap.master') }}</el-tag>
+          <el-tag v-if="row.node.role.admin === true" type="success" class="role-tag">{{ $t('node.roleMap.admin') }}</el-tag>
+          <el-tag v-if="row.node.role.worker === true" type="info" class="role-tag">{{ $t('node.roleMap.worker') }}</el-tag>
         </template>
       </el-table-column>
       <el-table-column :label="$t('capacity.cpuUsage')" width="auto">
         <template slot-scope="{row}">
+          <span v-if="row.status.ready === true">Total Cores: {{ row.capacity.cpu_cores }}</span>
           <el-progress v-if="row.status.ready === true" :percentage="row.capacity.cpu_usage" :color="colors" />
         </template>
       </el-table-column>
       <el-table-column :label="$t('capacity.memoryUsage')" width="auto">
         <template slot-scope="{row}">
+          <span v-if="row.status.ready === true">Total Memory: {{ (row.capacity.memory/(1024*1024*1024)).toFixed(2) }} Gi</span>
           <el-progress v-if="row.status.ready === true" :percentage="row.capacity.memory_usage" :color="colors" />
+        </template>
+      </el-table-column>
+      <el-table-column :label="$t('node.lastRunTime')" width="auto" align="center">
+        <template slot-scope="{row}">
+          <span>{{ dateFormat(row.node.last_run_time) }}</span>
         </template>
       </el-table-column>
     </el-table>
@@ -98,6 +102,7 @@
 import { fetchList } from '@/api/node'
 import waves from '@/directive/waves' // waves directive
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
+import { notify, errorNotify } from '@/utils/notify'
 
 export default {
   name: 'ComplexTable',
@@ -138,13 +143,15 @@ export default {
     getList() {
       this.listLoading = true
       fetchList(this.listQuery).then(response => {
-        this.list = response.data.items
-        this.total = response.data.total
-
-        // Just to simulate the time of the request
-        setTimeout(() => {
-          this.listLoading = false
-        }, 1.5 * 1000)
+        if (response.code == 20000) {
+          console.log(response.data.items); // 添加调试信息
+          this.list = response.data.items
+          this.total = response.data.total
+        } else {
+          errorNotify(this, response.msg)
+        }
+      }).finally(() => {
+        this.listLoading = false
       })
     },
     handleFilter() {
@@ -180,3 +187,13 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+.role-tag {
+  font-size: 12px;
+  border-radius: 10px;
+  background-color: #f0f0f0;
+  margin: 5px 0; /* 增加上下间距 */
+  padding: 2px 5px; /* 缩小字和边框的距离 */
+}
+</style>

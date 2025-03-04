@@ -2,54 +2,58 @@ package register
 
 import (
 	"context"
-	"encoding/json"
+	"errors"
 	"sync"
 	"time"
 
-	"go.etcd.io/etcd/api/v3/v3rpc/rpctypes"
-
-	"github.com/jin06/binlogo/pkg/etcdclient"
+	"github.com/jin06/binlogo/v2/pkg/store/dao"
+	"github.com/jin06/binlogo/v2/pkg/store/model/pipeline"
 	"github.com/sirupsen/logrus"
-	clientv3 "go.etcd.io/etcd/client/v3"
 )
 
 // New returns a new *Register
 func New(opts ...Option) (r *Register) {
 	r = &Register{
-		ttl:     5,
-		stopped: make(chan struct{}),
+		ttl:     time.Second * 5,
+		closing: make(chan struct{}),
+		closed:  make(chan struct{}),
 	}
 	//r.client = etcdclient.Default()
 	for _, v := range opts {
 		v(r)
 	}
+	r.log = logrus.WithField("RegisterKey", r.registerKey)
+
 	return
 }
 
 // Register Encapsulation of etcd register
 type Register struct {
-	lease                  clientv3.Lease
-	leaseID                clientv3.LeaseID
-	ttl                    int64
-	client                 *clientv3.Client
-	registerKey            string
-	registerData           interface{}
-	registerCreateRevision int64
-	stopped                chan struct{}
-	closeOnce              sync.Once
+	ttl          time.Duration
+	registerKey  string
+	registerData *pipeline.Instance
+	isClosed     bool
+	closing      chan struct{}
+	closed       chan struct{}
+	closeOnce    sync.Once
+	completeOnce sync.Once
+	log          *logrus.Entry
 }
 
-func (r *Register) init() (err error) {
-	logrus.Info("init register")
-	if r.client, err = etcdclient.New(); err != nil {
-		return
-	}
-	return
-}
+// func (r *Register) init() (err error) {
+// 	logrus.Info("init register")
+// 	if r.client, err = etcdclient.New(); err != nil {
+// 		return
+// 	}
+// 	return
+// }
 
 // Run start register
 func (r *Register) Run(ctx context.Context) (err error) {
-	logrus.WithField("key", r.registerKey).Info("register run")
+	defer r.CompleteClose()
+	defer r.Close()
+	// logrus.WithField("key", r.registerKey).Info("Register run")
+	r.log.Info("Register run")
 	defer func() {
 		if re := recover(); re != nil {
 			logrus.Errorln("register panic, ", re)
@@ -57,29 +61,18 @@ func (r *Register) Run(ctx context.Context) (err error) {
 		if err != nil {
 			logrus.WithField("err", err.Error()).Infoln("register process quit unexpectedly")
 		}
-		logrus.WithField("key", r.registerKey).Info("register stopped")
-		r.close()
+		// logrus.WithField("key", r.registerKey).Info("register stopped")
+		r.log.Info("Register end")
 	}()
-	if err = r.init(); err != nil {
+
+	if err = r.reg(ctx); err != nil {
+		r.log.Errorln(err)
 		return
 	}
-	stx, cancel := context.WithCancel(ctx)
-	defer cancel()
-	if err = r.reg(stx); err != nil {
-		logrus.Errorln(err)
-		return
-	}
-	defer func() {
-		errR := r.revoke(stx)
-		if errR != nil {
-			logrus.Errorln(errR)
-		}
-		logrus.Errorln("Register end: ", r.registerKey)
-	}()
 
 	keepTicker := time.NewTicker(time.Second)
 	defer keepTicker.Stop()
-	watchTicker := time.NewTicker(time.Second * 5)
+	watchTicker := time.NewTicker(time.Second)
 	defer watchTicker.Stop()
 	for {
 		select {
@@ -89,20 +82,17 @@ func (r *Register) Run(ctx context.Context) (err error) {
 			}
 		case <-watchTicker.C:
 			{
-				wOk, wErr := r.watch(stx)
-				if wErr != nil {
-					logrus.Errorln(wErr)
-					return
-				}
-				if !wOk {
-					return
+				err := r.watch(ctx)
+				if err != nil {
+					r.log.WithError(err).Errorln("Register watch error")
+					return err
 				}
 			}
 		case <-keepTicker.C:
 			{
-				err = r.keepOnce(stx)
-				if err == rpctypes.ErrLeaseNotFound {
-					return
+				if err := r.keepOnce(ctx); err != nil {
+					r.log.WithError(err).Errorln("Pipeline instance lease failed")
+					return err
 				}
 			}
 		}
@@ -110,74 +100,48 @@ func (r *Register) Run(ctx context.Context) (err error) {
 }
 
 func (r *Register) reg(ctx context.Context) (err error) {
-	//r.client, _ = etcdclient.New()
-	r.lease = clientv3.NewLease(r.client)
-	rep, err := r.lease.Grant(ctx, r.ttl)
-	if err != nil {
-		return
-	}
-	r.leaseID = rep.ID
-	//err = dao_register.Reg(r.registerKey, r.registerData, r.leaseID)
-	b, err := json.Marshal(r.registerData)
-	if err != nil {
-		return
-	}
-	txn := r.client.Txn(ctx).
-		If(clientv3.Compare(clientv3.CreateRevision(r.registerKey), "=", int64(0))).
-		Then(clientv3.OpPut(r.registerKey, string(b), clientv3.WithLease(r.leaseID)))
-	res, err := txn.Commit()
-	if err != nil {
-		return
-	}
-	if res != nil {
-		r.registerCreateRevision = res.Header.Revision
-	}
-	return
+	return dao.RegisterInstance(ctx, r.registerData, r.ttl)
 }
 
-func (r *Register) keepOnce(ctx context.Context) (err error) {
-	_, err = r.lease.KeepAliveOnce(ctx, r.leaseID)
-
-	if err != nil {
-		return
-	}
-	//logrus.Debugf("Node lease %v seconds.", resp.TTL)
-	return
+func (r *Register) keepOnce(ctx context.Context) error {
+	return dao.LeaseInstance(ctx, r.registerData.PipelineName, r.ttl)
 }
 
 func (r *Register) revoke(ctx context.Context) (err error) {
-	_, err = r.client.Revoke(ctx, r.leaseID)
-	return
+	r.log.Debug("Register revoke")
+	return dao.UnRegisterInstance(ctx, r.registerData.PipelineName, r.registerData.NodeName)
 }
 
-func (r *Register) watch(ctx context.Context) (ok bool, err error) {
-	var res *clientv3.GetResponse
-	res, err = r.client.Get(ctx, r.registerKey)
+func (r *Register) watch(ctx context.Context) error {
+	ins, err := dao.GetInstance(ctx, r.registerData.PipelineName)
 	if err != nil {
-		//logrus.Errorln(err)
-		return
+		return err
 	}
-	if len(res.Kvs) == 0 {
-		return
+	if ins.NodeName != r.registerData.NodeName {
+		return errors.New("register node is not expected")
 	}
-	if res.Kvs[0].CreateRevision == r.registerCreateRevision {
-		ok = true
-	}
-	//logrus.Debug(res.Kvs[0].CreateRevision)
-	// logrus.Debug(r.registerCreateRevision)
-	return
+	return nil
 }
 
-func (r *Register) close() error {
+func (r *Register) Close() error {
 	r.closeOnce.Do(func() {
-		if r.client != nil {
-			r.client.Close()
-		}
-		close(r.stopped)
+		logrus.Debug("Register exit")
+		r.revoke(context.Background())
+		close(r.closing)
 	})
 	return nil
 }
 
-func (r *Register) Stopped() chan struct{} {
-	return r.stopped
+func (r *Register) CompleteClose() {
+	r.completeOnce.Do(func() {
+		close(r.closed)
+	})
+}
+
+func (r *Register) Closed() chan struct{} {
+	return r.closed
+}
+
+func (r *Register) IsClosed() bool {
+	return r.isClosed
 }

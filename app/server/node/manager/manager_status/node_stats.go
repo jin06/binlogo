@@ -1,11 +1,12 @@
 package manager_status
 
 import (
+	"context"
 	"errors"
 	"time"
 
-	"github.com/jin06/binlogo/pkg/store/dao/dao_node"
-	"github.com/jin06/binlogo/pkg/store/model/node"
+	"github.com/jin06/binlogo/v2/pkg/store/dao"
+	"github.com/jin06/binlogo/v2/pkg/store/model/node"
 	"github.com/shirou/gopsutil/v3/cpu"
 	"github.com/shirou/gopsutil/v3/mem"
 	"github.com/sirupsen/logrus"
@@ -14,10 +15,10 @@ import (
 // NodeStatus reporting work
 type NodeStatus struct {
 	NodeName    string
-	Node        *node.Node
-	Cap         *node.Capacity
-	Allocatable *node.Allocatable
-	Conditions  *node.Condition
+	Node        *node.Node       `json:"node" redis:"node"`
+	Cap         node.Capacity    `json:"cap" redis:"cap"`
+	Allocatable node.Allocatable `json:"allocatable" redis:"allocatable"`
+	Conditions  *node.Condition  `json:"conditions" redis:"conditions"`
 }
 
 // NewNodeStatus returns a new NodeStatus
@@ -35,10 +36,12 @@ func (ns *NodeStatus) syncNodeStatus() (err error) {
 	}
 	err = ns.syncCap()
 	if err != nil {
+		logrus.Errorf("sync cap error: %s", err)
 		return
 	}
 	err = ns.syncAllocatable()
 	if err != nil {
+		logrus.Errorf("sync allocatable error: %s", err)
 		return
 	}
 	return
@@ -60,7 +63,7 @@ func (ns *NodeStatus) setStatus() (err error) {
 
 	c := ts[0]
 
-	capacity := &node.Capacity{
+	capacity := node.Capacity{
 		NodeName:   ns.NodeName,
 		Memory:     v.Total,
 		Cpu:        c.User + c.System + c.Idle,
@@ -76,7 +79,7 @@ func (ns *NodeStatus) setStatus() (err error) {
 		logrus.Error(err1)
 	}
 
-	al := &node.Allocatable{
+	al := node.Allocatable{
 		NodeName:   ns.NodeName,
 		Memory:     v.Available,
 		Cpu:        c.Idle,
@@ -95,13 +98,11 @@ func (ns *NodeStatus) setStatus() (err error) {
 }
 
 func (ns *NodeStatus) syncCap() (err error) {
-	//key := etcd.Prefix() + "/nodes/" + ns.NodeName + "/capacity"
-	//err = dao.UpdateCapacity(ns.Cap, dao.WithKey(key))
-	err = dao_node.UpdateCapacity(ns.Cap)
+	_, err = dao.UpdateCapacity(context.Background(), &ns.Cap)
 	return
 }
 
 func (ns *NodeStatus) syncAllocatable() (err error) {
-	err = dao_node.UpdateAllocatable(ns.Allocatable)
+	_, err = dao.UpdateAllocatable(context.Background(), &ns.Allocatable)
 	return
 }

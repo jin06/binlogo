@@ -1,13 +1,42 @@
 package node
 
+import "encoding/json"
+
+// StatusCondition Status field name
+type StatusCondition = string
+
+// StatusConditions Status conditions
+type StatusConditions = map[StatusCondition]bool
+
+const (
+	ConReady              StatusCondition = "ready"
+	ConNetworkUnavailable StatusCondition = "network_unavailable"
+	ConMemoryPressure     StatusCondition = "memory_pressure"
+	ConDiskPressure       StatusCondition = "disk_pressure"
+	ConCPUPressure        StatusCondition = "cpu_pressure"
+)
+
 // Status node status
 type Status struct {
-	NodeName           string `json:"node_name"`
-	Ready              bool   `json:"ready"`
-	NetworkUnavailable bool   `json:"network_unavailable"`
-	MemoryPressure     bool   `json:"memory_pressure"`
-	DiskPressure       bool   `json:"disk_pressure"`
-	CPUPressure        bool   `json:"cpu_pressure"`
+	NodeName           string `json:"node_name" redis:"node_name"`
+	Ready              bool   `json:"ready" redis:"ready"`
+	NetworkUnavailable bool   `json:"network_unavailable" redis:"network_unavailable"`
+	MemoryPressure     bool   `json:"memory_pressure" redis:"memory_pressure"`
+	DiskPressure       bool   `json:"disk_pressure" redis:"disk_pressure"`
+	CPUPressure        bool   `json:"cpu_pressure" redis:"cpu_pressure"`
+}
+
+func (s *Status) Key() string {
+	return "node/status/" + s.NodeName
+}
+
+func (s *Status) Val() string {
+	b, _ := json.Marshal(s)
+	return string(b)
+}
+
+func (s *Status) Unmarshal(data []byte) error {
+	return json.Unmarshal(data, s)
 }
 
 // New returns a status model

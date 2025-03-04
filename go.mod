@@ -1,6 +1,6 @@
-module github.com/jin06/binlogo
+module github.com/jin06/binlogo/v2
 
-go 1.20
+go 1.23
 
 require (
 	github.com/Shopify/sarama v1.30.0
@@ -15,7 +15,7 @@ require (
 	github.com/google/uuid v1.4.0
 	github.com/hashicorp/consul/api v1.11.0
 	github.com/prometheus/client_golang v1.11.0
-	github.com/redis/go-redis/v9 v9.3.0
+	github.com/redis/go-redis/v9 v9.7.0
 	github.com/shirou/gopsutil/v3 v3.21.10
 	github.com/sirupsen/logrus v1.8.1
 	github.com/spf13/cobra v1.2.1
@@ -23,6 +23,7 @@ require (
 	github.com/streadway/amqp v1.0.0
 	go.etcd.io/etcd/api/v3 v3.5.1
 	go.etcd.io/etcd/client/v3 v3.5.1
+	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
@@ -46,7 +47,6 @@ require (
 	github.com/eapache/go-resiliency v1.2.0 // indirect
 	github.com/eapache/go-xerial-snappy v0.0.0-20180814174437-776d5712da21 // indirect
 	github.com/eapache/queue v1.1.0 // indirect
-	github.com/facebookgo/stack v0.0.0-20160209184415-751773369052 // indirect
 	github.com/fatih/color v1.9.0 // indirect
 	github.com/fsnotify/fsnotify v1.5.1 // indirect
 	github.com/gin-contrib/cors v1.4.0

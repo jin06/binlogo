@@ -1,7 +1,7 @@
 package output
 
 import (
-	"github.com/jin06/binlogo/pkg/store/model/pipeline"
+	"github.com/jin06/binlogo/v2/pkg/store/model/pipeline"
 )
 
 // Options for configure output
@@ -15,9 +15,9 @@ type Options struct {
 type Option func(options *Options)
 
 // OptionOutput sets Output
-func OptionOutput(val *pipeline.Output) Option {
+func OptionOutput(val pipeline.Output) Option {
 	return func(options *Options) {
-		options.Output = val
+		options.Output = &val
 	}
 }
 

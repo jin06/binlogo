@@ -2,23 +2,23 @@ package http
 
 import (
 	"github.com/go-resty/resty/v2"
-	message2 "github.com/jin06/binlogo/app/pipeline/message"
-	"github.com/jin06/binlogo/pkg/store/model/pipeline"
+	message2 "github.com/jin06/binlogo/v2/app/pipeline/message"
+	"github.com/jin06/binlogo/v2/pkg/store/model/pipeline"
 )
 
 // Http send message to http api
 type Http struct {
-	Http   *pipeline.Http
-	Client *resty.Client
+	Http   *pipeline.Http `json:"http"`
+	Client *resty.Client  `json:"-"`
 }
 
 // New returns a new Http
-func New(cfg *pipeline.Http) (h *Http, err error) {
+func New(cfg pipeline.Http) (h *Http, err error) {
 	if cfg.Retries < 0 {
 		cfg.Retries = 0
 	}
 	h = &Http{
-		Http: cfg,
+		Http: &cfg,
 	}
 	h.Client = resty.New()
 	return

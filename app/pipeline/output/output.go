@@ -6,34 +6,39 @@ import (
 	"sync"
 	"time"
 
-	"github.com/jin06/binlogo/app/pipeline/output/sender/elastic"
+	"github.com/jin06/binlogo/v2/app/pipeline/output/sender/elastic"
+	"github.com/sirupsen/logrus"
 
-	"github.com/jin06/binlogo/app/pipeline/message"
-	"github.com/jin06/binlogo/app/pipeline/output/sender"
-	"github.com/jin06/binlogo/app/pipeline/output/sender/http"
-	"github.com/jin06/binlogo/app/pipeline/output/sender/kafka"
-	"github.com/jin06/binlogo/app/pipeline/output/sender/rabbitmq"
-	"github.com/jin06/binlogo/app/pipeline/output/sender/redis"
-	"github.com/jin06/binlogo/app/pipeline/output/sender/rocketmq"
-	"github.com/jin06/binlogo/app/pipeline/output/sender/stdout"
-	"github.com/jin06/binlogo/configs"
-	"github.com/jin06/binlogo/pkg/event"
-	"github.com/jin06/binlogo/pkg/promeths"
-	"github.com/jin06/binlogo/pkg/store/dao/dao_pipe"
-	event_store "github.com/jin06/binlogo/pkg/store/model/event"
-	"github.com/jin06/binlogo/pkg/store/model/pipeline"
+	"github.com/jin06/binlogo/v2/app/pipeline/message"
+	"github.com/jin06/binlogo/v2/app/pipeline/output/sender"
+	"github.com/jin06/binlogo/v2/app/pipeline/output/sender/http"
+	"github.com/jin06/binlogo/v2/app/pipeline/output/sender/kafka"
+	"github.com/jin06/binlogo/v2/app/pipeline/output/sender/rabbitmq"
+	"github.com/jin06/binlogo/v2/app/pipeline/output/sender/redis"
+	"github.com/jin06/binlogo/v2/app/pipeline/output/sender/rocketmq"
+	"github.com/jin06/binlogo/v2/app/pipeline/output/sender/stdout"
+	"github.com/jin06/binlogo/v2/configs"
+	"github.com/jin06/binlogo/v2/pkg/event"
+	"github.com/jin06/binlogo/v2/pkg/promeths"
+	"github.com/jin06/binlogo/v2/pkg/store/dao"
+	event_store "github.com/jin06/binlogo/v2/pkg/store/model"
+	"github.com/jin06/binlogo/v2/pkg/store/model/pipeline"
 	"github.com/prometheus/client_golang/prometheus"
 )
 
 // Output handle message output
 // depends pipeline config, send message to stdout、kafka, etc.
 type Output struct {
-	InChan       chan *message.Message
-	Sender       sender.Sender
-	Options      *Options
-	record       *pipeline.RecordPosition
+	InChan  chan *message.Message
+	Sender  sender.Sender
+	Options *Options
+	record  *pipeline.RecordPosition
+
 	closed       chan struct{}
+	completeOnce sync.Once
+	closing      chan struct{}
 	closeOnce    sync.Once
+
 	recordMutex  sync.Mutex
 	recordSynced bool
 }
@@ -47,6 +52,7 @@ func New(opts ...Option) (out *Output, err error) {
 	out = &Output{
 		Options:      options,
 		closed:       make(chan struct{}),
+		closing:      make(chan struct{}),
 		recordSynced: false,
 	}
 	return
@@ -80,7 +86,7 @@ func (o *Output) loopHandle(ctx context.Context, msg *message.Message) (err erro
 		if err = o.handle(msg); err == nil {
 			return
 		}
-		promeths.MessageSendErrCounter.With(prometheus.Labels{"pipeline": o.Options.PipelineName, "node": configs.NodeName}).Inc()
+		promeths.MessageSendErrCounter.With(prometheus.Labels{"pipeline": o.Options.PipelineName, "node": configs.GetNodeName()}).Inc()
 		ticker := time.NewTicker(time.Second)
 		defer ticker.Stop()
 		select {
@@ -156,20 +162,23 @@ func (o *Output) handle(msg *message.Message) (err error) {
 
 // Run start Output to send message
 func (o *Output) Run(ctx context.Context) (err error) {
+	defer o.CompleteClose()
+	defer o.Close()
 	if err = o.init(); err != nil {
 		return
 	}
-	defer o.close()
 	go o.loopSync(ctx)
 	for {
 		select {
+		case <-o.closing:
+			return
 		case <-ctx.Done():
 			{
 				return
 			}
 		case msg := <-o.InChan:
 			{
-				check, errPrepare := o.prepareRecord(msg)
+				check, errPrepare := o.prepareRecord(ctx, msg)
 				if errPrepare != nil {
 					message.Put(msg)
 					return
@@ -182,21 +191,21 @@ func (o *Output) Run(ctx context.Context) (err error) {
 					message.Put(msg)
 					return
 				}
-				promeths.MessageSendCounter.With(prometheus.Labels{"pipeline": o.Options.PipelineName, "node": configs.NodeName}).Inc()
+				promeths.MessageSendCounter.With(prometheus.Labels{"pipeline": o.Options.PipelineName, "node": configs.GetNodeName()}).Inc()
 				pass := uint32(time.Now().Unix()) - msg.Content.Head.Time
-				promeths.MessageSendHistogram.With(prometheus.Labels{"pipeline": o.Options.PipelineName, "node": configs.NodeName}).Observe(float64(pass))
+				promeths.MessageSendHistogram.With(prometheus.Labels{"pipeline": o.Options.PipelineName, "node": configs.GetNodeName()}).Observe(float64(pass))
 				message.Put(msg)
 			}
 		}
 	}
 }
 
-func (o *Output) prepareRecord(msg *message.Message) (pass bool, err error) {
+func (o *Output) prepareRecord(ctx context.Context, msg *message.Message) (pass bool, err error) {
 	o.recordMutex.Lock()
 	defer o.recordMutex.Unlock()
 	pass = true
 	if o.record == nil {
-		o.record, err = dao_pipe.GetRecord(o.Options.PipelineName)
+		o.record, err = dao.GetRecord(ctx, o.Options.PipelineName)
 		if err != nil {
 			return
 		}
@@ -263,17 +272,20 @@ func (o *Output) prepareRecord(msg *message.Message) (pass bool, err error) {
 }
 
 func (o *Output) loopSync(c context.Context) {
+	defer o.Close()
 	ticker := time.NewTicker(time.Second)
 	defer ticker.Stop()
 	for {
 		select {
+		case <-o.closing:
+			return
 		case <-c.Done():
 			{
 				return
 			}
 		case <-ticker.C:
 			{
-				o.syncRecord()
+				o.syncRecord(c)
 			}
 		}
 	}
@@ -285,11 +297,11 @@ func (o *Output) updateRecord() {
 	o.recordSynced = true
 }
 
-func (o *Output) syncRecord() (err error) {
+func (o *Output) syncRecord(ctx context.Context) (err error) {
 	o.recordMutex.Lock()
 	defer o.recordMutex.Unlock()
 	if o.recordSynced {
-		err = dao_pipe.UpdateRecord(o.record)
+		err = dao.UpdateRecord(ctx, o.record)
 	}
 	return
 }
@@ -298,11 +310,18 @@ func (o *Output) Closed() chan struct{} {
 	return o.closed
 }
 
-func (o *Output) close() {
+func (o *Output) Close() {
 	o.closeOnce.Do(func() {
 		if o.Sender != nil {
 			o.Sender.Close()
 		}
+		close(o.closing)
+	})
+}
+
+func (o *Output) CompleteClose() {
+	o.completeOnce.Do(func() {
+		logrus.WithField("Pipeline Name", o.Options.PipelineName).Debug("Output closed")
 		close(o.closed)
 	})
 }

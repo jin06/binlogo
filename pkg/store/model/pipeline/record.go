@@ -2,9 +2,9 @@ package pipeline
 
 // RecordPosition mysql replication position with pre position
 type RecordPosition struct {
-	PipelineName string    `json:"pipeline_name"`
-	Pre          *Position `json:"pre"`
-	Now          *Position `json:"now"`
+	PipelineName string    `json:"pipeline_name" redis:"pipeline_name"`
+	Pre          *Position `json:"pre" redis:"pre"`
+	Now          *Position `json:"now" redis:"now"`
 }
 
 // NewRecordPosition return empty RecordPosition

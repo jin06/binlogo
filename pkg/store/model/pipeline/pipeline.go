@@ -7,18 +7,18 @@ import (
 
 // Pipeline pipeline's definition
 type Pipeline struct {
-	Name       string    `json:"name"`
-	Status     Status    `json:"status"`
-	AliasName  string    `json:"aliasName"`
-	Mysql      *Mysql    `json:"mysql"`
-	Filters    []*Filter `json:"filters"`
-	Output     *Output   `json:"output"`
-	Replicas   int       `json:"replicas"`
-	CreateTime time.Time `json:"create_time"`
-	Remark     string    `json:"remark"`
-	IsDelete   bool      `json:"is_delete"`
+	Name       string    `json:"name" redis:"name"`
+	Status     Status    `json:"status" redis:"status"`
+	AliasName  string    `json:"aliasName" redis:"alias_name"`
+	Mysql      Mysql     `json:"mysql" redis:"mysql"`
+	Filters    Filters   `json:"filters" redis:"filters"`
+	Output     Output    `json:"output" redis:"output"`
+	Replicas   int       `json:"replicas" redis:"replicas"`
+	CreateTime time.Time `json:"create_time" redis:"create_time"`
+	Remark     string    `json:"remark" redis:"remark"`
+	IsDelete   bool      `json:"is_delete" redis:"is_delete"`
 	// If use newest posion to sync mysql replication when get mysql error 1236 (could not find binary log index)
-	FixPosNewest bool `json:"fix_pos_newest"`
+	FixPosNewest bool `json:"fix_pos_newest" redis:"fix_pos_newest"`
 }
 
 // NewPipeline returns a new pipeline with default values
@@ -27,16 +27,10 @@ func NewPipeline(name string) (pipe *Pipeline) {
 		Name:      name,
 		Status:    STATUS_STOP,
 		AliasName: name,
-		Mysql:     &Mysql{},
-		Filters:   []*Filter{},
-		Output: &Output{
-			Sender: &Sender{
-				Type:     SNEDER_TYPE_STDOUT,
-				Kafka:    nil,
-				Stdout:   nil,
-				Http:     nil,
-				RabbitMQ: nil,
-				Redis:    nil,
+		Filters:   Filters{},
+		Output: Output{
+			Sender: Sender{
+				Type: SNEDER_TYPE_STDOUT,
 			},
 		},
 		Replicas:   0,
@@ -48,7 +42,7 @@ func NewPipeline(name string) (pipe *Pipeline) {
 }
 
 // Status of Pipeline
-type Status string
+type Status = string
 
 const (
 	// STATUS_RUN run
@@ -119,22 +113,20 @@ func WithPipeDelete(d bool) OptionPipeline {
 
 func WithPipeMode(mode Mode) OptionPipeline {
 	return func(p *Pipeline) {
-		if p.Mysql != nil {
-			p.Mysql.Mode = mode
-		}
+		p.Mysql.Mode = mode
 	}
 }
 
 func WithAddFilter(filter *Filter) OptionPipeline {
 	return func(p *Pipeline) {
-		p.Filters = append(p.Filters, filter)
+		p.Filters = append(p.Filters, *filter)
 	}
 }
 
 func WithUpdateFilter(index int, filter *Filter) OptionPipeline {
 	return func(p *Pipeline) {
 		if len(p.Filters) > index {
-			p.Filters[index] = filter
+			p.Filters[index] = *filter
 		}
 	}
 }

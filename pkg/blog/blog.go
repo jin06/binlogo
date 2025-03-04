@@ -1,7 +1,7 @@
 package blog
 
 import (
-	"github.com/jin06/binlogo/configs"
+	"github.com/jin06/binlogo/v2/configs"
 	"github.com/sirupsen/logrus"
 )
 
@@ -10,23 +10,41 @@ func init() {
 	logrus.SetFormatter(&formatter{})
 }
 
-// Env sets log level
-func Env(env configs.Env) {
-	level := logrus.DebugLevel
-	switch env {
-	case configs.ENV_PRO:
-		{
-			level = logrus.InfoLevel
-		}
-	case configs.ENV_TEST:
-		fallthrough
-	case configs.ENV_DEV:
-		{
-			level = logrus.DebugLevel
-			logrus.SetReportCaller(true)
-		}
+const (
+	DEBUG = "debug"
+	INFO  = "info"
+	WARN  = "warn"
+	ERROR = "error"
+	FATAL = "fatal"
+	PANIC = "panic"
+	TRACE = "trace"
+)
+
+func SetLevel(log *logrus.Logger, level string) {
+	switch level {
+	case DEBUG:
+		log.SetLevel(logrus.DebugLevel)
+		log.SetReportCaller(true)
+	case INFO:
+		log.SetLevel(logrus.InfoLevel)
+	case WARN:
+		log.SetLevel(logrus.WarnLevel)
+	case ERROR:
+		log.SetLevel(logrus.ErrorLevel)
+	case FATAL:
+		log.SetLevel(logrus.FatalLevel)
+	case PANIC:
+		log.SetLevel(logrus.PanicLevel)
+	case TRACE:
+		log.SetLevel(logrus.TraceLevel)
+	default:
+		log.SetLevel(logrus.InfoLevel)
 	}
-	logrus.SetLevel(level)
-	logrus.Info("Set log level to: ", level.String())
-	return
+}
+
+func NewLog() *logrus.Logger {
+	log := logrus.New()
+	log.SetFormatter(&formatter{})
+	SetLevel(log, configs.Default.LogLevel)
+	return log
 }

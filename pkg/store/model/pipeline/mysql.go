@@ -1,17 +1,31 @@
 package pipeline
 
-import "github.com/go-mysql-org/go-mysql/mysql"
+import (
+	"github.com/go-mysql-org/go-mysql/mysql"
+)
 
 // Mysql store struct
 type Mysql struct {
-	Address  string `json:"address"`
-	Port     uint16 `json:"port"`
-	User     string `json:"user"`
-	Password string `json:"password"`
-	ServerId uint32 `json:"server_id"`
-	Flavor   Flavor `json:"flavor"`
-	Mode     Mode   `json:"mode"`
+	Address  string `json:"address" redis:"mysql"`
+	Port     uint16 `json:"port" redis:"port"`
+	User     string `json:"user" redis:"user"`
+	Password string `json:"password" redis:"password"`
+	ServerId uint32 `json:"server_id" redis:"serverId"`
+	Flavor   Flavor `json:"flavor" redis:"flavor"`
+	Mode     Mode   `json:"mode" redis:"mode"`
 }
+
+// func (m *Mysql) MarshalBinary() (data []byte, err error) {
+// 	return json.Marshal(m)
+// }
+
+// func (m *Mysql) UnmarshalBinary(data []byte) error {
+// 	return json.Unmarshal(data, &m)
+// }
+
+// func (m *Mysql) UnmarshalText(data []byte) error {
+// 	return json.Unmarshal(data, m)
+// }
 
 // Mode mysql replication mode
 type Mode string

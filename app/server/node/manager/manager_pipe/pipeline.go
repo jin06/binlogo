@@ -5,9 +5,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/jin06/binlogo/pkg/store/dao/dao_sche"
-	"github.com/jin06/binlogo/pkg/store/model/node"
-	"github.com/jin06/binlogo/pkg/store/model/scheduler"
+	"github.com/jin06/binlogo/v2/pkg/store/dao"
+	"github.com/jin06/binlogo/v2/pkg/store/model"
+	"github.com/jin06/binlogo/v2/pkg/store/model/node"
 	"github.com/sirupsen/logrus"
 )
 
@@ -15,66 +15,72 @@ import (
 // If there is a pipeline bound to the current node, run an instance
 // will also stop inbound instance on the current node
 type Manager struct {
-	mapping    map[string]bool
-	mappingIns map[string]*instance
-	node       *node.Node
-	mutex      sync.Mutex
-	stopped    chan struct{}
-	closeOnce  sync.Once
+	mapping      map[string]bool
+	mappingIns   map[string]*instance
+	node         *node.Node
+	mutex        sync.Mutex
+	closing      chan struct{}
+	closeOnce    sync.Once
+	closed       chan struct{}
+	completeOnce sync.Once
+	log          *logrus.Entry
 }
 
 // New returns a new Manager
-func New(n *node.Node) (m *Manager) {
+func New(log *logrus.Entry, n *node.Node) (m *Manager) {
 	m = &Manager{
 		mapping:    map[string]bool{},
 		mappingIns: map[string]*instance{},
-		mutex:      sync.Mutex{},
-		stopped:    make(chan struct{}),
+		// mutex:      sync.Mutex{},
+		closed:  make(chan struct{}),
+		closing: make(chan struct{}),
 	}
 	m.node = n
-	logrus.Debug("new pipeline manager ")
-	logrus.Debug("nodeName:", n.Name)
+	m.log = log
+	m.log.Debug("New Pipeline Manger")
 	return
 }
 
 // Run start woking
 func (m *Manager) Run(ctx context.Context) {
-	var err error
-	stx, cancel := context.WithCancel(ctx)
+	defer m.CompleteClose()
+	defer m.Close()
 	defer func() {
 		if r := recover(); r != nil {
-			logrus.Errorln("pipeline manager panic, ", r)
+			m.log.Errorln("pipeline manager panic, ", r)
+			panic(r)
 		}
-		cancel()
-		m.close()
 	}()
-	if err = m.scanPipelines(nil); err != nil {
-		logrus.Error(err)
+	if err := m.scanPipelines(ctx, nil); err != nil {
+		m.log.WithError(err).Errorln("Scan pipelines error")
 	}
-	ticker := time.NewTicker(time.Second * 1)
+	ticker := time.NewTicker(time.Second * 5)
+	defer ticker.Stop()
 	for {
 		select {
+		case <-m.closing:
+			return
 		case <-ctx.Done():
 			{
 				return
 			}
 		case <-ticker.C:
 			{
-				if serr := m.scanPipelines(nil); serr != nil {
-					logrus.Error(serr)
+				if err := m.scanPipelines(ctx, nil); err != nil {
+					m.log.WithError(err).Errorln("Scan pipelines error")
 				}
-				m.dispatch(stx)
+				m.dispatch(ctx)
 			}
 		}
 	}
 }
 
 // scanPipelines scan pipeline bind, find pipelines that should run in this node
-func (m *Manager) scanPipelines(pb *scheduler.PipelineBind) (err error) {
+func (m *Manager) scanPipelines(ctx context.Context, pb *model.PipelineBind) (err error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 	if pb == nil {
-		pb, err = dao_sche.GetPipelineBind()
+		pb, err = dao.GetPipelineBind(ctx)
 		if err != nil {
 			return
 		}
@@ -98,35 +104,62 @@ func (m *Manager) scanPipelines(pb *scheduler.PipelineBind) (err error) {
 }
 
 func (m *Manager) dispatch(ctx context.Context) {
-	m.mutex.Lock()
-	defer m.mutex.Unlock()
 	for pName, shouldRun := range m.mapping {
-		//logrus.Debug(pName, shouldRun)
-		ins, isExist := m.mappingIns[pName]
-		if shouldRun {
-			if !isExist || ins.exit {
-				m.mappingIns[pName] = newInstance(pName, m.node.Name)
-				go func() {
-					m.mappingIns[pName].start(ctx)
-				}()
-				<-m.mappingIns[pName].started
-			}
+		// _, isExist := m.mappingIns[pName]
+		ins := m.Get(pName)
+		if shouldRun && ins == nil {
+			m.Add(ctx, pName)
+			go func() {
+				err := m.mappingIns[pName].start(ctx)
+				if err != nil {
+					logrus.WithError(err).Error("Pipeline instance with error")
+				}
+			}()
 		}
-		if !shouldRun {
-			if isExist {
-				m.mappingIns[pName].stop()
-				delete(m.mappingIns, pName)
-			}
+		if !shouldRun && ins != nil {
+			m.mappingIns[pName].Close()
+			<-m.mappingIns[pName].Closed()
+			// m.Remove(pName)
 		}
 	}
 }
 
-func (m *Manager) close() {
+func (m *Manager) Close() {
 	m.closeOnce.Do(func() {
-		close(m.stopped)
+		close(m.closing)
 	})
 }
 
-func (m *Manager) Stopped() chan struct{} {
-	return m.stopped
+func (m *Manager) Closed() chan struct{} {
+	return m.closed
+}
+
+func (m *Manager) CompleteClose() {
+	m.completeOnce.Do(func() {
+		close(m.closed)
+	})
+}
+
+func (m *Manager) Get(pipeName string) *instance {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+	if ins, ok := m.mappingIns[pipeName]; ok {
+		return ins
+	}
+	return nil
+}
+
+func (m *Manager) Add(ctx context.Context, pipeName string) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+	ins := NewInstance(pipeName, m.node.Name, m, m.log)
+
+	m.mappingIns[pipeName] = ins
+}
+
+func (m *Manager) Remove(pipeName string) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
+	delete(m.mappingIns, pipeName)
 }

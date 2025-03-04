@@ -1,5 +1,5 @@
 .PHONY: build
-app = github.com/jin06/binlogo
+app = github.com/jin06/binlogo/v2
 version = $version
 compileTime = $(shell date)
 goVersion = $(shell go version)

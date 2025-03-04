@@ -2,61 +2,78 @@ package dao
 
 import (
 	"context"
-	"errors"
+	"time"
 
-	clientv3 "go.etcd.io/etcd/client/v3"
-	"github.com/jin06/binlogo/pkg/etcdclient"
-	"github.com/jin06/binlogo/pkg/store/dao/dao_pipe"
-	"github.com/jin06/binlogo/pkg/store/dao/dao_sche"
-	"github.com/jin06/binlogo/pkg/store/model/scheduler"
+	"github.com/jin06/binlogo/v2/pkg/store/model"
+	"github.com/jin06/binlogo/v2/pkg/store/model/node"
+	"github.com/jin06/binlogo/v2/pkg/store/model/pipeline"
+	"github.com/sirupsen/logrus"
 )
+
+var myDao Dao
+
+func Init() {
+	myDao = NewDaoRedis()
+}
+
+type Dao interface {
+	GetInstance(ctx context.Context, pname string) (ins *pipeline.Instance, err error)
+	AllInstance(ctx context.Context) (all []*pipeline.Instance, err error)
+	AllInstanceMap(ctx context.Context) (maps map[string]*pipeline.Instance, err error)
+	// Compete to become the master node of the cluster.
+	AcquireMasterLock(ctx context.Context, node *node.Node) error
+	// Find out who the current master node is.
+	GetMasterLock(ctx context.Context) (string, error)
+	// Renew the lease of the master node.
+	LeaseMasterLock(ctx context.Context) error
+	RegisterNode(ctx context.Context, n *node.Node) (bool, error)
+	LeaseNode(ctx context.Context, n *node.Node) error
+	GetNode(ctx context.Context, name string) (*node.Node, error)
+	AllNodes(ctx context.Context) (list []*node.Node, err error)
+	UpdateNode(ctx context.Context, name string, opts ...node.NodeOption) (bool, error)
+	UpdateNodeIP(ctx context.Context, name string, ip string) (ok bool, err error)
+	UpdateCapacity(ctx context.Context, cap *node.Capacity) (bool, error)
+	RefreshNode(ctx context.Context, n *node.Node) (success bool, err error)
+	AllCapacity(ctx context.Context) (list []*node.Capacity, err error)
+	CapacityMap(ctx context.Context) (mapping map[string]*node.Capacity, err error)
+	AllStatus(ctx context.Context) (list []*node.Status, err error)
+	StatusMap(ctx context.Context) (mapping map[string]*node.Status, err error)
+	DeleteStatus(ctx context.Context, name string) error
+	CreateOrUpdateStatus(ctx context.Context, nodeName string, conditions node.StatusConditions) (ok bool, err error)
+	GetStatus(ctx context.Context, nodeName string) (s *node.Status, err error)
+	LeaderNode(ctx context.Context) (node string, err error)
+	UpdateAllocatable(ctx context.Context, al *node.Allocatable) (ok bool, err error)
+	AllElections() (res []map[string]any, err error)
+	GetPipelineBind(ctx context.Context) (*model.PipelineBind, error)
+	UpdatePipelineBindIfNotExist(ctx context.Context, pName string, nName string) error
+	UpdatePipelineBind(ctx context.Context, pName string, nName string) (bool, error)
+	DeletePipelineBind(ctx context.Context, pName string) (ok bool, err error)
+	GetPipeline(ctx context.Context, name string) (p *pipeline.Pipeline, err error)
+	UpdatePipeline(ctx context.Context, name string, opts ...pipeline.OptionPipeline) (err error)
+	AllPipelines(ctx context.Context) (list []*pipeline.Pipeline, err error)
+	AllPipelinesMap(ctx context.Context) (mapping map[string]*pipeline.Pipeline, err error)
+	ClearOrDeleteBind(ctx context.Context, name string) (err error)
+	UpdateEvent(ctx context.Context, e *model.Event) error
+	GetPosition(ctx context.Context, pipe string) (p *pipeline.Position, err error)
+	UpdatePosition(ctx context.Context, p *pipeline.Position) error
+	DeletePosition(ctx context.Context, name string) (err error)
+	UpdateRecord(ctx context.Context, p *pipeline.RecordPosition) (err error)
+	UpdateRecordSafe(ctx context.Context, pipe string, opts ...pipeline.OptionRecord) (err error)
+	GetRecord(ctx context.Context, pipe string) (r *pipeline.RecordPosition, err error)
+	RegisterInstance(ctx context.Context, ins *pipeline.Instance, exp time.Duration) error
+	UnRegisterInstance(ctx context.Context, pipe string, n string) error
+	LeaseInstance(ctx context.Context, pipe string, exp time.Duration) error
+}
 
 // ClearOrDeleteBind clear or delete pipeline bind
 // sets pipeline bind to blank if pipeline is expected to run, so pipeline will be scheduled to a node later
 // delete pipeline bind if pipeline is expected to stop, pipeline will not be scheduled a node.
-func ClearOrDeleteBind(name string) (err error) {
-	if name == "" {
-		err = errors.New("empty name")
-		return
-	}
-	res, err := etcdclient.Default().Get(context.TODO(), dao_sche.PipeBindPrefix())
-	if err != nil {
-		return
-	}
-	pb := scheduler.EmptyPipelineBind()
-	var revision int64
-	if len(res.Kvs) > 0 {
-		revision = res.Kvs[0].CreateRevision
-		err = pb.Unmarshal(res.Kvs[0].Value)
-	}
-	pipe, err := dao_pipe.GetPipeline(name)
-	if err != nil {
-		return
-	}
-	if pipe.ExpectRun() {
-		pb.Bindings[name] = ""
-	} else {
-		delete(pb.Bindings, name)
-	}
-	txn := etcdclient.Default().Txn(context.TODO()).If(clientv3.Compare(clientv3.CreateRevision(dao_sche.PipeBindPrefix()), "=", revision))
-	txn = txn.Then(clientv3.OpPut(dao_sche.PipeBindPrefix(), pb.Val()))
-	_, err = txn.Commit()
-	if err != nil {
-		return
-	}
-	return
+func ClearOrDeleteBind(ctx context.Context, name string) (err error) {
+	return myDao.ClearOrDeleteBind(ctx, name)
 }
 
 // DeleteCluster delete whole cluster
 func DeleteCluster(clusterName string) (deleted int64, err error) {
-	if clusterName == "" {
-		err = errors.New("empty cluster name")
-	}
-	key := etcdclient.Prefix()
-	res, err := etcdclient.Default().Delete(context.Background(), key)
-	if err != nil {
-		return
-	}
-	deleted = res.Deleted
+	logrus.Warn("DeleteCluster unimplemented!")
 	return
 }

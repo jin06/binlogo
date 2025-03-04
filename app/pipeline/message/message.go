@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/jin06/binlogo/pkg/store/model/pipeline"
+	"github.com/jin06/binlogo/v2/pkg/store/model/pipeline"
 )
 
 const (
@@ -44,11 +44,6 @@ func New() *Message {
 type Content struct {
 	Head Head        `json:"head"`
 	Data interface{} `json:"data"`
-}
-
-func (c *Content) reset() {
-	c.Data = nil
-	c.Head.reset()
 }
 
 // Head of Message
@@ -106,13 +101,6 @@ func (msg *Message) ToString() string {
 // Table returns table with database
 func (msg *Message) Table() string {
 	return fmt.Sprintf("%s.%s", msg.Content.Head.Database, msg.Content.Head.Table)
-}
-
-// reset
-func (msg *Message) reset() {
-	msg.Status = STATUS_NEW
-	msg.Filter = false
-	msg.Content.reset()
 }
 
 // Pool reuse message object

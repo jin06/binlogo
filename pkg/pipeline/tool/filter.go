@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/jin06/binlogo/app/pipeline/message"
-	"github.com/jin06/binlogo/pkg/store/model/pipeline"
+	"github.com/jin06/binlogo/v2/app/pipeline/message"
+	"github.com/jin06/binlogo/v2/pkg/store/model/pipeline"
 )
 
 // NewFilter return a Filter object
-func NewFilter(filters []*pipeline.Filter) (f *Filter) {
+func NewFilter(filters []pipeline.Filter) (f *Filter) {
 	f = &Filter{
 		DBBlack:    map[string]bool{},
 		TableBlack: map[string]bool{},
@@ -18,7 +18,7 @@ func NewFilter(filters []*pipeline.Filter) (f *Filter) {
 		TableWhite: map[string]bool{},
 	}
 	for _, v := range filters {
-		if !FilterVerify(v) {
+		if !FilterVerify(&v) {
 			continue
 		}
 		arr := strings.Split(v.Rule, ".")

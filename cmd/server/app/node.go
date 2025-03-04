@@ -5,48 +5,43 @@ import (
 	"fmt"
 	"time"
 
-	server_node "github.com/jin06/binlogo/app/server/node"
-	"github.com/jin06/binlogo/configs"
-	"github.com/jin06/binlogo/pkg/event"
-	"github.com/jin06/binlogo/pkg/store/dao/dao_node"
-	model_event "github.com/jin06/binlogo/pkg/store/model/event"
-	"github.com/jin06/binlogo/pkg/store/model/node"
+	server_node "github.com/jin06/binlogo/v2/app/server/node"
+	"github.com/jin06/binlogo/v2/configs"
+	"github.com/jin06/binlogo/v2/pkg/blog"
+	"github.com/jin06/binlogo/v2/pkg/event"
+	"github.com/jin06/binlogo/v2/pkg/store/dao"
+	model_event "github.com/jin06/binlogo/v2/pkg/store/model"
+	"github.com/jin06/binlogo/v2/pkg/store/model/node"
+	"github.com/jin06/binlogo/v2/pkg/util/ip"
 	"github.com/sirupsen/logrus"
 )
 
 // RunNode run node.
 func RunNode(c context.Context) (err error) {
 	logrus.Info("init node")
+	nip, err := ip.LocalIp()
+	if err != nil {
+		return err
+	}
 	nodeOpts := &node.Node{
-		Name:       configs.NodeName,
-		Version:    configs.Version,
-		CreateTime: time.Now(),
-		Role:       node.Role{Master: true, Admin: true, Worker: true},
+		Name:        configs.Default.NodeName,
+		Version:     configs.Version,
+		CreateTime:  time.Now(),
+		Role:        node.Role{Master: true, Admin: true, Worker: true},
+		LastRunTime: time.Now(),
+		IP:          nip.String(),
 	}
-	nodeOpts.IP = configs.NodeIP
-	n, err := dao_node.GetNode(nodeOpts.Name)
-	if err != nil {
+	if _, err = dao.RefreshNode(c, nodeOpts); err != nil {
 		return
 	}
-	if n != nil {
-		if _, err = dao_node.UpdateNode(nodeOpts.Name, node.WithNodeIP(nodeOpts.IP), node.WithNodeVersion(nodeOpts.Version)); err != nil {
-			return
-		}
-	} else {
-		if err = dao_node.CreateNodeIfNotExist(nodeOpts); err != nil {
-			return
-		}
-	}
-	err = dao_node.CreateStatusIfNotExist(&node.Status{NodeName: nodeOpts.Name, Ready: true})
-	if err != nil {
-		logrus.Error(err)
-		return
-	}
+	dao.CreateStatusIfNotExist(c, nodeOpts.Name, node.StatusConditions{
+		node.ConReady: true,
+	})
+
 	logrus.Info("run node")
 	event.Event(model_event.NewInfoNode("Run node success"))
-	for {
-		server := server_node.New(server_node.OptionNode(nodeOpts))
-		func() {
+	for i := 1; ; i++ {
+		func(i int) {
 			var err error
 			ctx, cancel := context.WithCancel(c)
 			defer func() {
@@ -58,9 +53,13 @@ func RunNode(c context.Context) (err error) {
 				}
 				cancel()
 			}()
-			logrus.WithField("node name", configs.NodeName).Info("Running node")
+			// log := logrus.WithField("NodeSeq", i)
+			log := blog.NewLog().WithField("NodeSeq", i)
+			server := server_node.New(&server_node.Options{Node: nodeOpts, Log: log})
+			log.Info("Running node!")
+			// logrus.WithField("name", configs.GetNodeName()).Info("Running node")
 			err = server.Run(ctx)
-		}()
+		}(i)
 		time.Sleep(time.Second * 5)
 	}
 }

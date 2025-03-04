@@ -2,19 +2,23 @@ package node
 
 import (
 	"encoding/json"
+	"fmt"
 	"net"
 	"time"
 
-	"github.com/jin06/binlogo/configs"
+	"github.com/jin06/binlogo/v2/configs"
+	"github.com/jin06/binlogo/v2/pkg/store/model"
 )
 
 // Node is node
 type Node struct {
-	Name       string    `json:"name"`
-	Role       Role      `json:"role"`
-	IP         net.IP    `json:"ip"`
-	Version    string    `json:"version"`
-	CreateTime time.Time `json:"create_time"`
+	Name        string    `json:"name" redis:"name"`
+	Role        Role      `json:"role" redis:"role"`
+	IP          string    `json:"ip" redis:"ip"`
+	Version     string    `json:"version" redis:"version"`
+	CreateTime  time.Time `json:"create_time" redis:"create_time"`
+	UpdateTime  time.Time `json:"update_time" redis:"update_time"`
+	LastRunTime time.Time `json:"last_run_time" redis:"last_run_time"`
 }
 
 // NewNode returns a new node
@@ -26,38 +30,45 @@ func NewNode(name string) *Node {
 	}
 }
 
+func (s *Node) RegisterName() string {
+	return fmt.Sprintf("/%s/%s/%s", configs.APP, configs.Default.ClusterName, s.Name)
+}
+
 // Key generate etcd key
-func (s *Node) Key() (key string) {
-	key = "node/" + s.Name
-	return
+func (s *Node) Key() string {
+	return fmt.Sprintf("node/%s", s.Name)
 }
 
 // Val generate etcd val
-func (s *Node) Val() (val string) {
+func (s *Node) Val() string {
 	b, _ := json.Marshal(s)
-	val = string(b)
-	return
+	return string(b)
 }
 
 // Unmarshal generate from json data
-func (s *Node) Unmarshal(val []byte) (err error) {
-	err = json.Unmarshal(val, s)
-	return
+func (s *Node) Unmarshal(data []byte) error {
+	return json.Unmarshal(data, s)
 }
 
 // NodeOption configure node
-type NodeOption func(s *Node)
+type NodeOption func(s model.Values)
 
 // WithNodeIP sets node's ip
 func WithNodeIP(i net.IP) NodeOption {
-	return func(s *Node) {
-		s.IP = i
+	return func(s model.Values) {
+		s["ip"] = i
 	}
 }
 
 // WithNodeVersion sets node's version
 func WithNodeVersion(v string) NodeOption {
-	return func(s *Node) {
-		s.Version = v
+	return func(s model.Values) {
+		s["version"] = v
+	}
+}
+
+func WithNodeLastRunTime(t time.Time) NodeOption {
+	return func(s model.Values) {
+		s["version"] = t
 	}
 }

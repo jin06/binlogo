@@ -1,18 +1,20 @@
 package pipeline
 
 import (
+	"context"
 	"errors"
-	"github.com/jin06/binlogo/pkg/store/dao/dao_pipe"
-	"github.com/jin06/binlogo/pkg/store/model/pipeline"
+
+	"github.com/jin06/binlogo/v2/pkg/store/dao"
+	"github.com/jin06/binlogo/v2/pkg/store/model/pipeline"
 )
 
 // GetItemByName get item by pipeline name
-func GetItemByName(name string) (item *Item, err error) {
+func GetItemByName(ctx context.Context, name string) (item *Item, err error) {
 	if name == "" {
 		err = errors.New("empty name")
 		return
 	}
-	pipe, err := dao_pipe.GetPipeline(name)
+	pipe, err := dao.GetPipeline(ctx, name)
 	if err != nil {
 		return
 	}
@@ -30,8 +32,8 @@ func GetItemByName(name string) (item *Item, err error) {
 }
 
 // PipeStatus get pipeline status by pipeline name
-func PipeStatus(name string) (status pipeline.Status, err error) {
-	pipe, err := dao_pipe.GetPipeline(name)
+func PipeStatus(ctx context.Context, name string) (status pipeline.Status, err error) {
+	pipe, err := dao.GetPipeline(ctx, name)
 	if err != nil {
 		return
 	}

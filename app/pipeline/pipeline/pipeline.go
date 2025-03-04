@@ -5,14 +5,12 @@ import (
 	"errors"
 	"sync"
 
-	"github.com/sirupsen/logrus"
-
-	"github.com/jin06/binlogo/app/pipeline/filter"
-	"github.com/jin06/binlogo/app/pipeline/input"
-	"github.com/jin06/binlogo/app/pipeline/message"
-	"github.com/jin06/binlogo/app/pipeline/output"
-	"github.com/jin06/binlogo/pkg/event"
-	event_store "github.com/jin06/binlogo/pkg/store/model/event"
+	"github.com/jin06/binlogo/v2/app/pipeline/filter"
+	"github.com/jin06/binlogo/v2/app/pipeline/input"
+	"github.com/jin06/binlogo/v2/app/pipeline/message"
+	"github.com/jin06/binlogo/v2/app/pipeline/output"
+	"github.com/jin06/binlogo/v2/pkg/event"
+	event_store "github.com/jin06/binlogo/v2/pkg/store/model"
 )
 
 type status byte
@@ -29,7 +27,7 @@ type outChan struct {
 	out    chan *message.Message
 }
 
-func (o *outChan) close() {
+func (o *outChan) Close() {
 	if o.input != nil {
 		close(o.input)
 	}
@@ -50,10 +48,10 @@ func New(opt ...Option) (p *Pipeline, err error) {
 	p = &Pipeline{
 		Options:  options,
 		runMutex: sync.Mutex{},
-		status:   STATUS_STOP,
 		closed:   make(chan struct{}),
+		closing:  make(chan struct{}),
 	}
-	p.log = logrus.WithField("mod", "pipeline").WithField("name", options.Pipeline.Name)
+	// p.log = logrus.WithField("mod", "pipeline").WithField("name", options.Pipeline.Name)
 	err = p.init()
 	return
 }
@@ -61,16 +59,21 @@ func New(opt ...Option) (p *Pipeline, err error) {
 // Pipeline for handle message
 // contains input, filter, output
 type Pipeline struct {
-	Input     *input.Input
-	Output    *output.Output
-	Filter    *filter.Filter
-	Options   Options
-	outChan   *outChan
-	runMutex  sync.Mutex
-	status    status
-	closed    chan struct{}
-	closeOnce sync.Once
-	log       *logrus.Entry
+	Input  *input.Input
+	Output *output.Output
+	Filter *filter.Filter
+
+	Options  Options
+	outChan  *outChan
+	runMutex sync.Mutex
+	// log      *logrus.Entry
+
+	closed       chan struct{}
+	closeOnce    sync.Once
+	closing      chan struct{}
+	completeOnce sync.Once
+
+	isClosed bool
 }
 
 func (p *Pipeline) init() (err error) {
@@ -132,28 +135,30 @@ func (p *Pipeline) initOutput() (err error) {
 
 // Run pipeline start working
 func (p *Pipeline) Run(ctx context.Context) {
-	defer p.close()
-	defer logrus.Info("pipeline stream stopped: ", p.Options.Pipeline.Name)
-	logrus.Info("pipeline stream run: ", p.Options.Pipeline.Name)
+	defer p.CompleteClose()
+	defer p.Close()
+	defer p.Options.Log.Infof("Pipeline stream stopped: %s", p.Options.Pipeline.Name)
+	p.Options.Log.Infof("Pipeline stream run: %s", p.Options.Pipeline.Name)
 
 	//logrus.Debug("mysql position", p.Input.Options.Position)
-	stx, cancel := context.WithCancel(ctx)
-	defer cancel()
 	go func() {
-		if err := p.Input.Run(stx); err != nil {
+		if err := p.Input.Run(ctx); err != nil {
 			event.Event(event_store.NewErrorPipeline(p.Options.Pipeline.Name, "Start error: "+err.Error()))
+			p.Close()
 			return
 		}
 	}()
 	go func() {
-		if err := p.Filter.Run(stx); err != nil {
+		if err := p.Filter.Run(ctx); err != nil {
 			event.Event(event_store.NewErrorPipeline(p.Options.Pipeline.Name, "Start error: "+err.Error()))
+			p.Close()
 			return
 		}
 	}()
 	go func() {
-		if err := p.Output.Run(stx); err != nil {
+		if err := p.Output.Run(ctx); err != nil {
 			event.Event(event_store.NewErrorPipeline(p.Options.Pipeline.Name, "Start error: "+err.Error()))
+			p.Close()
 			return
 		}
 	}()
@@ -164,27 +169,47 @@ func (p *Pipeline) Run(ctx context.Context) {
 		case <-ctx.Done():
 			return
 		case <-p.Input.Closed():
-			logrus.Info("input closed")
+			p.Options.Log.Info("input closed")
 			return
 		case <-p.Filter.Closed():
-			logrus.Info("filter closed")
+			p.Options.Log.Info("filter closed")
 			return
 		case <-p.Output.Closed():
-			logrus.Info("output closed")
+			p.Options.Log.Info("output closed")
+			return
+		case <-p.closing:
 			return
 		}
 	}
 }
 
-func (p *Pipeline) close() (err error) {
+func (p *Pipeline) Close() (err error) {
 	p.closeOnce.Do(func() {
+		p.Input.Close()
+		p.Filter.Close()
+		p.Output.Close()
+		if p.outChan != nil {
+			p.outChan.Close()
+		}
+		close(p.closing)
+	})
+	return
+}
+
+func (p *Pipeline) CompleteClose() {
+	p.completeOnce.Do(func() {
 		<-p.Input.Closed()
 		<-p.Filter.Closed()
 		<-p.Output.Closed()
-		if p.outChan != nil {
-			p.outChan.close()
-		}
+		p.isClosed = true
 		close(p.closed)
 	})
-	return
+}
+
+func (p *Pipeline) IsClosed() bool {
+	return p.isClosed
+}
+
+func (p *Pipeline) Closed() chan struct{} {
+	return p.closed
 }

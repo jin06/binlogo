@@ -14,26 +14,26 @@ const SENDER_TYPE_Elastic = "elastic"
 
 // Sender output configuration
 type Sender struct {
-	Name     string    `json:"name"`
-	Type     string    `json:"type"`
-	Kafka    *Kafka    `json:"kafka"`
-	Stdout   *Stdout   `json:"stdout"`
-	Http     *Http     `json:"http"`
-	RabbitMQ *RabbitMQ `json:"rabbitMQ"`
-	Redis    *Redis    `json:"redis"`
-	RocketMQ *RocketMQ `json:"rocketMQ"`
+	Name     string   `json:"name" redis:"name"`
+	Type     string   `json:"type" redis:"type"`
+	Kafka    Kafka    `json:"kafka" redis:"kafka"`
+	Stdout   Stdout   `json:"stdout" redis:"stdout"`
+	Http     Http     `json:"http" redis:"http"`
+	RabbitMQ RabbitMQ `json:"rabbitMQ" redis:"rabbitMQ"`
+	Redis    Redis    `json:"redis" redis:"redis"`
+	RocketMQ RocketMQ `json:"rocketMQ" redis:"rocketMQ"`
 	// todo use interface for sender params
-	Elastic Elastic `json:"elastic"`
+	Elastic Elastic `json:"elastic" redis:"elastic"`
 }
 
 // Kafka output configuration
 type Kafka struct {
-	Brokers      string                   `json:"brokers"`
-	Topic        string                   `json:"topic"`
-	RequiredAcks *sarama.RequiredAcks     `json:"require_acks"`
-	Compression  *sarama.CompressionCodec `json:"compression"`
-	Retries      *int                     `json:"retries"`
-	Idepotent    *bool                    `json:"idepotent"`
+	Brokers      string                   `json:"brokers" redis:"brokers"`
+	Topic        string                   `json:"topic" redis:"topic"`
+	RequiredAcks *sarama.RequiredAcks     `json:"require_acks" redis:"require_acks"`
+	Compression  *sarama.CompressionCodec `json:"compression" redis:"compression"`
+	Retries      *int                     `json:"retries" redis:"retries"`
+	Idepotent    *bool                    `json:"idepotent" redis:"idepotent"`
 }
 
 // Stdout output configuration

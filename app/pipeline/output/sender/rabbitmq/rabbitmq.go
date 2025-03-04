@@ -1,8 +1,8 @@
 package rabbitmq
 
 import (
-	message2 "github.com/jin06/binlogo/app/pipeline/message"
-	"github.com/jin06/binlogo/pkg/store/model/pipeline"
+	message2 "github.com/jin06/binlogo/v2/app/pipeline/message"
+	"github.com/jin06/binlogo/v2/pkg/store/model/pipeline"
 	"github.com/sirupsen/logrus"
 	"github.com/streadway/amqp"
 )
@@ -15,9 +15,9 @@ type RabbitMQ struct {
 }
 
 // New returns a new RabbitMQ object
-func New(rq *pipeline.RabbitMQ) (r *RabbitMQ, err error) {
+func New(rq pipeline.RabbitMQ) (r *RabbitMQ, err error) {
 	r = &RabbitMQ{
-		RabbitMQ:   rq,
+		RabbitMQ:   &rq,
 		Connection: nil,
 		Channel:    nil,
 	}

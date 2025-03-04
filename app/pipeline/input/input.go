@@ -9,11 +9,11 @@ import (
 
 	"github.com/go-mysql-org/go-mysql/canal"
 	"github.com/go-mysql-org/go-mysql/mysql"
-	"github.com/jin06/binlogo/app/pipeline/message"
-	"github.com/jin06/binlogo/pkg/event"
-	"github.com/jin06/binlogo/pkg/store/dao/dao_pipe"
-	event_store "github.com/jin06/binlogo/pkg/store/model/event"
-	"github.com/jin06/binlogo/pkg/store/model/pipeline"
+	"github.com/jin06/binlogo/v2/app/pipeline/message"
+	"github.com/jin06/binlogo/v2/pkg/event"
+	"github.com/jin06/binlogo/v2/pkg/store/dao"
+	event_store "github.com/jin06/binlogo/v2/pkg/store/model"
+	"github.com/jin06/binlogo/v2/pkg/store/model/pipeline"
 	"github.com/sirupsen/logrus"
 )
 
@@ -24,9 +24,9 @@ func New(opts ...Option) (input *Input, err error) {
 		v(options)
 	}
 	input = &Input{
-		Options:  options,
-		closed:   make(chan struct{}),
-		stopping: make(chan struct{}),
+		Options: options,
+		closed:  make(chan struct{}),
+		closing: make(chan struct{}),
 	}
 	input.log = logrus.WithField("mod", "input").
 		WithField("pipe name", options.PipeName)
@@ -41,27 +41,31 @@ type Input struct {
 	// eventHandler *canalHandler
 	pipe *pipeline.Pipeline
 	// node         *node.Node
-	closed    chan struct{}
-	closeOnce sync.Once
-	stopping  chan struct{}
-	stopOnce  sync.Once
-	log       *logrus.Entry
+	closed       chan struct{}
+	closing      chan struct{}
+	closeOnce    sync.Once
+	completeOnce sync.Once
+	log          *logrus.Entry
 }
 
 // Run Input start working
 func (r *Input) Run(ctx context.Context) (err error) {
+	defer r.CompleteClose()
+	defer r.Close()
+
 	defer func() {
 		if err != nil {
 			event.Event(event_store.NewErrorPipeline(r.Options.PipeName, err.Error()))
 		}
-		r.close()
+		// r.Close()
+		// r.CompleteClose()
 	}()
 	if r.canal == nil {
-		if err = r.prepareCanal(); err != nil {
+		if err = r.prepareCanal(ctx); err != nil {
 			r.log.WithError(err).Error("prepare canal")
 			return
 		}
-		if err = r.runCanal(); err != nil {
+		if err = r.runCanal(ctx); err != nil {
 			r.log.WithError(err).Error("run canal")
 			return
 		}
@@ -75,33 +79,36 @@ func (r *Input) Run(ctx context.Context) (err error) {
 			r.log.Info("canal done")
 			return
 		}
-	case <-r.stopping:
+	case <-r.closing:
 		r.log.Info("stopping")
 		return
+	case <-r.closed:
+		return
 	}
-}
-
-func (r *Input) stop() {
-	r.stopOnce.Do(func() {
-		close(r.stopping)
-	})
 }
 
 func (r *Input) Closed() chan struct{} {
 	return r.closed
 }
 
-func (r *Input) close() {
-	r.closeOnce.Do(func() {
-		if r.canal != nil {
-			r.canal.Close()
-		}
+func (r *Input) CompleteClose() {
+	r.completeOnce.Do(func() {
+		logrus.WithField("Pipeline Name", r.Options.PipeName).Debug("Input closed")
 		close(r.closed)
 	})
 }
 
-func (r *Input) prepareCanal() (err error) {
-	pipe, err := dao_pipe.GetPipeline(r.Options.PipeName)
+func (r *Input) Close() {
+	r.closeOnce.Do(func() {
+		if r.canal != nil {
+			r.canal.Close()
+		}
+		close(r.closing)
+	})
+}
+
+func (r *Input) prepareCanal(ctx context.Context) (err error) {
+	pipe, err := dao.GetPipeline(ctx, r.Options.PipeName)
 	if err != nil {
 		return
 	}
@@ -124,15 +131,10 @@ func (r *Input) prepareCanal() (err error) {
 	return
 }
 
-func (r *Input) runCanal() (err error) {
-	defer r.stop()
-	defer func() {
-		if err != nil {
-			logrus.Errorln("canal run failed with error, ", err.Error())
-		}
-	}()
-	record, err := dao_pipe.GetRecord(r.Options.PipeName)
+func (r *Input) runCanal(ctx context.Context) (err error) {
+	record, err := dao.GetRecord(ctx, r.Options.PipeName)
 	if err != nil {
+		logrus.WithError(err).Errorln("Run canal error, get record")
 		return
 	}
 	if r.pipe.Mysql.Mode == pipeline.MODE_GTID {
@@ -142,7 +144,7 @@ func (r *Input) runCanal() (err error) {
 				return
 			}
 		} else {
-			if canGTID, err = r.storeNewestGTID(); err != nil {
+			if canGTID, err = r.storeNewestGTID(ctx); err != nil {
 				return
 			}
 		}
@@ -162,7 +164,7 @@ func (r *Input) runCanal() (err error) {
 				logrus.WithField("mode", "GTID").Errorln(startErr.Error())
 				errCode := mysql.ErrorCode(startErr.Error())
 				if errCode == 1236 && r.pipe.FixPosNewest {
-					if canGTID, startErr = r.storeNewestGTID(); startErr != nil {
+					if canGTID, startErr = r.storeNewestGTID(ctx); startErr != nil {
 						return
 					} else {
 						event.Event(event_store.NewErrorPipeline(r.Options.PipeName, "Start mysql replication could not find first log file name in binary log index file, set current pipeline binlog postion to newest"))
@@ -185,7 +187,7 @@ func (r *Input) runCanal() (err error) {
 				Pos:  record.Pre.BinlogPosition,
 			}
 		} else {
-			if canPos, err = r.storeNewestPosition(); err != nil {
+			if canPos, err = r.storeNewestPosition(ctx); err != nil {
 				return
 			}
 		}
@@ -206,7 +208,7 @@ func (r *Input) runCanal() (err error) {
 				logrus.WithField("mode", "file index").Errorln(startErr.Error())
 				errCode := mysql.ErrorCode(startErr.Error())
 				if errCode == 1236 && r.pipe.FixPosNewest {
-					if canPos, startErr = r.storeNewestPosition(); startErr != nil {
+					if canPos, startErr = r.storeNewestPosition(ctx); startErr != nil {
 						return
 					} else {
 						event.Event(event_store.NewErrorPipeline(r.Options.PipeName, "Start mysql replication could not find first log file name in binary log index file, set current pipeline binlog postion to newest"))
@@ -227,11 +229,11 @@ func (r *Input) runCanal() (err error) {
 	return
 }
 
-func (r *Input) storeNewestGTID() (gtidSet mysql.GTIDSet, err error) {
+func (r *Input) storeNewestGTID(ctx context.Context) (gtidSet mysql.GTIDSet, err error) {
 	if gtidSet, err = r.canal.GetMasterGTIDSet(); err != nil {
 		return
 	}
-	err = dao_pipe.UpdateRecord(&pipeline.RecordPosition{
+	err = dao.UpdateRecord(ctx, &pipeline.RecordPosition{
 		PipelineName: r.Options.PipeName,
 		Pre: &pipeline.Position{
 			GTIDSet:      gtidSet.String(),
@@ -241,13 +243,13 @@ func (r *Input) storeNewestGTID() (gtidSet mysql.GTIDSet, err error) {
 	return
 }
 
-func (r *Input) storeNewestPosition() (pos mysql.Position, err error) {
+func (r *Input) storeNewestPosition(ctx context.Context) (pos mysql.Position, err error) {
 	pos, err = r.canal.GetMasterPos()
 	if err != nil {
 		logrus.Errorln(err)
 		return
 	}
-	err = dao_pipe.UpdateRecord(&pipeline.RecordPosition{
+	err = dao.UpdateRecord(ctx, &pipeline.RecordPosition{
 		PipelineName: r.Options.PipeName,
 		Pre: &pipeline.Position{
 			BinlogFile:     pos.Name,

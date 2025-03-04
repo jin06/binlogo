@@ -1,12 +1,12 @@
 package pipeline
 
 import (
-	"github.com/jin06/binlogo/pkg/store/dao/dao_node"
-	"github.com/jin06/binlogo/pkg/store/dao/dao_pipe"
-	"github.com/jin06/binlogo/pkg/store/dao/dao_sche"
-	"github.com/jin06/binlogo/pkg/store/model/node"
-	"github.com/jin06/binlogo/pkg/store/model/pipeline"
-	"github.com/jin06/binlogo/pkg/store/model/scheduler"
+	"context"
+
+	"github.com/jin06/binlogo/v2/pkg/store/dao"
+	"github.com/jin06/binlogo/v2/pkg/store/model"
+	"github.com/jin06/binlogo/v2/pkg/store/model/node"
+	"github.com/jin06/binlogo/v2/pkg/store/model/pipeline"
 )
 
 // Item for front display
@@ -49,7 +49,7 @@ func completePipelineRun(i *Item, pMap map[string]*pipeline.Instance) (err error
 		return
 	}
 
-	ins, err := dao_pipe.GetInstance(i.Pipeline.Name)
+	ins, err := dao.GetInstance(context.Background(), i.Pipeline.Name)
 	if err != nil {
 		return
 	}
@@ -58,9 +58,9 @@ func completePipelineRun(i *Item, pMap map[string]*pipeline.Instance) (err error
 }
 
 // CompletePipelineBind complete pipeline bind info
-func CompletePipelineBind(i *Item, pb *scheduler.PipelineBind) (err error) {
+func CompletePipelineBind(i *Item, pb *model.PipelineBind) (err error) {
 	if pb == nil {
-		pb, err = dao_sche.GetPipelineBind()
+		pb, err = dao.GetPipelineBind(context.Background())
 		if err != nil {
 			return
 		}
@@ -79,7 +79,7 @@ func CompletePipelineBind(i *Item, pb *scheduler.PipelineBind) (err error) {
 		i.Info.BindNode = &node.Node{}
 		return
 	}
-	n, err := dao_node.GetNode(nodeName)
+	n, err := dao.GetNode(context.Background(), nodeName)
 	if err != nil {
 		return
 	}
@@ -87,40 +87,26 @@ func CompletePipelineBind(i *Item, pb *scheduler.PipelineBind) (err error) {
 	return
 }
 
-func completeEmpty(i *Item) {
-	sender := i.Pipeline.Output.Sender
-	if sender.RocketMQ == nil {
-		sender.RocketMQ = &pipeline.RocketMQ{}
-	}
-	if sender.Redis == nil {
-		sender.Redis = &pipeline.Redis{}
-	}
-	if sender.Kafka == nil {
-		sender.Kafka = &pipeline.Kafka{}
-	}
-	if sender.Http == nil {
-		sender.Http = &pipeline.Http{}
-	}
-}
-
 // CompleteInfoList complete pipeline list info
-func CompleteInfoList(list []*Item) (err error) {
-	pb, err := dao_sche.GetPipelineBind()
+func CompleteInfoList(ctx context.Context, list []*Item) (err error) {
+	if len(list) == 0 {
+		return nil
+	}
+	pb, err := dao.GetPipelineBind(ctx)
 	if err != nil {
 		return
 	}
-	allInstance, err := dao_pipe.AllInstanceMap()
+	allInstance, err := dao.AllInstanceMap(ctx)
 	if err != nil {
 		return
 	}
 	for _, v := range list {
-		if err1 := CompletePipelineBind(v, pb); err1 != nil {
+		if err := CompletePipelineBind(v, pb); err != nil {
 			continue
 		}
-		if err2 := completePipelineRun(v, allInstance); err2 != nil {
-			return
+		if err := completePipelineRun(v, allInstance); err != nil {
+			return err
 		}
-		completeEmpty(v)
 	}
-	return
+	return nil
 }

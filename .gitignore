@@ -1,5 +1,4 @@
 .idea/
-.vscode
 vendor/
 vendor2/
 etc/*test*.yaml
@@ -13,3 +12,6 @@ profile.out
 coverage.txt
 codecov.yml
 data
+__debug_*
+.vscode/launch.json
+.vscode

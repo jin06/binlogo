@@ -2,9 +2,10 @@ package redis
 
 import (
 	"context"
+
 	"github.com/go-redis/redis/v8"
-	message2 "github.com/jin06/binlogo/app/pipeline/message"
-	"github.com/jin06/binlogo/pkg/store/model/pipeline"
+	message2 "github.com/jin06/binlogo/v2/app/pipeline/message"
+	"github.com/jin06/binlogo/v2/pkg/store/model/pipeline"
 )
 
 // Reids send message to Redis
@@ -14,8 +15,8 @@ type Redis struct {
 }
 
 // New returns a new Reids instance
-func New(rs *pipeline.Redis) (r *Redis, err error) {
-	r = &Redis{Redis: rs}
+func New(rs pipeline.Redis) (r *Redis, err error) {
+	r = &Redis{Redis: &rs}
 	err = r.init()
 	return
 }

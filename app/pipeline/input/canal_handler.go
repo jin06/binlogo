@@ -4,10 +4,10 @@ import (
 	"github.com/go-mysql-org/go-mysql/canal"
 	"github.com/go-mysql-org/go-mysql/mysql"
 	"github.com/go-mysql-org/go-mysql/replication"
-	"github.com/jin06/binlogo/app/pipeline/message"
-	"github.com/jin06/binlogo/configs"
-	"github.com/jin06/binlogo/pkg/promeths"
-	"github.com/jin06/binlogo/pkg/store/model/pipeline"
+	"github.com/jin06/binlogo/v2/app/pipeline/message"
+	"github.com/jin06/binlogo/v2/configs"
+	"github.com/jin06/binlogo/v2/pkg/promeths"
+	"github.com/jin06/binlogo/v2/pkg/store/model/pipeline"
 	"github.com/prometheus/client_golang/prometheus"
 )
 
@@ -57,7 +57,7 @@ func (h *canalHandler) OnPosSynced(pos mysql.Position, set mysql.GTIDSet, force 
 			msg.Content.Head.Position.GTIDSet = set.String()
 		}
 		h.ch <- msg
-		promeths.MessageTotalCounter.With(prometheus.Labels{"pipeline": h.pipe.Name, "node": configs.NodeName}).Inc()
+		promeths.MessageTotalCounter.With(prometheus.Labels{"pipeline": h.pipe.Name, "node": configs.GetNodeName()}).Inc()
 	}
 	return nil
 }

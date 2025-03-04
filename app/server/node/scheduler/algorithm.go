@@ -1,13 +1,13 @@
 package scheduler
 
 import (
+	"context"
 	"errors"
 
-	"github.com/jin06/binlogo/pkg/store/dao/dao_node"
-	"github.com/jin06/binlogo/pkg/store/dao/dao_sche"
-	"github.com/jin06/binlogo/pkg/store/model/node"
-	"github.com/jin06/binlogo/pkg/store/model/pipeline"
-	"github.com/jin06/binlogo/pkg/store/model/scheduler"
+	"github.com/jin06/binlogo/v2/pkg/store/dao"
+	"github.com/jin06/binlogo/v2/pkg/store/model"
+	"github.com/jin06/binlogo/v2/pkg/store/model/node"
+	"github.com/jin06/binlogo/v2/pkg/store/model/pipeline"
 )
 
 type algorithm struct {
@@ -16,7 +16,7 @@ type algorithm struct {
 	potentialNodes map[string]*node.Node
 	nodesScores    map[string]int
 	bestNode       *node.Node
-	pb             *scheduler.PipelineBind
+	pb             *model.PipelineBind
 	capacityMap    map[string]*node.Capacity
 }
 
@@ -34,19 +34,19 @@ func newAlgorithm(opts ...optionAlgorithm) *algorithm {
 
 func (a *algorithm) cal() (err error) {
 	if a.allNodes == nil {
-		a.allNodes, err = dao_node.AllWorkNodesMap()
+		a.allNodes, err = dao.AllWorkNodesMap()
 		if err != nil {
 			return
 		}
 	}
 	if a.pb == nil {
-		a.pb, err = dao_sche.GetPipelineBind()
+		a.pb, err = dao.GetPipelineBind(context.Background())
 		if err != nil {
 			return
 		}
 	}
 	if a.capacityMap == nil {
-		a.capacityMap, err = dao_node.CapacityMap()
+		a.capacityMap, err = dao.CapacityMap(context.Background())
 		if err != nil {
 			return
 		}
@@ -217,7 +217,7 @@ func withAlgAllNodes(allNodes map[string]*node.Node) optionAlgorithm {
 	}
 }
 
-func withAlgPipeBind(pb *scheduler.PipelineBind) optionAlgorithm {
+func withAlgPipeBind(pb *model.PipelineBind) optionAlgorithm {
 	return func(alg *algorithm) {
 		alg.pb = pb
 	}

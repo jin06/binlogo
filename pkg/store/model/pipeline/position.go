@@ -20,16 +20,30 @@ func (s *Position) Key() (key string) {
 }
 
 // Val get position json data
-func (s *Position) Val() (val string) {
-	b, _ := json.Marshal(s)
-	val = string(b)
-	return
-}
+// func (s *Position) Val() (val string) {
+// 	b, _ := json.Marshal(s)
+// 	val = string(b)
+// 	return
+// }
 
 // Unmarshal unmarshal json data to object
-func (s *Position) Unmarshal(val []byte) (err error) {
-	err = json.Unmarshal(val, s)
-	return
+// func (s *Position) Unmarshal(val []byte) (err error) {
+// 	err = json.Unmarshal(val, s)
+// 	return
+// }
+
+func (s *Position) MarshalBinary() (data []byte, err error) {
+	return json.Marshal(s)
+}
+
+func (s *Position) ScanRedis(data string) error {
+	if data == "null" {
+		return nil
+	}
+	if err := json.Unmarshal([]byte(data), s); err != nil {
+		return err
+	}
+	return nil
 }
 
 // OptionPosition Position options

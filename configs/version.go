@@ -1,6 +1,6 @@
 package configs
 
-var Version string
+var Version string = "2.0.0"
 
 var BuildTime string
 

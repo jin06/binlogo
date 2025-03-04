@@ -1,9 +1,9 @@
 package rocketmq
 
 import (
-	"github.com/aliyunmq/mq-http-go-sdk"
-	message2 "github.com/jin06/binlogo/app/pipeline/message"
-	"github.com/jin06/binlogo/pkg/store/model/pipeline"
+	mq_http_sdk "github.com/aliyunmq/mq-http-go-sdk"
+	message2 "github.com/jin06/binlogo/v2/app/pipeline/message"
+	"github.com/jin06/binlogo/v2/pkg/store/model/pipeline"
 )
 
 // RocketMQ send message to Aliyun's RocketMQ
@@ -14,9 +14,9 @@ type RocketMQ struct {
 }
 
 // New returns a new RocketMQ
-func New(rm *pipeline.RocketMQ) (r *RocketMQ, err error) {
+func New(rm pipeline.RocketMQ) (r *RocketMQ, err error) {
 	r = &RocketMQ{
-		RocketMQ: rm,
+		RocketMQ: &rm,
 	}
 	r.client = mq_http_sdk.NewAliyunMQClient(r.RocketMQ.Endpoint, r.RocketMQ.AccessKey, r.RocketMQ.SecretKey, "")
 	r.producer = r.client.GetProducer(r.RocketMQ.InstanceId, r.RocketMQ.TopicName)

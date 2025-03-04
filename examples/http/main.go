@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/gin-gonic/gin"
-	"github.com/jin06/binlogo/app/pipeline/message"
+	"github.com/jin06/binlogo/v2/app/pipeline/message"
 )
 
 func main() {

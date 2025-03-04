@@ -2,14 +2,16 @@ package app
 
 import (
 	"context"
+	"errors"
 	"fmt"
-	"sync"
 
-	"github.com/jin06/binlogo/configs"
-	"github.com/jin06/binlogo/pkg/promeths"
+	"github.com/jin06/binlogo/v2/configs"
+	"github.com/jin06/binlogo/v2/pkg/promeths"
+	"github.com/jin06/binlogo/v2/pkg/store/dao"
+	storeredis "github.com/jin06/binlogo/v2/pkg/store/redis"
+	"github.com/sirupsen/logrus"
 
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 // NewCommand returns a new command for binlogo server
@@ -29,35 +31,38 @@ func NewCommand() (cmd *cobra.Command) {
 		Use:   "server",
 		Short: "Generate mysql data increment",
 		Long:  "Generate mysql data increment",
-		Run: func(cmd *cobra.Command, args []string) {
+		RunE: func(cmd *cobra.Command, args []string) error {
+			ctx := context.Background()
 			cfg, _ := cmd.Flags().GetString("config")
-			Init(cfg)
+			if err := Init(cfg); err != nil {
+				return err
+			}
+			if err := storeredis.Init(ctx, configs.Default.Store.Redis); err != nil {
+				return errors.Join(errors.New("init redis error"), err)
+			}
+			dao.Init()
 			promeths.Init()
 			RunEvent()
 			// panic(123)
-			var err error
-			ctx := context.Background()
-			exit := make(chan struct{})
-			closeOnce := sync.Once{}
+			exit := make(chan error, 2)
 			go func() {
-				if err = RunNode(ctx); err != nil {
-					fmt.Println(err.Error())
+				if err := RunNode(ctx); err != nil {
+					logrus.Error(err)
+					panic(err)
+					exit <- err
 				}
-				closeOnce.Do(func() {
-					close(exit)
-				})
 			}()
-			if viper.GetBool("roles.api") {
+			if configs.Default.Roles.API {
 				go func() {
-					if err = RunConsole(ctx); err != nil {
-						fmt.Println(err.Error())
+					if err := RunConsole(ctx); err != nil {
+						logrus.Error(err)
+						panic(err)
+						exit <- err
 					}
-					closeOnce.Do(func() {
-						close(exit)
-					})
 				}()
 			}
-			<-exit
+			err := <-exit
+			return err
 		},
 	}
 

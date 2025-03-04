@@ -2,11 +2,12 @@ package kafka
 
 import (
 	"encoding/json"
-	"github.com/Shopify/sarama"
-	message2 "github.com/jin06/binlogo/app/pipeline/message"
-	"github.com/jin06/binlogo/pkg/store/model/pipeline"
-	"github.com/sirupsen/logrus"
 	"strings"
+
+	"github.com/Shopify/sarama"
+	message2 "github.com/jin06/binlogo/v2/app/pipeline/message"
+	"github.com/jin06/binlogo/v2/pkg/store/model/pipeline"
+	"github.com/sirupsen/logrus"
 )
 
 // Kafka send message to kafka
@@ -16,8 +17,8 @@ type Kafka struct {
 }
 
 // New returns a new Kafka
-func New(kafka *pipeline.Kafka) (kaf *Kafka, err error) {
-	kaf = &Kafka{Kafka: kafka}
+func New(kafka pipeline.Kafka) (kaf *Kafka, err error) {
+	kaf = &Kafka{Kafka: &kafka}
 	err = kaf.init()
 	return
 }

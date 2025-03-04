@@ -5,7 +5,7 @@ Binlogo
 [![codecov](https://codecov.io/gh/jin06/binlogo/branch/master/graph/badge.svg)](https://codecov.io/gh/jin06/binlogo)
 ![GitHub commit activity](https://img.shields.io/github/commit-activity/m/jin06/binlogo)
 </br>
-[中文](README_zh.md) | [English](README.md)
+
 
 Binlogo is the distributed, visualized application based on MySQL binlog. In short, binlogo is to process the data
 changes of MySQL into easily understand messages and output to different systems according to the user's
@@ -17,20 +17,21 @@ configuration. Here are part of advantages:
 
 ### Get Started
 
-* Install etcd. Binlogo relies on etcd, so you must install etcd first.
+* Install redis. Binlogo V2 relies on redis, so you must install redis first.
 
 * Install binlogo. Binlogo's download address: [Download Address](https://github.com/jin06/binlogo/releases)
 
 * Message Format： [Data format of binlogo output](/docs/1.0.*/message-format.md)
 
 * Start binlogo.
-    * Edit config. ${binlogo-path}/etc/binlogo.yaml
 
-      ![avatar](/docs/wiki/assets/pic/edit_config_step1.en.png)
+   Edit config. ${binlogo-path}/etc/binlogo.yaml
+  
+  
+      # ./binlogo server --config ./etc/binlogo.yaml
 
-    * > $ ./binlogo server --config ./etc/binlogo.yaml
 
-* Open up your browser to http://127.0.0.1:9999/console to view the console website
+* Open up your browser to http://127.0.0.1:8081/console to view the console website
 
 * Create Pipeline:
 [config.go](etc%2Fconfig.go)
@@ -81,16 +82,13 @@ configuration. Here are part of advantages:
 
 ### Docker
 
-- [Docker Hub](https://hub.docker.com/r/jin06/binlogo)
+ [Docker Hub](https://hub.docker.com/r/jin06/binlogo)
 
-> $ docker pull jin06/binlogo
-> </br>
-> $ docker run -e "ETCD_ENDPOINTS=172.17.0.3:2379" --name BinlogoNode -it -d -p 9999:9999 jin06/binlogo:latest
-> </br>
-> Open browser access http://127.0.0.1:9999/console
-> </br>
-> I started five nodes with docker. The following is a screenshot
->
+
+      # docker pull jin06/binlogo
+      # docker run -e REDIS_ADDR=127.0.0.1 -e REDIS_PORT=6379 -e REDIS_PASSWORD=yourpassword -e REDIS_DB=0  --name BinlogoNode -it -d -p 8081:8081 jin06/binlogo:latest
+
+
 
 ![avatar](/docs/wiki/assets/pic/docker_step1.en.png)
 

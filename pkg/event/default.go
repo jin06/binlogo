@@ -3,7 +3,7 @@ package event
 import (
 	"context"
 
-	"github.com/jin06/binlogo/pkg/store/model/event"
+	"github.com/jin06/binlogo/v2/pkg/store/model"
 )
 
 // DefaultRecorder global default event recorder
@@ -16,7 +16,7 @@ func Init() {
 }
 
 // Event client call this function to record a event
-func Event(e *event.Event) {
+func Event(e *model.Event) {
 	//fmt.Println(e)
 	if DefaultRecorder != nil {
 		go DefaultRecorder.Event(e)
@@ -25,12 +25,12 @@ func Event(e *event.Event) {
 
 // EventErrorPipeline record a pipeline error event
 func EventErrorPipeline(name string, msg string) {
-	e := event.NewErrorPipeline(name, msg)
+	e := model.NewErrorPipeline(name, msg)
 	Event(e)
 }
 
 // EventInfoPipeline record a pipeline info event
 func EventInfoPipeline(name string, msg string) {
-	e := event.NewInfoPipeline(name, msg)
+	e := model.NewInfoPipeline(name, msg)
 	Event(e)
 }

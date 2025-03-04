@@ -3,28 +3,24 @@ package app
 import (
 	"fmt"
 
-	"github.com/jin06/binlogo/configs"
-	"github.com/jin06/binlogo/pkg/blog"
-	store2 "github.com/jin06/binlogo/pkg/store"
-	"github.com/jin06/binlogo/pkg/store/model/pipeline"
+	"github.com/jin06/binlogo/v2/configs"
+	"github.com/jin06/binlogo/v2/pkg/blog"
+	store2 "github.com/jin06/binlogo/v2/pkg/store"
+	"github.com/jin06/binlogo/v2/pkg/store/model/pipeline"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
 
 // NewCommand return a new *cobra.Command for cli
 func NewCommand() (cmd *cobra.Command) {
-	cmd = &cobra.Command{Use: "binctl", Run: func(cmd *cobra.Command, args []string) {
-		//fmt.Println("Operate pipeline")
-		//fmt.Println("init binctl")
-	}}
+	cmd = &cobra.Command{Use: "binctl", Run: func(cmd *cobra.Command, args []string) {}}
 	cmd.AddCommand(cmdMemory())
 	cmd.AddCommand(cmdPipeline())
 	cmd.PersistentFlags().String("config", "./etc/binlogo.yaml", "config file default is ./etc/binlogo.yaml")
 	err := viper.BindPFlag("config", cmd.PersistentFlags().Lookup("config"))
-	// configs.InitViperFromFile(viper.GetString("config"))
 	configs.Init(viper.GetString("config"))
-	//etcd2.DefaultETCD()
-	blog.Env(configs.Env(viper.GetString("env")))
+	blog.SetLevel(logrus.StandardLogger(), configs.Default.LogLevel)
 	if err != nil {
 		fmt.Println(err)
 	}

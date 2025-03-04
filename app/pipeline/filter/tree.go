@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"strings"
 
-	message2 "github.com/jin06/binlogo/app/pipeline/message"
-	"github.com/jin06/binlogo/pkg/pipeline/tool"
-	"github.com/jin06/binlogo/pkg/store/model/pipeline"
+	"github.com/jin06/binlogo/v2/app/pipeline/message"
+	"github.com/jin06/binlogo/v2/pkg/pipeline/tool"
+	"github.com/jin06/binlogo/v2/pkg/store/model/pipeline"
 )
 
 type tree struct {
@@ -16,7 +16,7 @@ type tree struct {
 	TableWhite map[string]bool
 }
 
-func (t *tree) isFilter(msg *message2.Message) bool {
+func (t *tree) isFilter(msg *message.Message) bool {
 	if _, ok := t.DBWhite[msg.Content.Head.Database]; ok {
 		return false
 	}
@@ -34,7 +34,7 @@ func (t *tree) isFilter(msg *message2.Message) bool {
 	return false
 }
 
-func newTree(filters []*pipeline.Filter) (res tree) {
+func newTree(filters []pipeline.Filter) (res tree) {
 	res = tree{
 		DBBlack:    map[string]bool{},
 		TableBlack: map[string]bool{},
@@ -45,7 +45,7 @@ func newTree(filters []*pipeline.Filter) (res tree) {
 		return
 	}
 	for _, v := range filters {
-		if !tool.FilterVerify(v) {
+		if !tool.FilterVerify(&v) {
 			continue
 		}
 		arr := strings.Split(v.Rule, ".")
