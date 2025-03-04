@@ -5,7 +5,7 @@ Binlogo
 [![codecov](https://codecov.io/gh/jin06/binlogo/branch/master/graph/badge.svg)](https://codecov.io/gh/jin06/binlogo)
 ![GitHub commit activity](https://img.shields.io/github/commit-activity/m/jin06/binlogo)
 </br>
-[中文](README_zh.md) | [English](README.md)
+
 
 Binlogo is the distributed, visualized application based on MySQL binlog. In short, binlogo is to process the data
 changes of MySQL into easily understand messages and output to different systems according to the user's
