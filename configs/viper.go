@@ -2,6 +2,7 @@ package configs
 
 import (
 	"os"
+	"strconv"
 	"syscall"
 
 	"github.com/jin06/binlogo/v2/pkg/util/ip"
@@ -14,10 +15,37 @@ func Init(file string) error {
 	if err := InitConfig(file); err != nil {
 		return err
 	}
+	if err := initConfigFromEnv(); err != nil {
+		return err
+	}
 	initViperDefault()
 	initViperFromFile(file)
 	initViperFromEnv()
 	initConst()
+	return nil
+}
+
+func initConfigFromEnv() error {
+	if val, found := syscall.Getenv("REDIS_ADDR"); found {
+		Default.Store.Redis.Addr = val
+	}
+	if val, found := syscall.Getenv("REDIS_PORT"); found {
+		if port, err := strconv.Atoi(val); err != nil {
+			return err
+		} else {
+			Default.Store.Redis.Port = port
+		}
+	}
+	if val, found := syscall.Getenv("REDIS_PASSWORD"); found {
+		Default.Store.Redis.Password = val
+	}
+	if val, found := syscall.Getenv("REDIS_DB"); found {
+		if port, err := strconv.Atoi(val); err != nil {
+			return err
+		} else {
+			Default.Store.Redis.DB = port
+		}
+	}
 	return nil
 }
 

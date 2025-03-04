@@ -66,7 +66,7 @@ type Store struct {
 type Redis struct {
 	Addr     string `yaml:"addr"`
 	Port     int    `yaml:"port"`
-	Passwrod string `yaml:"password"`
+	Password string `yaml:"password"`
 	DB       int    `yaml:"db"`
 }
 

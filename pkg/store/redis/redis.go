@@ -21,7 +21,7 @@ func Init(ctx context.Context, cfg configs.Redis) error {
 func NewRedis(ctx context.Context, cfg configs.Redis) *Redis {
 	rdb := redis.NewClient(&redis.Options{
 		Addr:     fmt.Sprintf("%s:%d", cfg.Addr, cfg.Port),
-		Password: cfg.Passwrod,
+		Password: cfg.Password,
 		DB:       cfg.DB,
 	})
 	r := &Redis{
