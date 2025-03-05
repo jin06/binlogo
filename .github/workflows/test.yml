@@ -1,0 +1,39 @@
+name: Test and Report
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.23.6
+
+      - name: Run tests
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN || '' }}
+        run: |
+          #!/usr/bin/env bash
+          rm coverage.txt || true
+          echo "" > coverage.txt
+
+          for d in $(go list ./... | grep -v vendor); do
+            go test -v -coverprofile=profile.out -covermode=atomic $d
+            if [ -f profile.out ]; then
+              cat profile.out >> coverage.txt
+              rm profile.out
+            fi
+          done
+
+          bash <(curl -s https://codecov.io/bash)
+
+          rm coverage.txt
