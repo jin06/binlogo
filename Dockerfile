@@ -30,7 +30,7 @@ FROM alpine:3.10 as final
 #ENV CLUSTER_NAME="cluster"
 COPY --from=builder /binlogo/binlogo /binlogo/binlogo
 COPY --from=builder /binlogo/etc/binlogo_docker.yaml /binlogo/etc/binlogo.yaml
-# COPY --from=builder /binlogo/assets /binlogo/assets
+COPY --from=builder /binlogo/static /binlogo/static
 WORKDIR /binlogo
 
 EXPOSE 8081
