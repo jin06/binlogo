@@ -1,9 +1,8 @@
-FROM golang:1.21.4-alpine3.18 as builder
+FROM golang:1.23-alpine as builder
 
-LABEL maintainer="jinlog<jinlong4696@163.com>"
+LABEL maintainer="kc<jlonmyway@gmail.com>"
 
 ENV GO111MODULE=on \
-#    GOPROXY=https://goproxy.cn,https://goproxy.io,direct \
     CGO_ENABLED=0 \
     GOOS=linux \
     GOARCH=amd64
@@ -14,8 +13,6 @@ COPY . .
 
 ARG VERSION
 ENV app=github.com/jin06/binlogo/v2
-
-RUN go mod vendor
 
 RUN go build  -ldflags="-X '$app/configs.Version=$VERSION' -X '$app/configs.BuildTime=$(date)' -X '$app/configs.GoVersion=$(go env GOVERSION)'" ./cmd/server/binlogo.go
 
@@ -33,10 +30,10 @@ FROM alpine:3.10 as final
 #ENV CLUSTER_NAME="cluster"
 COPY --from=builder /binlogo/binlogo /binlogo/binlogo
 COPY --from=builder /binlogo/etc/binlogo_docker.yaml /binlogo/etc/binlogo.yaml
-COPY --from=builder /binlogo/assets /binlogo/assets
+COPY --from=builder /binlogo/static /binlogo/static
 WORKDIR /binlogo
 
-EXPOSE 9999
+EXPOSE 8081
 RUN cd /binlogo
 
 CMD ["/binlogo/binlogo","server", "--config", "/binlogo/etc/binlogo.yaml"]

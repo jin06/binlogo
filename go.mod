@@ -28,6 +28,7 @@ require (
 
 require (
 	github.com/Azure/go-ntlmssp v0.0.0-20221128193559-754e69321358 // indirect
+	github.com/facebookgo/stack v0.0.0-20160209184415-751773369052 // indirect
 	github.com/go-asn1-ber/asn1-ber v1.5.5 // indirect
 	github.com/goccy/go-json v0.9.7 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.1 // indirect

@@ -3,7 +3,6 @@ package store
 import (
 	"context"
 
-	"github.com/jin06/binlogo/v2/pkg/store/etcd"
 	"github.com/jin06/binlogo/v2/pkg/store/model"
 	"github.com/spf13/viper"
 )
@@ -35,20 +34,20 @@ func Init() {
 
 // Create  deprecated
 func Create(m model.Model) (bool, error) {
-	return etcd.E.Create(m)
+	panic("deprecated")
 }
 
 // Update  deprecated
 func Update(m model.Model) (bool, error) {
-	return etcd.E.Update(m)
+	panic("deprecated")
 }
 
 // Delete deprecated
 func Delete(m model.Model) (bool, error) {
-	return etcd.E.Delete(m)
+	panic("deprecated")
 }
 
 // Get deprecated
 func Get(m model.Model) (bool, error) {
-	return etcd.E.Get(m)
+	panic("deprecated")
 }

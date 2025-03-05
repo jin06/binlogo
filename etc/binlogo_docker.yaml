@@ -1,0 +1,40 @@
+cluster_name: myCluster
+node_name: myNode
+log_level: debug # info,debug,warn,error,fatal
+profile: true
+profile_port: 6060
+event_expire: 60 # second, default 86400
+console:
+  port: 8081
+  listen: 
+roles:
+  api: true
+  master: true
+monitor:
+  port: 8035
+store:
+  type: redis
+  redis:
+    addr: 127.0.0.1
+    port: 6379
+    password: 
+    db: 0
+auth:
+  expiration: 24h
+  #emtpy for no auth 
+  #default type is none
+  #none: no auth 
+  #basic
+  #ldap
+  type: basic
+  basic:
+    username: admin  
+    password: admin
+  ldap:
+    addr: "127.0.0.1:18888"
+    username: "admin"
+    password: "admin"
+    baseDN: "dc=ops,dc=com"
+    idAttr: "uid"
+    attributs: 
+      - "dn"
