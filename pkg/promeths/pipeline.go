@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/jin06/binlogo/v2/configs"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
@@ -22,7 +23,7 @@ func Init() {
 	logrus.Info("init prometheus")
 	pipelineLabels := []string{"pipeline", "node"}
 	nameSpace := "binlogo"
-	subSystem := viper.GetString("cluster.name")
+	subSystem := configs.Default.ClusterName
 
 	MessageTotalCounter = prometheus.NewCounterVec(
 		prometheus.CounterOpts{

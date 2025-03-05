@@ -206,10 +206,6 @@ func (p *Pipeline) CompleteClose() {
 	})
 }
 
-func (p *Pipeline) IsClosed() bool {
-	return p.isClosed
-}
-
 func (p *Pipeline) Closed() chan struct{} {
 	return p.closed
 }

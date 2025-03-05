@@ -8,8 +8,6 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-var ENV Env
-
 // NodeName current node's name
 var NodeName string
 

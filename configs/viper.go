@@ -112,8 +112,6 @@ func initViperFromEnv() {
 
 // initConst set global config
 func initConst() {
-	ENV = Env(viper.GetString("env"))
-	// NodeName = viper.GetString("node.name")
 	NodeIP, _ = ip.LocalIp()
 }
 
@@ -124,8 +122,5 @@ func InitGoTest() {
 	_ = os.Setenv("CLUSTER_NAME", "go_test_cluster")
 	_ = os.Setenv("CONSOLE_LISTEN", "0.0.0.0")
 	_ = os.Setenv("CONSOLE_PORT", "19999")
-	_ = os.Setenv("ETCD_ENDPOINTS", "localhost:12379")
-	_ = os.Setenv("ETCD_PASSWORD", "")
-	_ = os.Setenv("ETCD_USERNAME", "")
 	Init("")
 }

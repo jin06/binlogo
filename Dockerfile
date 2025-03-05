@@ -20,9 +20,6 @@ RUN ./binlogo version
 
 FROM alpine:3.10 as final
 
-#ENV ETCD_ENDPOINTS="127.0.0.1:2379"
-#ENV ETCD_PASSWORD=""
-#ENV ETCD_USERNAME=""
 #ENV NODE_NAME=""
 #ENV BINLOGO_ENV="production"
 #ENV CONSOLE_LISTEN="0.0.0.0"
