@@ -204,10 +204,6 @@ func (n *Node) pollMustRun(ctx context.Context) {
 	}
 }
 
-func (n *Node) Closed() chan struct{} {
-	return n.closed
-}
-
 func (n *Node) CompleteClose() {
 	n.completeOnce.Do(func() {
 		<-n.monitor.Closed()

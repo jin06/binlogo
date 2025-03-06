@@ -29,11 +29,6 @@ func New(opts ...Option) (w *General, err error) {
 	return
 }
 
-// GetKey returns General key
-func (w *General) GetKey() string {
-	return w.options.Key
-}
-
 func (w *General) WatchNode(ctx context.Context) (chan *WatcherEvent, error) {
 	w.options.Key = storeredis.NodeChan()
 	return w.WatchEtcd(ctx)

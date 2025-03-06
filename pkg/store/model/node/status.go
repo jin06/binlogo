@@ -76,13 +76,6 @@ func WithMemoryPressure(b bool) StatusOption {
 	}
 }
 
-// WithDiskPressure sets status disk
-func WithDiskPressure(b bool) StatusOption {
-	return func(s *Status) {
-		s.DiskPressure = b
-	}
-}
-
 // WithCPUPressure sets status cpu
 func WithCPUPressure(b bool) StatusOption {
 	return func(s *Status) {

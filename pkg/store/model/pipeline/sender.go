@@ -85,8 +85,3 @@ type Elastic struct {
 	//TLSClientCertificateFile string `json:"tls_client_certificate_file"`
 	//TLSClientKeyFile         string `json:"tls_client_key_file"`
 }
-
-// EmptyHttp return a new empty Http object
-func EmptyHttp() *Http {
-	return &Http{}
-}

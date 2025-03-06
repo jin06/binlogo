@@ -35,27 +35,6 @@ func (d *DaoRedis) client() *redis.Client {
 	return d.store.GetClient()
 }
 
-func (d *DaoRedis) prefix() string {
-	return "/binlogo"
-}
-
-func (d *DaoRedis) clusterPrefix() string {
-	return d.prefix() + "/" + configs.Default.ClusterName
-}
-
-func (d *DaoRedis) instancePrefix() string {
-	return d.clusterPrefix() + "/pipeline/instance"
-}
-
-func (d *DaoRedis) instanceKey(name string) string {
-	return fmt.Sprintf("%s/%s", d.instancePrefix(), name)
-}
-
-func (d *DaoRedis) publish(ctx context.Context, channel string, message any) error {
-	cmd := d.client().Publish(ctx, channel, message)
-	return cmd.Err()
-}
-
 func scanKeysWithPrefix(ctx context.Context, client *redis.Client, prefix string) ([]string, error) {
 	var cursor uint64 = 0
 	var keys []string
