@@ -12,6 +12,7 @@ import (
 	"github.com/jin06/binlogo/v2/pkg/store/dao"
 	"github.com/jin06/binlogo/v2/pkg/store/model"
 	mPipe "github.com/jin06/binlogo/v2/pkg/store/model/pipeline"
+	storeredis "github.com/jin06/binlogo/v2/pkg/store/redis"
 	"github.com/sirupsen/logrus"
 )
 
@@ -78,7 +79,7 @@ func (i *instance) init(ctx context.Context) (err error) {
 		CreateTime:   time.Now(),
 	}
 	reg := register.New(
-		register.WithKey(dao.PipeInstancePrefix()+"/"+i.pipeName),
+		register.WithKey(storeredis.GetPipeInstanceKey(i.pipeName)),
 		register.WithData(insModel),
 		register.WithLog(i.log),
 	)

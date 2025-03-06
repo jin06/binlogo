@@ -3,19 +3,8 @@ package dao
 import (
 	"context"
 
-	"github.com/jin06/binlogo/v2/pkg/etcdclient"
 	"github.com/jin06/binlogo/v2/pkg/store/model"
 )
-
-// PipeBindPrefix returns etcd prefix of pipeline bind
-func PipeBindPrefix() string {
-	return etcdclient.Prefix() + "/scheduler/pipeline_bind"
-}
-
-// SchedulerPrefix etcd prefix of scheduler
-func SchedulerPrefix() string {
-	return etcdclient.Prefix() + "/scheduler"
-}
 
 // GetPipelineBind get pipeline bind from etcd
 func GetPipelineBind(ctx context.Context) (*model.PipelineBind, error) {

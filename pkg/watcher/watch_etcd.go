@@ -6,7 +6,6 @@ import (
 	"sync"
 
 	storeredis "github.com/jin06/binlogo/v2/pkg/store/redis"
-	clientv3 "go.etcd.io/etcd/client/v3"
 )
 
 // General a base watcher
@@ -19,7 +18,7 @@ type General struct {
 }
 
 // Handler function of handle event
-type Handler func(*clientv3.Event) (*Event, error)
+// type Handler func(*clientv3.Event) (*Event, error)
 
 // New returns a new General watcher with handler
 func New(opts ...Option) (w *General, err error) {

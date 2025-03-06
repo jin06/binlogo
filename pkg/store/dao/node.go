@@ -3,20 +3,9 @@ package dao
 import (
 	"context"
 
-	"github.com/jin06/binlogo/v2/pkg/etcdclient"
 	"github.com/jin06/binlogo/v2/pkg/store/model/node"
 	// "github.com/jin06/binlogo/v2/pkg/store/storeredis"
 )
-
-// NodePrefix returns etcd prefix of node
-func NodePrefix() string {
-	return etcdclient.Prefix() + "/node/info"
-}
-
-// NodeRegisterPrefix returns etcd prefix of register node
-func NodeRegisterPrefix() string {
-	return etcdclient.Prefix() + "/cluster/register"
-}
 
 func RegisterNode(ctx context.Context, n *node.Node) (bool, error) {
 	return myDao.RegisterNode(ctx, n)

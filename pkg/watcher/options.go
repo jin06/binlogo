@@ -2,7 +2,6 @@ package watcher
 
 type Options struct {
 	Key string
-	Handler Handler
 }
 
 type Option func(*Options)
@@ -20,10 +19,3 @@ func WithKey(k string) Option {
 		options.Key = k
 	}
 }
-
-func WithHandler(h Handler) Option {
-	return func(options *Options) {
-		options.Handler = h
-	}
-}
-
