@@ -5,8 +5,8 @@ import (
 	"sync"
 
 	"github.com/go-ldap/ldap/v3"
+	"github.com/jin06/binlogo/v2/configs"
 	"github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
 )
 
 var defaultAuth Authorizer
@@ -15,7 +15,7 @@ var initDefaultAuth sync.Once
 
 func DefaultAuth() Authorizer {
 	initDefaultAuth.Do(func() {
-		authType := viper.GetString("auth.authorizer.type")
+		authType := configs.Default.Auth.Type
 		if authType == "" {
 			authType = "none"
 		}
@@ -23,19 +23,19 @@ func DefaultAuth() Authorizer {
 		case "basic":
 			{
 				defaultAuth = &basicAuth{
-					username: viper.GetString("auth.authorizer.basic.username"),
-					password: viper.GetString("auth.authorizer.basic.password"),
+					configs.Default.Auth.AuthBasic.UserName,
+					configs.Default.Auth.AuthBasic.Password,
 				}
 			}
 		case "ldap":
 			{
 				defaultAuth = &ldapAuth{
-					addr:       viper.GetString("auth.authorizer.ldap.addr"),
-					username:   viper.GetString("auth.authorizer.ldap.username"),
-					password:   viper.GetString("auth.authorizer.ldap.password"),
-					baseDN:     viper.GetString("auth.authorizer.ldap.baseDN"),
-					idAttr:     viper.GetString("auth.authorizer.ldap.idAttr"),
-					attributes: viper.GetStringSlice("auth.authorizer.ldap.attributs"),
+					configs.Default.Auth.AuthLDAP.Addr,
+					configs.Default.Auth.AuthLDAP.UserName,
+					configs.Default.Auth.AuthLDAP.Password,
+					configs.Default.Auth.AuthLDAP.BaseDN,
+					configs.Default.Auth.AuthLDAP.IDAttr,
+					configs.Default.Auth.AuthLDAP.Attributs,
 				}
 			}
 		case "none":

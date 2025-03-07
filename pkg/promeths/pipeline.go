@@ -8,7 +8,6 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
 )
 
 var (
@@ -76,7 +75,7 @@ func Init() {
 
 func listen() {
 	http.Handle("/metrics", promhttp.Handler())
-	addr := fmt.Sprintf(":%v", viper.Get("monitor.port"))
+	addr := fmt.Sprintf(":%v", configs.Default.Monitor.Port)
 	logrus.Info("prometheus listen addr: ", addr)
 	err := http.ListenAndServe(addr, nil)
 	logrus.Error("prometheus listen exit: ", err)

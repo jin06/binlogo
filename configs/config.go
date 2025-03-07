@@ -14,7 +14,26 @@ var NodeName string
 // NodeIP current node's ip
 var NodeIP net.IP
 
-var Default Config = Config{}
+var Default Config
+
+func init() {
+	hostname, _ := os.Hostname()
+	Default = Config{
+		NodeName:    hostname,
+		ClusterName: CLUSTER_NAME,
+		Console: Console{
+			Listen: CONSOLE_LISTEN,
+			Port:   8081,
+		},
+		Roles: Roles{
+			API:    true,
+			Master: true,
+		},
+		Monitor: Monitor{
+			Port: 8085,
+		},
+	}
+}
 
 type Config struct {
 	Test        string  `yaml:"test"`
