@@ -62,6 +62,11 @@ jobs:
           release_name: ${{ github.ref }}
           body: |
             What's Changed
+            ==============
+            - 🔹 New Features
+            - 🛠 Enhancements
+            - 🐞 Bug Fixes
+            - 📌 Notes
           draft: false
           prerelease: false
 
