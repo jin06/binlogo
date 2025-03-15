@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jin06/binlogo/v2/configs"
 	"github.com/redis/go-redis/v9"
 	"github.com/spf13/viper"
 )
@@ -29,8 +30,10 @@ func DefaultStore() TokenStore {
 		case "redis":
 			{
 				client := redis.NewClient(&redis.Options{
-					Addr:     viper.GetString("auth.store.redis.addr"),
-					Username: viper.GetString("auth.store.redis.username"),
+					// Addr:     viper.GetString("auth.store.redis.addr"),
+					Addr: configs.Default.Store.Redis.Addr,
+					// Username: viper.GetString("auth.store.redis.username"),
+					Username: configs.Default.Store.Redis.Username,
 					Password: viper.GetString("auth.store.redis.password"),
 					DB:       viper.GetInt("auth.store.redis.db"),
 					PoolSize: 5,

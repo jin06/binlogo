@@ -22,11 +22,7 @@ store:
 auth:
   expiration: 24h
   #emtpy for no auth 
-  #default type is none
-  #none: no auth 
-  #basic
-  #ldap
-  type: basic
+  type: none # none basic ldap
   basic:
     username: admin  
     password: admin
