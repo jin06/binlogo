@@ -7,7 +7,6 @@ import (
 	"github.com/jin06/binlogo/v2/pkg/store/model"
 	"github.com/jin06/binlogo/v2/pkg/store/model/node"
 	"github.com/jin06/binlogo/v2/pkg/store/model/pipeline"
-	"github.com/sirupsen/logrus"
 )
 
 var myDao Dao
@@ -70,10 +69,4 @@ type Dao interface {
 // delete pipeline bind if pipeline is expected to stop, pipeline will not be scheduled a node.
 func ClearOrDeleteBind(ctx context.Context, name string) (err error) {
 	return myDao.ClearOrDeleteBind(ctx, name)
-}
-
-// DeleteCluster delete whole cluster
-func DeleteCluster(clusterName string) (deleted int64, err error) {
-	logrus.Warn("DeleteCluster unimplemented!")
-	return
 }

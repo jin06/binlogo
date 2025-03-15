@@ -4,7 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/jin06/binlogo/v2/app/server/console/basic"
 	"github.com/jin06/binlogo/v2/app/server/console/service"
-	"github.com/spf13/viper"
+	"github.com/jin06/binlogo/v2/configs"
 )
 
 type token struct {
@@ -55,7 +55,7 @@ func UserInfo(c *gin.Context) {
 }
 
 func AuthType(c *gin.Context) {
-	typ := viper.GetString("auth.authorizer.type")
+	typ := configs.Default.Auth.Type
 	c.JSON(200, basic.Success(map[string]any{
 		"type": typ,
 	}))

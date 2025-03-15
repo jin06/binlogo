@@ -70,7 +70,3 @@ func (r *Register) CompleteClose() {
 		close(r.closed)
 	})
 }
-
-func (r *Register) IsClosed() bool {
-	return r.isClosed
-}

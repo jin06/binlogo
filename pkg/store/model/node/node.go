@@ -66,9 +66,3 @@ func WithNodeVersion(v string) NodeOption {
 		s["version"] = v
 	}
 }
-
-func WithNodeLastRunTime(t time.Time) NodeOption {
-	return func(s model.Values) {
-		s["version"] = t
-	}
-}

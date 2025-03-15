@@ -53,7 +53,7 @@ docker:
 
 dash:
 	sh -c "cd dashboard;NODE_OPTIONS="--openssl-legacy-provider" npm run build:prod"
-	sh -c "rm -fr assets/dist;mv dashboard/dist ./assets"
+	sh -c "cp static/assets.go.tpl static/dist/assets.go"
 
 
 

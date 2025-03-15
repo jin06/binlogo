@@ -40,14 +40,6 @@ func RegisterPrefix() string {
 	return fmt.Sprintf("%s/%s", NodePrefix(), RegisterKey)
 }
 
-func ClusterPrefix() string {
-	return fmt.Sprintf("%s/%s", Prefix(), ClusterKey)
-}
-
-func ElectionPrefix() string {
-	return fmt.Sprintf("%s/%s", ClusterPrefix(), ElectionKey)
-}
-
 func NodePrefix() string {
 	return fmt.Sprintf("%s/%s", Prefix(), NodeKey)
 }

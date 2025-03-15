@@ -2,13 +2,12 @@ package watcher
 
 import (
 	"github.com/jin06/binlogo/v2/pkg/store/model"
-	clientv3 "go.etcd.io/etcd/client/v3"
 )
 
 // Event watcher event
 type Event struct {
-	Event *clientv3.Event
-	Data  interface{}
+	// Event *clientv3.Event
+	Data interface{}
 }
 
 type ChangeEvent struct {

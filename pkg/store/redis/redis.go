@@ -7,7 +7,6 @@ import (
 	"github.com/jin06/binlogo/v2/configs"
 	"github.com/jin06/binlogo/v2/pkg/store/model"
 	"github.com/redis/go-redis/v9"
-	"github.com/sirupsen/logrus"
 )
 
 var Default *Redis
@@ -97,42 +96,6 @@ func (r *Redis) List(ctx context.Context, list []model.Model) error {
 func (r *Redis) HashSet(ctx context.Context) {
 }
 
-func (r *Redis) getAllHashKeys(ctx context.Context) ([]string, error) {
-	var hashKeys []string
-	var cursor uint64
-	rdb := r.client
-
-	// 遍历所有键
-	for {
-		// 使用 SCAN 命令获取部分键
-		keys, nextCursor, err := rdb.Scan(ctx, cursor, "*", 10).Result()
-		if err != nil {
-			return nil, err
-		}
-
-		// 检查每个键的类型，筛选出 hash 类型的键
-		for _, key := range keys {
-			keyType, err := rdb.Type(ctx, key).Result()
-			if err != nil {
-				return nil, err
-			}
-			if keyType == "hash" {
-				hashKeys = append(hashKeys, key)
-			}
-		}
-
-		// 如果 cursor 变为 0，表示遍历完成
-		if nextCursor == 0 {
-			break
-		}
-
-		// 更新游标
-		cursor = nextCursor
-	}
-
-	return hashKeys, nil
-}
-
 func (r *Redis) GetField(ctx context.Context, key string, field string) (string, error) {
 	str, err := r.client.HGet(ctx, key, field).Result()
 	if err != nil {
@@ -142,41 +105,4 @@ func (r *Redis) GetField(ctx context.Context, key string, field string) (string,
 		return "", err
 	}
 	return str, nil
-}
-
-func AllDatas[T model.Model](ctx context.Context, key string, client redis.Client) (list []T, err error) {
-	var cursor uint64
-	for {
-		keys, nextCursor, err := client.Scan(ctx, cursor, key, 10).Result()
-		if err != nil {
-			return nil, err
-		}
-		for _, key := range keys {
-			keyType, err := client.Type(ctx, key).Result()
-			if err != nil {
-				logrus.Error(err)
-				continue
-			}
-			if keyType == "hash" {
-				cmd := client.HGetAll(ctx, key)
-				if cmd.Err() != nil {
-					return nil, cmd.Err()
-				}
-				var item T
-				err := cmd.Scan(item)
-				if err != nil {
-					logrus.Error(err)
-					continue
-				}
-				list = append(list, item)
-			}
-		}
-		if nextCursor == 0 {
-			break
-		}
-		cursor = nextCursor
-
-	}
-
-	return
 }

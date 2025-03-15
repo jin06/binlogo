@@ -11,13 +11,6 @@ type PipelineBind struct {
 
 type Bindings map[string]string
 
-// EmptyPipelineBind returns a empty pipeline bind
-func EmptyPipelineBind() *PipelineBind {
-	return &PipelineBind{
-		Bindings: map[string]string{},
-	}
-}
-
 // Key generate etcd prefix of pipeline bind
 func (s *PipelineBind) Key() (key string) {
 	return "scheduler/pipeline_bind"

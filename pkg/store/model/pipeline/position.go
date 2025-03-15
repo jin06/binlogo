@@ -56,13 +56,6 @@ func WithBinlogFile(b string) OptionPosition {
 	}
 }
 
-// WithPos sets binlog position to OptionPosition
-func WithPos(p uint32) OptionPosition {
-	return func(position *Position) {
-		position.BinlogPosition = p
-	}
-}
-
 // WithGTIDSet sets GTIDSet to OptionPosition
 func WithGTIDSet(g string) OptionPosition {
 	return func(position *Position) {

@@ -3,14 +3,8 @@ package dao
 import (
 	"context"
 
-	"github.com/jin06/binlogo/v2/pkg/etcdclient"
 	"github.com/jin06/binlogo/v2/pkg/store/model/node"
 )
-
-// StatusPrefix returns etcd prefix of node status
-func StatusPrefix() string {
-	return etcdclient.Prefix() + "/node/status"
-}
 
 // CreateOrUpdateStatus crate of update status in etcd
 // create if not exist

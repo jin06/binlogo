@@ -27,19 +27,6 @@ type Message struct {
 	Content Content
 }
 
-// New return a new message
-func New() *Message {
-	msg := &Message{
-		Status: STATUS_NEW,
-		Filter: false,
-		Content: Content{
-			Head: Head{},
-			Data: nil,
-		},
-	}
-	return msg
-}
-
 // Content of Message
 type Content struct {
 	Head Head        `json:"head"`
@@ -53,14 +40,6 @@ type Head struct {
 	Database string            `json:"database"`
 	Table    string            `json:"table"`
 	Position pipeline.Position `json:"position"`
-}
-
-func (h *Head) reset() {
-	h.Type = ""
-	h.Time = 0
-	h.Database = ""
-	h.Table = ""
-	h.Position.Reset()
 }
 
 // Json marshal message to json data

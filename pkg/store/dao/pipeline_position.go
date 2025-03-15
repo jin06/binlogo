@@ -3,14 +3,8 @@ package dao
 import (
 	"context"
 
-	"github.com/jin06/binlogo/v2/pkg/etcdclient"
 	"github.com/jin06/binlogo/v2/pkg/store/model/pipeline"
 )
-
-// PositionPrefix returns etcd prefix of pipeline position
-func PositionPrefix() string {
-	return etcdclient.Prefix() + "/pipeline/position"
-}
 
 // UpdatePosition update pipeline position in etcd
 func UpdatePosition(ctx context.Context, p *pipeline.Position) (err error) {

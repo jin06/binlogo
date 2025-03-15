@@ -26,12 +26,6 @@ type Watcher interface {
 	WatchNode(ctx context.Context) chan node.Node
 }
 
-func NewRedisWatcher(redis *storeredis.Redis) *RedisWatcher {
-	return &RedisWatcher{
-		redis: redis,
-	}
-}
-
 func newRedisWatcher(redis *storeredis.Redis) *RedisWatcher {
 	return &RedisWatcher{redis}
 }

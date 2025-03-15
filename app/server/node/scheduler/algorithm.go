@@ -93,12 +93,12 @@ func (a *algorithm) calScore() (err error) {
 	for _, v := range a.potentialNodes {
 		a.nodesScores[v.Name] = 0
 	}
-	scores, err := a._scoreNumOfPipelines()
+	scores, err := a.scoreNumOfPipelines()
 	if err != nil {
 		return
 	}
 	a.mergeScores(scores)
-	scores, err = a._scoreResources()
+	scores, err = a.scoreResources()
 	if err != nil {
 		return
 	}
@@ -119,7 +119,7 @@ func (a *algorithm) mergeScores(scores map[string]int) {
 }
 
 // Node's score depend on numbers of running pipeline in the node.
-func (a *algorithm) _scoreNumOfPipelines() (scores map[string]int, err error) {
+func (a *algorithm) scoreNumOfPipelines() (scores map[string]int, err error) {
 	weight := 5
 	scores = map[string]int{}
 	pipeNums := map[string]int{}
@@ -159,7 +159,7 @@ func (a *algorithm) _scoreNumOfPipelines() (scores map[string]int, err error) {
 }
 
 // Node's score depend on node's resources.
-func (a *algorithm) _scoreResources() (scores map[string]int, err error) {
+func (a *algorithm) scoreResources() (scores map[string]int, err error) {
 	weight := 10
 	scores = map[string]int{}
 	GB := uint64(1 << 20) // kb
@@ -208,23 +208,5 @@ type optionAlgorithm func(alg *algorithm)
 func withAlgPipe(p *pipeline.Pipeline) optionAlgorithm {
 	return func(alg *algorithm) {
 		alg.pipeline = p
-	}
-}
-
-func withAlgAllNodes(allNodes map[string]*node.Node) optionAlgorithm {
-	return func(alg *algorithm) {
-		alg.allNodes = allNodes
-	}
-}
-
-func withAlgPipeBind(pb *model.PipelineBind) optionAlgorithm {
-	return func(alg *algorithm) {
-		alg.pb = pb
-	}
-}
-
-func withAlgCapMap(cm map[string]*node.Capacity) optionAlgorithm {
-	return func(alg *algorithm) {
-		alg.capacityMap = cm
 	}
 }

@@ -20,12 +20,17 @@ func Init(file string) error {
 	}
 	initViperDefault()
 	initViperFromFile(file)
-	initViperFromEnv()
 	initConst()
 	return nil
 }
 
 func initConfigFromEnv() error {
+	if val, found := syscall.Getenv("CLUSTER_NAME"); found {
+		Default.ClusterName = val
+	}
+	if val, found := syscall.Getenv("NODE_NAME"); found {
+		Default.NodeName = val
+	}
 	if val, found := syscall.Getenv("REDIS_ADDR"); found {
 		Default.Store.Redis.Addr = val
 	}
@@ -46,6 +51,21 @@ func initConfigFromEnv() error {
 			Default.Store.Redis.DB = port
 		}
 	}
+	if val, found := syscall.Getenv("AUTH_TYPE"); found {
+		Default.Auth.Type = val
+	}
+	if val, found := syscall.Getenv("CONSOLE_LISTEN"); found {
+		Default.Console.Listen = val
+	}
+	if val, found := syscall.Getenv("CONSOLE_PORT"); found {
+		Default.Console.Port, _ = strconv.Atoi(val)
+	}
+	if val, found := syscall.Getenv("ROLES_API"); found {
+		Default.Roles.API, _ = strconv.ParseBool(val)
+	}
+	if val, found := syscall.Getenv("ROLES_MASTER"); found {
+		Default.Roles.Master, _ = strconv.ParseBool(val)
+	}
 	return nil
 }
 
@@ -65,55 +85,13 @@ func initViperFromFile(file string) {
 
 // initViperDefault set default configs
 func initViperDefault() {
-	hostName, _ := os.Hostname()
-	viper.SetDefault("node.name", hostName)
-	viper.SetDefault("env", ENV_PRO)
-	viper.SetDefault("cluster.name", CLUSTER_NAME)
-	viper.SetDefault("console.listen", CONSOLE_LISTEN)
-	viper.SetDefault("console.port", CONSOLE_PORT)
 	viper.SetDefault("roles.api", true)
 	viper.SetDefault("roles.master", true)
 	viper.SetDefault("monitor.port", 8085)
 }
 
-// initViperFromEnv read config from env then whrite to viper
-func initViperFromEnv() {
-	if val, found := syscall.Getenv("NODE_NAME"); found {
-		viper.Set("node.name", val)
-	}
-	if val, found := syscall.Getenv("BINLOGO_ENV"); found {
-		viper.Set("env", val)
-	}
-	if val, found := syscall.Getenv("CLUSTER_NAME"); found {
-		viper.Set("cluster.name", val)
-	}
-	if val, found := syscall.Getenv("CONSOLE_LISTEN"); found {
-		viper.Set("console.listen", val)
-	}
-	if val, found := syscall.Getenv("CONSOLE_PORT"); found {
-		viper.Set("console.port", val)
-	}
-	if val, found := syscall.Getenv("ETCD_ENDPOINTS"); found {
-		viper.Set("etcd.endpoints", val)
-	}
-	if val, found := syscall.Getenv("ETCD_PASSWORD"); found {
-		viper.Set("etcd.password", val)
-	}
-	if val, found := syscall.Getenv("ETCD_USERNAME"); found {
-		viper.Set("etcd.username", val)
-	}
-	if val, found := syscall.Getenv("ROLES_API"); found {
-		viper.Set("roles.api", val)
-	}
-	if val, found := syscall.Getenv("ROLES_MASTER"); found {
-		viper.Set("roles.master", val)
-	}
-}
-
 // initConst set global config
 func initConst() {
-	ENV = Env(viper.GetString("env"))
-	// NodeName = viper.GetString("node.name")
 	NodeIP, _ = ip.LocalIp()
 }
 
@@ -124,8 +102,5 @@ func InitGoTest() {
 	_ = os.Setenv("CLUSTER_NAME", "go_test_cluster")
 	_ = os.Setenv("CONSOLE_LISTEN", "0.0.0.0")
 	_ = os.Setenv("CONSOLE_PORT", "19999")
-	_ = os.Setenv("ETCD_ENDPOINTS", "localhost:12379")
-	_ = os.Setenv("ETCD_PASSWORD", "")
-	_ = os.Setenv("ETCD_USERNAME", "")
 	Init("")
 }

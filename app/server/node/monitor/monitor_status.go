@@ -8,6 +8,7 @@ import (
 
 	"github.com/jin06/binlogo/v2/pkg/store/dao"
 	"github.com/jin06/binlogo/v2/pkg/store/model/node"
+	storeredis "github.com/jin06/binlogo/v2/pkg/store/redis"
 	"github.com/sirupsen/logrus"
 )
 
@@ -16,8 +17,9 @@ func (m *Monitor) monitorStatus(ctx context.Context) (err error) {
 	defer logrus.Info("monitor status stop")
 	stx, cancel := context.WithCancel(ctx)
 	defer cancel()
-	key := dao.StatusPrefix()
-	w, err := watcher.New(watcher.WithKey(key), watcher.WithHandler(watcher.WrapNodeStatus(key, "")))
+	// key := dao.StatusPrefix()
+	key := storeredis.StatusPrefix()
+	w, err := watcher.New(watcher.WithKey(key))
 	if err != nil {
 		return
 	}
