@@ -47,6 +47,7 @@ func RegisterList(c *gin.Context) {
 
 }
 
+// ElectionList is deprecated and no longer in use
 func ElectionList(c *gin.Context) {
 	all, err := dao.AllElections()
 	if err != nil {
